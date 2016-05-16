@@ -1,0 +1,10 @@
+		var cssElt = WMEAC.createElement({type: "style"});
+		cssElt.type = "text/css";
+		var css="";
+		css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px; border; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
+		css += ".wmeac-closuredialog button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
+		css += ".wmeac-closuredialog h1 { background-color: #F1DDDB; text-align: center; font-size: medium; margin-top: 0px; padding: 10px;}";
+		css += ".wmeac-closuredialog .content { padding: 10px;}";
+		css += ".wmeac-closuredialog .footer { height: 40px; padding: 0 10px;}";
+		cssElt.innerHTML = css;
+		document.body.appendChild(cssElt);
