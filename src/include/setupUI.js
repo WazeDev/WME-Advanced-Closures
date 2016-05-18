@@ -26,6 +26,13 @@ WMEAC.initUI = function ()
 		var title='<b><a target="_blank" href="https://greasyfork.org/fr/scripts/"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=68&t=91786">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=125216">En</a> </b> v' + WMEAC.ac_version;
 		section.innerHTML  = title;
 		addon.appendChild(section);
+        
+        var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel'});
+        var csvHTML = 'Import CSV: <input type="file" id="wmeac-csv-file" name="files[]" />';
+        csvHTML += '<button id="wmeac-csv-parse"/>Parse</a>';
+        divCSV.innerHTML = csvHTML;
+        addon.appendChild(divCSV);
+
 		
 		var userTabs = WMEAC.getId('user-tabs');
 		var userInfo = WMEAC.getId('user-info');
@@ -34,7 +41,7 @@ WMEAC.initUI = function ()
 		var tabContent = sidePanelPrefs.parentNode;
 		
 		newtab = WMEAC.createElement({type: 'li'});
-		newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-clock-o"></span></a>';
+		newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road"></span></a>';
 		navTabs.appendChild(newtab);
 
 		
@@ -44,6 +51,7 @@ WMEAC.initUI = function ()
 		tabContent.appendChild(addon);
 
 		Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+        window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
 };
 
 WMEAC.selectionChanged = function (e)
@@ -157,4 +165,17 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 			if (d) d.style.display='none';
 		});
 	}
+};
+
+
+WMEAC.connectAdvancedClosureTabHandlers = function ()
+{
+	var e = null;
+	e=WMEAC.getId('wmeac-csv-parse');
+	if (e)
+		e.addEventListener('click', WMEAC.parseCSV);
+    
+	e=WMEAC.getId('wmeac-csv-file');
+	if (e)
+		e.addEventListener('change', WMEAC.CSVFileChanged);
 };

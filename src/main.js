@@ -63,6 +63,7 @@ function WMEAC_Injected()
 	// functions to load and save settings
 	INCLUDE_FILE('include/saveLoad.js');
 	
+    INCLUDE_FILE('include/csv.js');
 	
 	WMEAC.log("Ready");
 	WMEAC.bootstrapAC();
