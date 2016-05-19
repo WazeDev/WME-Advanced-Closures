@@ -9,3 +9,4 @@ WMEAC.closureTabTimeout=null;
 
 WMEAC.lastCSVFile=null;
 
+WMEAC.csv=[];
