@@ -1,8 +1,8 @@
-WMEAC.parseCSV = function ()
+WMEAC.parseCSV = function (csvString)
 {
-    if (WMEAC.lastCSVFile!=null)
+    if (csvString!=null)
     {
-        var csvArray = WMEAC.CSVtoArray(WMEAC.lastCSVFile);
+        var csvArray = WMEAC.CSVtoArray(csvString);
         WMEAC.log("CSV as array:", csvArray);
         var isValid = WMEAC.csv[0].validate(csvArray);
         if (isValid.isValid)
@@ -20,8 +20,8 @@ WMEAC.CSVFileChanged = function (evt)
 				var reader = new FileReader();
 				reader.onload = (function(theFile) {
 						return function(e) {
-								WMEAC.lastCSVFile=e.target.result;
 								WMEAC.log("import CSV file read");
+                                WMEAC.parseCSV(e.target.result);
 						};
 				})(f);
 

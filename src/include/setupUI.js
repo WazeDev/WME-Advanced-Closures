@@ -28,8 +28,8 @@ WMEAC.initUI = function ()
 		addon.appendChild(section);
         
         var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel'});
-        var csvHTML = 'Import CSV: <input type="file" id="wmeac-csv-file" name="files[]" />';
-        csvHTML += '<button id="wmeac-csv-parse"/>Parse</a>';
+        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-custom-file-upload">Parse CSV</label>';
+        csvHTML += '<input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
         divCSV.innerHTML = csvHTML;
         addon.appendChild(divCSV);
 
@@ -171,10 +171,6 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 WMEAC.connectAdvancedClosureTabHandlers = function ()
 {
 	var e = null;
-	e=WMEAC.getId('wmeac-csv-parse');
-	if (e)
-		e.addEventListener('click', WMEAC.parseCSV);
-    
 	e=WMEAC.getId('wmeac-csv-file');
 	if (e)
 		e.addEventListener('change', WMEAC.CSVFileChanged);

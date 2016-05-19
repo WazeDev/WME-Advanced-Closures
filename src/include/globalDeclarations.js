@@ -7,6 +7,4 @@ WMEAC.ac_version="<WMEACVERSION>";
 
 WMEAC.closureTabTimeout=null;
 
-WMEAC.lastCSVFile=null;
-
 WMEAC.csv=[];
