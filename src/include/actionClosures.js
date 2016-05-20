@@ -9,6 +9,7 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         options.hasOwnProperty('location') &&
         options.hasOwnProperty('permanent'))
     {
+        WMEAC.log("Addinf closure: ", options);
         var fail = function (e) {
             return function (f) {
                 if (failureHandler)

@@ -6,7 +6,18 @@ WMEAC.parseCSV = function (csvString)
         WMEAC.log("CSV as array:", csvArray);
         var isValid = WMEAC.csv[0].validate(csvArray);
         if (isValid.isValid)
+        {
             WMEAC.log("CSV is valid!");
+            var closures = WMEAC.csv[0].filter(csvArray).map(function (e) {
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[6], lonlat:e[7], permanent:e[8]})};
+            });
+            WMEAC.log("Closure list:", closures);
+            // aply closures: TEST ONLY: this should not be done there!
+            closures.forEach(function (c) {
+                c.closure.applyInWME(function () { WMEAC.log("Closure success:", c);});
+            });
+            // END OF aply closures: TEST ONLY: this should not be done there!
+        }
         else
             WMEAC.log("CSV is NOT valid!:" + isValid.feedBack);
     }
@@ -46,7 +57,7 @@ WMEAC.ClassCSV = function (options)
     {
         var regexps = this.regexpValidation;
         var feedBack = "";
-        data.forEach(function (line, l) {
+        this.filter(data).forEach(function (line, l) {
             var isLineValid = line.reduce(function (stillValid, cell, i) {
                 var isCellValid = cell.match(regexps[i])!=null;
                 if (!isCellValid)
@@ -71,5 +82,7 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/(^header$)|(^
                                                                   /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, // start date
                                                                   /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, // end date
                                                                   /(^A to B$)|(^B to A$)|(^TWO WAY$)/, // direction
-                                                                  /^(\d+(;|$))+/ // seg ID list
+                                                                  /^(\d+(;|$))+/, // seg ID list
+                                                                  /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
+                                                                  /(Yes)|(No)/ // ignore trafic = permanent
                                                                   ]}));
