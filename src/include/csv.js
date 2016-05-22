@@ -8,18 +8,31 @@ WMEAC.parseCSV = function (csvString)
         if (isValid.isValid)
         {
             WMEAC.log("CSV is valid!");
-            var closures = WMEAC.csv[0].filter(csvArray).map(function (e) {
-                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[6], lonlat:e[7], permanent:e[8]})};
+            var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[6], lonlat:e[7], permanent:e[8], id: i})};
             });
             WMEAC.log("Closure list:", closures);
-            // aply closures: TEST ONLY: this should not be done there!
+            WMEAC.csvCurrentClosureList = closures;
+            var listUI = WMEAC.getId('wmeac-csv-closures-list-elts');
             closures.forEach(function (c) {
-                c.closure.applyInWME(function () { WMEAC.log("Closure success:", c);});
+                var ui = WMEAC.buildInlineClosureUI(c.closure, c.action);
+                listUI.appendChild(ui);
             });
+            WMEAC.csvShowList(true);
+            WMEAC.csvAddLog("CSV parse successful");
+            // aply closures: TEST ONLY: this should not be done there!
+            /*closures.forEach(function (c) {
+                c.closure.applyInWME(function () { WMEAC.log("Closure success:", c);});
+            });*/
             // END OF aply closures: TEST ONLY: this should not be done there!
         }
         else
+        {
             WMEAC.log("CSV is NOT valid!:" + isValid.feedBack);
+            WMEAC.csvAddLog(isValid.feedBack);
+            WMEAC.csvShowList(false);
+            WMEAC.csvCurrentClosureList = null;
+        }
     }
 };
 
@@ -61,7 +74,7 @@ WMEAC.ClassCSV = function (options)
             var isLineValid = line.reduce(function (stillValid, cell, i) {
                 var isCellValid = cell.match(regexps[i])!=null;
                 if (!isCellValid)
-                    feedBack="Error while parsing line " + l + " cell " + i + ": \"" + cell + "\" in line " + line.join(',');
+                    feedBack+="Error while parsing line " + l + " cell " + i + ": \"" + cell + "\" in line " + line.join(',');
                 return (stillValid && isCellValid);
             }, true);
         }, this);
@@ -86,3 +99,95 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/(^header$)|(^
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
                                                                   /(Yes)|(No)/ // ignore trafic = permanent
                                                                   ]}));
+                                                                  
+WMEAC.buildInlineClosureUI = function (closure, action)
+{
+    var liElt = WMEAC.createElement({type: 'li', className: 'wmeac-csv-closures-list-' + action});
+    if (action=="add")
+        liElt.title="Ready to apply";
+    else if (action=="remove")
+        liElt.title="Ready to remove";
+    liElt.setAttribute('closureID', closure.id);
+    liElt.innerHTML='<div class="wmeac-csv-closures-list-col-action"><input type="checkbox" /></div>\
+                    <div class="wmeac-csv-closures-list-col-lr"><div title="' + closure.location + '">' + closure.location + '</div><div title="' + closure.reason + '">' + closure.reason + '</div></div>\
+                    <div class="wmeac-csv-closures-list-col-dates">' + closure.startDate + '<br/>' + closure.endDate + '</div>\
+                    <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
+                    <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
+                    <div class="wmeac-csv-closures-list-col-target"><a href="#" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
+                    <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>';
+    // attach handlers
+    liElt.children[5].children[0].addEventListener('click', function (e) {
+        // get closure id:
+        var cid = parseInt(e.target.parentNode.parentNode.parentNode.getAttribute('closureID'));
+        var closure = WMEAC.csvCurrentClosureList.find(function (c) {
+            return (c.closure.id==cid);
+        });
+        WMEAC.log('Closure to target:', closure);
+        Waze.map.setCenter(closure.closure.lonlat, 4);
+    });
+    liElt.children[6].children[0].addEventListener('click', function (e) {
+        // get closure id:
+        var liElt = e.target.parentNode.parentNode.parentNode;
+        var cid = parseInt(liElt.getAttribute('closureID'));
+        var closure = WMEAC.csvCurrentClosureList.find(function (c) {
+            return (c.closure.id==cid);
+        });
+        WMEAC.log('Closure to apply:', closure);
+        Waze.map.setCenter(closure.closure.lonlat, 4);
+        function applySuccess(evt)
+        {
+            WMEAC.csvClearLog();
+            WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
+            liElt.className="wmeac-csv-closures-list-done";
+            liElt.setAttribute('title', 'Closure is applied');
+        };
+        function applyFailure(evt)
+        {
+            WMEAC.log('evt', evt);
+            WMEAC.csvClearLog();
+            var details="";
+            evt.forEach(function (err) {
+                if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
+                    details += err.attributes.details + "\n";
+            });
+            WMEAC.csvAddLog("Closure KO: " + closure.closure.location + " (" + closure.closure.reason + ")\n" + details + "\n");
+            liElt.className="wmeac-csv-closures-list-failed";
+            liElt.setAttribute('title', details);
+        };
+        var tmp2 = function applyClosure()
+        {
+            WMEAC.log("Now apply closure...");
+            closure.closure.applyInWME(applySuccess, applyFailure);
+        };
+        var tmp1 = function readyToApply() {
+            WMEAC.log("Test to apply closure...");
+            if (WMEAC.pendingOps==true)
+            {
+                WMEAC.log("Not yet. Waiting for WME...");
+                window.setTimeout(readyToApply, 500);
+            }
+            else
+                tmp2();
+        };
+        window.setTimeout(tmp1, 500);
+    });
+    return liElt;
+};
+
+WMEAC.csvAddLog = function(text)
+{
+    var divLog = WMEAC.getId('wmeac-csv-closures-log');
+    divLog.innerHTML += text.replace(/\n/g, "<br>");
+};
+
+WMEAC.csvClearLog = function()
+{
+    var divLog = WMEAC.getId('wmeac-csv-closures-log');
+    divLog.innerHTML = "";
+};
+
+WMEAC.csvShowList = function(show)
+{
+    var divList = WMEAC.getId('wmeac-csv-closures');
+    divList.style.display=(show?"block":"none");
+};

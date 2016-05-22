@@ -1,8 +1,9 @@
 WMEAC.ClassClosure = function (options)
 {
-    WMEAC.log("opyions", options);
+    WMEAC.log("options", options);
     this.isValid=false;
-    var validProperties=['reason', 'location', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent'];
+    this.errorMessage='';
+    var validProperties=['reason', 'location', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent', 'id'];
     var goodOptions=0;
     validProperties.forEach(function (p) {
         if (options.hasOwnProperty(p))
@@ -12,7 +13,7 @@ WMEAC.ClassClosure = function (options)
         }
         else
         {
-            this.errorMessage="Missing property " + p + "\n";
+            this.errorMessage+="Missing property " + p + "\n";
         }
     }, this);
     if (goodOptions==validProperties.length)
@@ -26,12 +27,12 @@ WMEAC.ClassClosure = function (options)
     this.segIDs = this.segIDs.split(';');
     var matches = this.lonlat.match(/lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*)/);
     if (matches && matches.length==3)
-        this.lonlat = [matches[1], matches[2]];
+        this.lonlat = {lon: matches[1], lat: matches[2]};
     else
     {
         matches = this.lonlat.match(/lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*)/);
         if (matches && matches.length==3)
-            this.lonlat = [matches[2], matches[1]];
+            this.lonlat = {lon: matches[2], lat: matches[1]}
         else
         {
             this.isValid=false;

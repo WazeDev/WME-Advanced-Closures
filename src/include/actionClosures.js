@@ -13,7 +13,7 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         var fail = function (e) {
             return function (f) {
                 if (failureHandler)
-                    failureHandler();
+                    failureHandler(f);
                 else
                     WMEAC.log("Failed to create closure:", f);
             };
@@ -21,7 +21,7 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         var done = function (e) {
             return function (f) {
                 if (successHandler)
-                    successHandler();
+                    successHandler(f);
                 else
                     WMEAC.log("Closure successful:", f);
             };

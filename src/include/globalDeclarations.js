@@ -8,3 +8,7 @@ WMEAC.ac_version="<WMEACVERSION>";
 WMEAC.closureTabTimeout=null;
 
 WMEAC.csv=[];
+
+WMEAC.csvCurrentClosureList=null;
+
+WMEAC.pendingOps=false;

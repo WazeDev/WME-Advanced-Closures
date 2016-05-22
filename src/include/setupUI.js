@@ -27,9 +27,22 @@ WMEAC.initUI = function ()
 		section.innerHTML  = title;
 		addon.appendChild(section);
         
-        var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel'});
-        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-custom-file-upload">Parse CSV</label>';
-        csvHTML += '<input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
+        var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
+        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-custom-file-upload">Parse CSV</label>\
+        <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
+        csvHTML += '\
+        <div id="wmeac-csv-closures" style="display: none;">\
+            <div id="wmeac-csv-closures-controls">\
+                <a href="#" id="wmeac-csv-closures-controls-apply">Apply</a>\
+            </div>\
+            <div id="wmeac-csv-closures-list">\
+                <ul id="wmeac-csv-closures-list-elts">\
+                </ul>\
+            </div>\
+        </div>\
+        <div id="wmeac-csv-closures-log">\
+        </div>';
+        
         divCSV.innerHTML = csvHTML;
         addon.appendChild(divCSV);
 
@@ -51,6 +64,18 @@ WMEAC.initUI = function ()
 		tabContent.appendChild(addon);
 
 		Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+        Waze.vent.on("operationPending", function(e) {
+            if (e.operation.id!="pending.road_data")
+                return;
+            WMEAC.pendingOps = true;
+        });
+
+        Waze.vent.on("operationDone", function(e) {
+            if (e.operation.id!="pending.road_data")
+                return;
+            WMEAC.pendingOps = false;
+        });
+
         window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
 };
 
