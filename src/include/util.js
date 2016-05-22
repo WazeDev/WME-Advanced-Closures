@@ -187,3 +187,12 @@ WMEAC.CSVtoArray = function (text) {
     });
     return b;
 };
+
+WMEAC.segmentsIDsToSegments = function (ids)
+{
+    return ids.filter(function (e) {
+        return (Waze.model.segments.objects.hasOwnProperty(e));
+    }).map (function (e) {
+        return (Waze.model.segments.objects[e]);
+    });
+};

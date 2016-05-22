@@ -124,6 +124,24 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         });
         WMEAC.log('Closure to target:', closure);
         Waze.map.setCenter(closure.closure.lonlat, 4);
+        var tmp2 = function selectSegments()
+        {
+            WMEAC.log("Now select segments...");
+            var segs = WMEAC.segmentsIDsToSegments(closure.closure.segIDs);
+            Waze.selectionManager.select(segs);
+        };
+        var tmp1 = function readyToSelect() {
+            WMEAC.log("Test to select segments...");
+            if (WMEAC.pendingOps==true)
+            {
+                WMEAC.log("Not yet. Waiting for WME...");
+                window.setTimeout(readyToSelect, 500);
+            }
+            else
+                tmp2();
+        };
+        window.setTimeout(tmp1, 500);
+
     });
     liElt.children[6].children[0].addEventListener('click', function (e) {
         // get closure id:

@@ -24,5 +24,6 @@
         css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-target { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-apply { width: 15px; min-width: 15px; }";
+        css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; }";
 		cssElt.innerHTML = css;
 		document.body.appendChild(cssElt);

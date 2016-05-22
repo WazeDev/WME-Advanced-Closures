@@ -49,11 +49,7 @@ WMEAC.ClassClosure = function (options)
     this.applyInWME = function(successHandler, failureHandler)
     {
         // check if segments are on screen
-        var segs = this.segIDs.filter(function (e) {
-            return (Waze.model.segments.objects.hasOwnProperty(e));
-        }).map (function (e) {
-            return (Waze.model.segments.objects[e]);
-        });
+        var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         WMEAC.log("Segs: ", segs);
         
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
