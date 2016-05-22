@@ -127,6 +127,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
     });
     liElt.children[6].children[0].addEventListener('click', function (e) {
         // get closure id:
+        WMEAC.csvClearLog();
         var liElt = e.target.parentNode.parentNode.parentNode;
         var cid = parseInt(liElt.getAttribute('closureID'));
         var closure = WMEAC.csvCurrentClosureList.find(function (c) {
@@ -136,15 +137,13 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         Waze.map.setCenter(closure.closure.lonlat, 4);
         function applySuccess(evt)
         {
-            WMEAC.csvClearLog();
             WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
             liElt.className="wmeac-csv-closures-list-done";
             liElt.setAttribute('title', 'Closure is applied');
         };
         function applyFailure(evt)
         {
-            WMEAC.log('evt', evt);
-            WMEAC.csvClearLog();
+            //WMEAC.log('evt', evt);
             var details="";
             evt.forEach(function (err) {
                 if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
