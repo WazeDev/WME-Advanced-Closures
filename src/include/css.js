@@ -4,7 +4,7 @@
         css += ".fa.fa-road:after { content: ''; position: absolute; width: 80%; height: 1px; top: 40%; display: block; background: red; left: 10%; transform: rotate(-30deg); }";
         css += ".wmeac-sidepanel button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
         css += ".wmeac-csv-custom-file-upload { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; display: inline-block; padding: 6px 12px; cursor: pointer; }";
-		css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px; border; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
+		css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
 		css += ".wmeac-closuredialog button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
 		css += ".wmeac-closuredialog h1 { background-color: #F1DDDB; text-align: center; font-size: medium; margin-top: 0px; padding: 10px;}";
 		css += ".wmeac-closuredialog .content { padding: 10px;}";
@@ -24,6 +24,7 @@
         css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-target { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-apply { width: 15px; min-width: 15px; }";
-        css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; }";
+        css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
+        css += "#wmeac-csv-closures-log:before { content: \"Console\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px;    padding: 2px; }";
 		cssElt.innerHTML = css;
 		document.body.appendChild(cssElt);
