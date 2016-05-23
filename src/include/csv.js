@@ -103,10 +103,6 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/(^header$)|(^
 WMEAC.buildInlineClosureUI = function (closure, action)
 {
     var liElt = WMEAC.createElement({type: 'li', className: 'wmeac-csv-closures-list-' + action});
-    if (action=="add")
-        liElt.title="Ready to apply";
-    else if (action=="remove")
-        liElt.title="Ready to remove";
     liElt.setAttribute('closureID', closure.id);
     liElt.innerHTML='<div class="wmeac-csv-closures-list-col-action"><input type="checkbox" /></div>\
                     <div class="wmeac-csv-closures-list-col-lr"><div title="' + closure.location + '">' + closure.location + '</div><div title="' + closure.reason + '">' + closure.reason + '</div></div>\
@@ -114,9 +110,11 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
                     <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
                     <div class="wmeac-csv-closures-list-col-target"><a href="#" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
-                    <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>';
+                    <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>\
+                    <div class="wmeac-csv-closures-minilog" style="display: block;">' + (action=='add'?'Ready to apply':(action=='remove'?'Ready to remove':'')) + '</div>';
     // attach handlers
     liElt.children[5].children[0].addEventListener('click', function (e) {
+        WMEAC.csvClearLog();
         // get closure id:
         var cid = parseInt(e.target.parentNode.parentNode.parentNode.getAttribute('closureID'));
         var closure = WMEAC.csvCurrentClosureList.find(function (c) {
@@ -128,7 +126,27 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         {
             WMEAC.log("Now select segments...");
             var segs = WMEAC.segmentsIDsToSegments(closure.closure.segIDs);
-            Waze.selectionManager.select(segs);
+            if (segs.length!=closure.closure.segIDs.length)
+            {
+                if (segs.length==0)
+                {
+                    WMEAC.csvAddLog("No segment found: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
+                    liElt.children[7].innerHTML="Selection failed: no segment found";
+                }
+                else
+                {
+                    WMEAC.csvAddLog("Partial selection (" + segs.length + "/" + closure.closure.segIDs.length + "): " + closure.closure.location + "(" + closure.closure.reason + ")\n");
+                    liElt.children[7].innerHTML="Partial selection: " + segs.length + "/" + closure.closure.segIDs.length;                    
+                }
+                alert ("Warning: missing segments.\nFound " + segs.length + "/" + closure.closure.segIDs.length + " segment(s)");
+            }
+            else
+            {
+                WMEAC.csvAddLog("Selection ok (" + segs.length + "): " + closure.closure.location + "(" + closure.closure.reason + ")\n");
+                liElt.children[7].innerHTML="Selection OK: " + segs.length;
+            }
+            if (segs.length!=0)
+                Waze.selectionManager.select(segs);
         };
         var tmp1 = function readyToSelect() {
             WMEAC.log("Test to select segments...");
@@ -157,7 +175,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         {
             WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
             liElt.className="wmeac-csv-closures-list-done";
-            liElt.setAttribute('title', 'Closure is applied');
+            liElt.children[7].innerHTML="OK";
         };
         function applyFailure(evt)
         {
@@ -168,8 +186,8 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     details += err.attributes.details + "\n";
             });
             WMEAC.csvAddLog("Closure KO: " + closure.closure.location + " (" + closure.closure.reason + ")\n" + details + "\n");
+            liElt.children[7].innerHTML="KO: " + details;
             liElt.className="wmeac-csv-closures-list-failed";
-            liElt.setAttribute('title', details);
         };
         var tmp2 = function applyClosure()
         {

@@ -10,7 +10,7 @@
 		css += ".wmeac-closuredialog .content { padding: 10px;}";
 		css += ".wmeac-closuredialog .footer { height: 40px; padding: 0 10px;}";
         css += "#wmeac-csv-closures-list ul { list-style-type: none; padding: 0px;}";
-        css += "#wmeac-csv-closures-list ul li { width: 100%; height: 28px; border-radius: 4px; margin-top: 1px; }";
+        css += "#wmeac-csv-closures-list ul li { width: 100%; height: 44px; border-radius: 4px; margin-top: 1px; }";
         css += "#wmeac-csv-closures-list ul li > * { display: table-cell; vertical-align: middle;}";
         css += ".wmeac-csv-closures-list-add { background-color: #C6DFFF; }";
         css += ".wmeac-csv-closures-list-remove { background-color: #FFC65F; }";
@@ -24,7 +24,8 @@
         css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-target { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-apply { width: 15px; min-width: 15px; }";
+        css += ".wmeac-csv-closures-minilog { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-top: none; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; background-color: #FFFFFF; }";
         css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
-        css += "#wmeac-csv-closures-log:before { content: \"Console\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px;    padding: 2px; }";
+        css += "#wmeac-csv-closures-log:before { content: \"Logs\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 2px; }";
 		cssElt.innerHTML = css;
 		document.body.appendChild(cssElt);
