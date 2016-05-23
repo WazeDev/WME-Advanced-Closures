@@ -14,12 +14,15 @@ WMEAC.parseCSV = function (csvString)
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
             var listUI = WMEAC.getId('wmeac-csv-closures-list-elts');
+            // remove all closures before:
+            WMEAC.removeChildElements(listUI);
             closures.forEach(function (c) {
                 var ui = WMEAC.buildInlineClosureUI(c.closure, c.action);
                 listUI.appendChild(ui);
             });
             WMEAC.csvShowList(true);
-            WMEAC.csvAddLog("CSV parse successful");
+            WMEAC.csvClearLog();
+            WMEAC.csvAddLog("CSV parse successful\n");
             // aply closures: TEST ONLY: this should not be done there!
             /*closures.forEach(function (c) {
                 c.closure.applyInWME(function () { WMEAC.log("Closure success:", c);});
@@ -52,7 +55,7 @@ WMEAC.CSVFileChanged = function (evt)
 				// Read in the image file as a data URL.
 				reader.readAsText(f);
 		}
-  
+        this.value = null;
 };
 
 WMEAC.ClassCSV = function (options)
