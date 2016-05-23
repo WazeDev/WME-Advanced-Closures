@@ -10,7 +10,7 @@
 		css += ".wmeac-closuredialog .content { padding: 10px;}";
 		css += ".wmeac-closuredialog .footer { height: 40px; padding: 0 10px;}";
         css += "#wmeac-csv-closures-list ul { list-style-type: none; padding: 0px;}";
-        css += "#wmeac-csv-closures-list ul li { width: 100%; height: 44px; border-radius: 4px; margin-top: 1px; }";
+        css += "#wmeac-csv-closures-list ul li { width: 100%; height: 42px; border-radius: 4px; margin-top: 1px; }";
         css += "#wmeac-csv-closures-list ul li > * { display: table-cell; vertical-align: middle;}";
         css += ".wmeac-csv-closures-list-add { background-color: #C6DFFF; }";
         css += ".wmeac-csv-closures-list-remove { background-color: #FFC65F; }";
@@ -18,7 +18,7 @@
         css += ".wmeac-csv-closures-list-done { background-color: #B9FAB1; }";
         css += ".wmeac-csv-closures-list-col-action { width: 14px; min-width: 14px; }";
         css += ".wmeac-csv-closures-list-col-lr { font-size: xx-small; width: 100%; }";
-        css += ".wmeac-csv-closures-list-col-lr > * { height: 15px; overflow-y: hidden; vertical-align: center; }";
+        css += ".wmeac-csv-closures-list-col-lr > * { height: 14px; overflow-y: hidden; vertical-align: center; }";
         css += ".wmeac-csv-closures-list-col-dates { width: 75px; min-width: 75px; font-size: xx-small; text-align: center; }";
         css += ".wmeac-csv-closures-list-col-dir { width: 35px; min-width: 35px; text-align: center; }";
         css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
