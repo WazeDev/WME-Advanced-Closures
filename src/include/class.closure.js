@@ -27,12 +27,12 @@ WMEAC.ClassClosure = function (options)
     this.segIDs = this.segIDs.split(';');
     var matches = this.lonlat.match(/lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*)/);
     if (matches && matches.length==3)
-        this.lonlat = {lon: matches[1], lat: matches[2]};
+        this.lonlat = {lon: parseFloat(matches[1]), lat: parseFloat(matches[2])};
     else
     {
         matches = this.lonlat.match(/lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*)/);
         if (matches && matches.length==3)
-            this.lonlat = {lon: matches[2], lat: matches[1]}
+            this.lonlat = {lon: parseFloat(matches[2]), lat: parseFloat(matches[1])}
         else
         {
             this.isValid=false;

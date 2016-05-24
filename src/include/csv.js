@@ -124,7 +124,8 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             return (c.closure.id==cid);
         });
         WMEAC.log('Closure to target:', closure);
-        Waze.map.setCenter(closure.closure.lonlat, 4);
+        var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
+        Waze.map.setCenter(xy, 4);
         var tmp2 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
@@ -173,7 +174,8 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             return (c.closure.id==cid);
         });
         WMEAC.log('Closure to apply:', closure);
-        Waze.map.setCenter(closure.closure.lonlat, 4);
+        var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
+        Waze.map.setCenter(xy, 4);
         function applySuccess(evt)
         {
             WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
