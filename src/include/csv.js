@@ -9,7 +9,7 @@ WMEAC.parseCSV = function (csvString)
         {
             WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
-                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[6], lonlat:e[7], permanent:e[8], id: i})};
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[7], lonlat:e[8], permanent:e[6], zoom: e[9], id: i})};
             });
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
@@ -98,9 +98,10 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/(^header$)|(^
                                                                   /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, // start date
                                                                   /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, // end date
                                                                   /(^A to B$)|(^B to A$)|(^TWO WAY$)/, // direction
+                                                                  /(Yes)|(No)/, // ignore trafic = permanent
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
-                                                                  /(Yes)|(No)/ // ignore trafic = permanent
+                                                                  /^\d$/ // zoom
                                                                   ]}));
                                                                   
 WMEAC.buildInlineClosureUI = function (closure, action)
@@ -125,7 +126,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         });
         WMEAC.log('Closure to target:', closure);
         var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        Waze.map.setCenter(xy, 4);
+        Waze.map.setCenter(xy, closure.closure.zoom);
         var tmp2 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
@@ -175,7 +176,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         });
         WMEAC.log('Closure to apply:', closure);
         var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        Waze.map.setCenter(xy, 4);
+        Waze.map.setCenter(xy, closure.closure.zoom);
         function applySuccess(evt)
         {
             WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");

@@ -3,7 +3,7 @@ WMEAC.ClassClosure = function (options)
     WMEAC.log("options", options);
     this.isValid=false;
     this.errorMessage='';
-    var validProperties=['reason', 'location', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent', 'id'];
+    var validProperties=['reason', 'location', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent', 'id', 'zoom'];
     var goodOptions=0;
     validProperties.forEach(function (p) {
         if (options.hasOwnProperty(p))
@@ -45,6 +45,13 @@ WMEAC.ClassClosure = function (options)
         this.isValid=false;
         this.errorMessage="Can't determine direction: " + this.direction + "\n";
         return;        
+    }
+    this.zoom = parseInt(this.zoom);
+    if (this.zoom<2||this.zoom>10)
+    {
+        this.isValid=false;
+        this.errorMessage="Wrong zoom (2 to 10): " + this.zoom + "\n";
+        return; 
     }
     this.applyInWME = function(successHandler, failureHandler)
     {
