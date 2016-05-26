@@ -3,6 +3,11 @@
 		var css="";
         css += ".fa.fa-road:after { content: ''; position: absolute; width: 80%; height: 1px; top: 40%; display: block; background: red; left: 10%; transform: rotate(-30deg); }";
         css += ".wmeac-sidepanel button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
+        
+        css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
+        css += ".wmeac-progressBarBG { margin-top: 2px; margin-bottom: 2px; margin-left: 2px; margin-right: 2px; padding-bottom: 0px; padding-top: 0px; padding-left: 0px; padding-right: 0px; width: 33%; background-color: #93c4d3; border: 3px rgb(147, 196, 211); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; height: 22px;}";
+        css += ".wmeac-progressBarFG { float: left; position: relative; bottom: 22px; height: 0px; text-align: center; width: 100% }";
+        
         css += ".wmeac-csv-custom-file-upload { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; display: inline-block; padding: 6px 12px; cursor: pointer; }";
 		css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
 		css += ".wmeac-closuredialog button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
@@ -20,6 +25,7 @@
         css += ".wmeac-csv-closures-list-col-lr { font-size: xx-small; width: 100%; }";
         css += ".wmeac-csv-closures-list-col-lr > * { height: 14px; overflow-y: hidden; vertical-align: center; }";
         css += ".wmeac-csv-closures-list-col-dates { width: 75px; min-width: 75px; font-size: xx-small; text-align: center; }";
+        css += ".wmeac-csv-closures-list-col-dates > * { height: 14px; overflow-y: hidden; vertical-align: center; }";
         css += ".wmeac-csv-closures-list-col-dir { width: 35px; min-width: 35px; text-align: center; }";
         css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
         css += ".wmeac-csv-closures-list-col-target { width: 15px; min-width: 15px; }";

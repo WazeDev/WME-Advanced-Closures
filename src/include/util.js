@@ -196,3 +196,11 @@ WMEAC.segmentsIDsToSegments = function (ids)
         return (Waze.model.segments.objects[e]);
     });
 };
+
+WMEAC.reloadRoadLayer = function ()
+{
+    var l=Waze.map.getLayersBy("uniqueName","roads")[0];
+    l.redraw({force:!0});
+    l.removeBackBuffer();
+    Waze.controller.reload();  
+};

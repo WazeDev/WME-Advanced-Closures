@@ -9,7 +9,7 @@ WMEAC.parseCSV = function (csvString)
         {
             WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
-                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[7], lonlat:e[8], permanent:e[6], zoom: e[9], id: i})};
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:e[2], startDate:e[3], endDate:e[4], direction:e[5], segIDs:e[7], lonlat:e[8], permanent:e[6], zoom: e[9], id: i}), UI: null};
             });
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
@@ -17,12 +17,12 @@ WMEAC.parseCSV = function (csvString)
             // remove all closures before:
             WMEAC.removeChildElements(listUI);
             closures.forEach(function (c) {
-                var ui = WMEAC.buildInlineClosureUI(c.closure, c.action);
-                listUI.appendChild(ui);
+                c.UI = WMEAC.buildInlineClosureUI(c.closure, c.action);
+                listUI.appendChild(c.UI);
             });
             WMEAC.csvShowList(true);
-            WMEAC.csvClearLog();
             WMEAC.csvAddLog("CSV parse successful\n");
+            return true;
             // aply closures: TEST ONLY: this should not be done there!
             /*closures.forEach(function (c) {
                 c.closure.applyInWME(function () { WMEAC.log("Closure success:", c);});
@@ -31,31 +31,36 @@ WMEAC.parseCSV = function (csvString)
         }
         else
         {
-            WMEAC.log("CSV is NOT valid!:" + isValid.feedBack);
+            WMEAC.log("CSV is NOT valid!:" + isValid.feedBack + "\n");
             WMEAC.csvAddLog(isValid.feedBack);
             WMEAC.csvShowList(false);
             WMEAC.csvCurrentClosureList = null;
+            return false;
         }
+        return false;
     }
+    return false;
 };
 
 WMEAC.CSVFileChanged = function (evt)
 {
-		var files = evt.target.files; // FileList object
-		for (var i = 0, f; f = files[i]; i++)
-		{
-				var reader = new FileReader();
-				reader.onload = (function(theFile) {
-						return function(e) {
-								WMEAC.log("import CSV file read");
-                                WMEAC.parseCSV(e.target.result);
-						};
-				})(f);
+    var files = evt.target.files; // FileList object
+    for (var i = 0, f; f = files[i]; i++)
+    {
+        var reader = new FileReader();
+        reader.onload = (function(theFile) {
+            return function(e) {
+                WMEAC.log("import CSV file read");
+                WMEAC.csvClearLog();
+                if (WMEAC.parseCSV(e.target.result))
+                    WMEAC.csvCheckAllSegments(-1);
+            };
+        })(f);
 
-				// Read in the image file as a data URL.
-				reader.readAsText(f);
-		}
-        this.value = null;
+        // Read in the image file as a data URL.
+        reader.readAsText(f);
+    }
+    this.value = null;
 };
 
 WMEAC.ClassCSV = function (options)
@@ -110,7 +115,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
     liElt.setAttribute('closureID', closure.id);
     liElt.innerHTML='<div class="wmeac-csv-closures-list-col-action"><input type="checkbox" /></div>\
                     <div class="wmeac-csv-closures-list-col-lr"><div title="' + closure.location + '">' + closure.location + '</div><div title="' + closure.reason + '">' + closure.reason + '</div></div>\
-                    <div class="wmeac-csv-closures-list-col-dates">' + closure.startDate + '<br/>' + closure.endDate + '</div>\
+                    <div class="wmeac-csv-closures-list-col-dates"><div title="' + closure.startDate + '">' + closure.startDate + '</div><div title="' + closure.endDate + '">' + closure.endDate + '</div></div>\
                     <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
                     <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
                     <div class="wmeac-csv-closures-list-col-target"><a href="#" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
@@ -127,7 +132,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         WMEAC.log('Closure to target:', closure);
         var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
         Waze.map.setCenter(xy, closure.closure.zoom);
-        var tmp2 = function selectSegments()
+        var tmp3 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
             var segs = WMEAC.segmentsIDsToSegments(closure.closure.segIDs);
@@ -153,15 +158,30 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             if (segs.length!=0)
                 Waze.selectionManager.select(segs);
         };
-        var tmp1 = function readyToSelect() {
-            WMEAC.log("Test to select segments...");
+        var tmp2 = function readyToSelect() {
+            WMEAC.log("Test if ready to select...");
             if (WMEAC.pendingOps==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(readyToSelect, 500);
             }
             else
+            {
+                tmp3();
+            }
+        };
+        var tmp1 = function mapMovedEnd() {
+            WMEAC.log("Test if roads are reloaded...");
+            if (WMEAC.pendingOps==true)
+            {
+                WMEAC.log("Not yet. Waiting for WME...");
+                window.setTimeout(mapMovedEnd, 500);
+            }
+            else
+            {
+                WMEAC.reloadRoadLayer();
                 tmp2();
+            }
         };
         window.setTimeout(tmp1, 500);
 
@@ -195,20 +215,36 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             liElt.children[7].innerHTML="KO: " + details;
             liElt.className="wmeac-csv-closures-list-failed";
         };
-        var tmp2 = function applyClosure()
+        var tmp3 = function applyClosure()
         {
             WMEAC.log("Now apply closure...");
             closure.closure.applyInWME(applySuccess, applyFailure);
         };
-        var tmp1 = function readyToApply() {
-            WMEAC.log("Test to apply closure...");
+        
+        var tmp2 = function readyToApply() {
+            WMEAC.log("Test if ready to apply...");
             if (WMEAC.pendingOps==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(readyToApply, 500);
             }
             else
+            {
+                tmp3();
+            }
+        };
+        var tmp1 = function mapMovedEnd() {
+            WMEAC.log("Test if roads are reloaded...");
+            if (WMEAC.pendingOps==true)
+            {
+                WMEAC.log("Not yet. Waiting for WME...");
+                window.setTimeout(mapMovedEnd, 500);
+            }
+            else
+            {
+                WMEAC.reloadRoadLayer();
                 tmp2();
+            }
         };
         window.setTimeout(tmp1, 500);
     });
@@ -231,4 +267,99 @@ WMEAC.csvShowList = function(show)
 {
     var divList = WMEAC.getId('wmeac-csv-closures');
     divList.style.display=(show?"block":"none");
+};
+
+WMEAC.csvCheckAllSegments = function (i)
+{
+    if (i==-1) // firt call: init progressbar
+    {
+        WMEAC.pb.update(0);
+        WMEAC.pb.show(true);
+        // and call the check on first closure
+        window.setTimeout(function () { WMEAC.csvCheckAllSegments(0); });
+        return;
+    }
+    var continueSegmentCheck = function()
+    {
+        window.setTimeout(function () { WMEAC.csvCheckAllSegments(i+1); });
+    };
+    if (i<WMEAC.csvCurrentClosureList.length)
+    {
+        var currentClosure = WMEAC.csvCurrentClosureList[i];
+        WMEAC.pb.update(i*100/WMEAC.csvCurrentClosureList.length);
+        WMEAC.pb.info("Scanning segments. please wait...");
+        // check segments
+        
+        // catch window tile
+        var c = OpenLayers.Layer.SphericalMercator.forwardMercator(currentClosure.closure.lonlat.lon, currentClosure.closure.lonlat.lat);
+        var b = Waze.map.calculateBounds();
+        
+        var zoomRatio = Math.pow(2, Waze.map.zoom - currentClosure.closure.zoom);
+
+        var w = b.getWidth()*Waze.controller.ratio*zoomRatio;
+        var h = b.getHeight()*Waze.controller.ratio*zoomRatio;
+
+        var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
+        tileBounds=tileBounds.transform(Waze.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
+        
+        var roadTypes = (Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
+        
+        var req = new XMLHttpRequest();
+        req.open('GET', document.location.protocol + '//' + document.location.host + Waze.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
+        req.onreadystatechange = function (e) {
+            if (req.readyState == 4) {
+                if(req.status == 200)
+                {
+                    //WMEAC.log(req.responseText);
+                    try {
+                        var data = JSON.parse(req.responseText);
+                        WMEAC.log("data", data);
+                        var existingSegs = currentClosure.closure.segIDs.filter(function (sid) {
+                            return (data.segments.objects.find(function (seg) {
+                                return (sid == seg.id);
+                            })!=null);
+                        });
+                        if (existingSegs.length == currentClosure.closure.segIDs.length)
+                        {
+                            WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " seg(s) found\n");
+                            currentClosure.UI.children[7].innerHTML="segs OK: " + existingSegs.length + " seg(s) found";
+                        }
+                        else
+                        {
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found\n");
+                            currentClosure.UI.children[7].innerHTML="segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found";
+                        }
+                    }
+                    catch (err)
+                    {
+                        WMEAC.log("Failed to parse Waze's server response: " + req.responseText);
+                        WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nFailed to parse response from Waze\n");
+                        currentClosure.UI.children[7].innerHTML="segs KO: Failed to parse response from Waze";
+                    }
+                }
+                else
+                {
+                    WMEAC.log("Error on road tile: " + e.target.status);
+                    WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze\n");
+                    currentClosure.UI.children[7].innerHTML="segs KO: Communication failed with Waze";
+                }
+                continueSegmentCheck();
+            }
+        };
+        req.onError = function (e) {
+            WMEAC.log("Error on road tile: " + e.target.status);
+            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze's server\n");
+            currentClosure.UI.children[7].innerHTML="segs KO: Communication failed with Waze's server";
+            continueSegmentCheck();
+        };
+        req.onProgress = function(e) {
+            WMEAC.pb.update((i+(e.position / e.totalSize))*100/WMEAC.csvCurrentClosureList.length);
+        };
+        req.send(null);
+    }
+    else // end of check
+    {
+        WMEAC.pb.show(false);
+    }
+
 };

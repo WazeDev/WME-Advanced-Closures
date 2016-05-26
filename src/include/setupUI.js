@@ -2,20 +2,9 @@ WMEAC.initUI = function ()
 {
 		var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
 		
-		var divpbi = WMEAC.createElement({type: 'div', id: 'wmeac-progressBarInfo', className: 'wmeac-progressBarInfo'});
+        WMEAC.pb = new WMEAC.ProgressBar('wmeac-progressBarInfo');
 		
-		var elt = WMEAC.createElement({type: 'div', id: 'wmeac-progressBar'});
-		elt.style.width="100%";
-		elt.style.display="none";
-		elt.innerHTML='<div class="wmeac-progressBarBG"></div><span class="wmeac-progressBarFG">100%</span>';
-		divpbi.appendChild(elt);
-		
-		
-		elt = WMEAC.createElement({type: 'div', id: 'wmeac-info'});
-		//elt.innerHTML="&nbsp;";
-		divpbi.appendChild(elt);
-		
-		addon.appendChild(divpbi);
+		addon.appendChild(WMEAC.pb.divpbi);
 		
 		
 		var section = WMEAC.createElement({type: 'p', id: 'wmeac-main-title'});

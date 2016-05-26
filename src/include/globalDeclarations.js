@@ -12,3 +12,5 @@ WMEAC.csv=[];
 WMEAC.csvCurrentClosureList=null;
 
 WMEAC.pendingOps=false;
+
+WMEAC.pb = null;
