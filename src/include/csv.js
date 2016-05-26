@@ -141,19 +141,19 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                 if (segs.length==0)
                 {
                     WMEAC.csvAddLog("No segment found: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
-                    liElt.children[7].innerHTML="Selection failed: no segment found";
+                    WMEAC.setCSVMiniLog(closure, "Selection failed: no segment found", 3);
                 }
                 else
                 {
                     WMEAC.csvAddLog("Partial selection (" + segs.length + "/" + closure.closure.segIDs.length + "): " + closure.closure.location + "(" + closure.closure.reason + ")\n");
-                    liElt.children[7].innerHTML="Partial selection: " + segs.length + "/" + closure.closure.segIDs.length;                    
+                    WMEAC.setCSVMiniLog(closure, "Partial selection: " + segs.length + "/" + closure.closure.segIDs.length, 2);
                 }
                 alert ("Warning: missing segments.\nFound " + segs.length + "/" + closure.closure.segIDs.length + " segment(s)");
             }
             else
             {
                 WMEAC.csvAddLog("Selection ok (" + segs.length + "): " + closure.closure.location + "(" + closure.closure.reason + ")\n");
-                liElt.children[7].innerHTML="Selection OK: " + segs.length;
+                WMEAC.setCSVMiniLog(closure, "Selection OK: " + segs.length, 1);
             }
             if (segs.length!=0)
                 Waze.selectionManager.select(segs);
@@ -201,7 +201,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         {
             WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
             liElt.className="wmeac-csv-closures-list-done";
-            liElt.children[7].innerHTML="OK";
+            WMEAC.setCSVMiniLog(closure, "OK", 1);
         };
         function applyFailure(evt)
         {
@@ -212,7 +212,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     details += err.attributes.details + "\n";
             });
             WMEAC.csvAddLog("Closure KO: " + closure.closure.location + " (" + closure.closure.reason + ")\n" + details + "\n");
-            liElt.children[7].innerHTML="KO: " + details;
+            WMEAC.setCSVMiniLog(closure, "KO: " + details, 3);
             liElt.className="wmeac-csv-closures-list-failed";
         };
         var tmp3 = function applyClosure()
@@ -322,26 +322,26 @@ WMEAC.csvCheckAllSegments = function (i)
                         if (existingSegs.length == currentClosure.closure.segIDs.length)
                         {
                             WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " seg(s) found\n");
-                            currentClosure.UI.children[7].innerHTML="segs OK: " + existingSegs.length + " seg(s) found";
+                            WMEAC.setCSVMiniLog(currentClosure, "segs OK: " + existingSegs.length + " seg(s) found", 1);
                         }
                         else
                         {
                             WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found\n");
-                            currentClosure.UI.children[7].innerHTML="segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found";
+                            WMEAC.setCSVMiniLog(currentClosure, "segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found", 3);
                         }
                     }
                     catch (err)
                     {
                         WMEAC.log("Failed to parse Waze's server response: " + req.responseText);
                         WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nFailed to parse response from Waze\n");
-                        currentClosure.UI.children[7].innerHTML="segs KO: Failed to parse response from Waze";
+                        WMEAC.setCSVMiniLog(currentClosure, "segs KO: Failed to parse response from Waze", 3);
                     }
                 }
                 else
                 {
                     WMEAC.log("Error on road tile: " + e.target.status);
                     WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze\n");
-                    currentClosure.UI.children[7].innerHTML="segs KO: Communication failed with Waze";
+                    WMEAC.setCSVMiniLog(currentClosure, "segs KO: Communication failed with Waze", 3);
                 }
                 continueSegmentCheck();
             }
@@ -349,12 +349,13 @@ WMEAC.csvCheckAllSegments = function (i)
         req.onError = function (e) {
             WMEAC.log("Error on road tile: " + e.target.status);
             WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze's server\n");
-            currentClosure.UI.children[7].innerHTML="segs KO: Communication failed with Waze's server";
+            WMEAC.setCSVMiniLog(currentClosure, "segs KO: Communication failed with Waze", 3);
             continueSegmentCheck();
         };
-        req.onProgress = function(e) {
+        /* // Useless since waze server never send content length... :/
+        req.onprogress = function(e) {
             WMEAC.pb.update((i+(e.position / e.totalSize))*100/WMEAC.csvCurrentClosureList.length);
-        };
+        };*/
         req.send(null);
     }
     else // end of check
@@ -362,4 +363,25 @@ WMEAC.csvCheckAllSegments = function (i)
         WMEAC.pb.show(false);
     }
 
+};
+
+WMEAC.setCSVMiniLog = function(closure, text, level) // level=0: black 1: green, 2:orange, 3: red
+{
+    var c=null;
+    if (closure.hasOwnProperty('UI'))
+        c=closure;
+    else
+        c = WMEAC.csvCurrentClosureList.find(function (e) {
+            return (e.closure.id == closure.id);
+        });
+
+    if (c!=null)
+    {
+        c.UI.children[7].innerHTML=text;
+        var colors = ["#000000", "#54C600", "#FFA000", "#FF0000"];
+        if (arguments.length==3)
+            c.UI.children[7].style.color=colors[level];
+        else
+            c.UI.children[7].style.color=colors[0];
+    }
 };
