@@ -22,7 +22,9 @@ WMEAC.initUI = function ()
         csvHTML += '\
         <div id="wmeac-csv-closures" style="display: none;">\
             <div id="wmeac-csv-closures-controls">\
-                <a href="#" id="wmeac-csv-closures-controls-apply">Apply</a>\
+                <input type="checkbox" id="wmeac-csv-closures-controls-check"> | \
+                <a href="#" id="wmeac-csv-closures-controls-apply">Apply</a> | \
+                <a href="#" id="wmeac-csv-closures-controls-segs">Check segments</a>\
             </div>\
             <div id="wmeac-csv-closures-list">\
                 <ul id="wmeac-csv-closures-list-elts">\
@@ -185,7 +187,22 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 WMEAC.connectAdvancedClosureTabHandlers = function ()
 {
 	var e = null;
+    
 	e=WMEAC.getId('wmeac-csv-file');
 	if (e)
 		e.addEventListener('change', WMEAC.CSVFileChanged);
+    
+    e=WMEAC.getId('wmeac-csv-closures-controls-check');
+	if (e)
+		e.addEventListener('change', function (e) { WMEAC.CSVCheckAll(e.target.checked); });
+    
+    e=WMEAC.getId('wmeac-csv-closures-controls-apply');
+	if (e)
+		e.addEventListener('click', WMEAC.CSVApplyChecked);
+
+    e=WMEAC.getId('wmeac-csv-closures-controls-segs');
+	if (e)
+		e.addEventListener('click', WMEAC.CSVCheckSegsChecked);
+
+    
 };

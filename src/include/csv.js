@@ -53,7 +53,10 @@ WMEAC.CSVFileChanged = function (evt)
                 WMEAC.log("import CSV file read");
                 WMEAC.csvClearLog();
                 if (WMEAC.parseCSV(e.target.result))
+                {
+                    WMEAC.csvCurrentBatchClosureList=WMEAC.csvCurrentClosureList.slice();
                     WMEAC.csvCheckAllSegments(-1);
+                }
             };
         })(f);
 
@@ -283,10 +286,10 @@ WMEAC.csvCheckAllSegments = function (i)
     {
         window.setTimeout(function () { WMEAC.csvCheckAllSegments(i+1); });
     };
-    if (i<WMEAC.csvCurrentClosureList.length)
+    if (i<WMEAC.csvCurrentBatchClosureList.length)
     {
-        var currentClosure = WMEAC.csvCurrentClosureList[i];
-        WMEAC.pb.update(i*100/WMEAC.csvCurrentClosureList.length);
+        var currentClosure = WMEAC.csvCurrentBatchClosureList[i];
+        WMEAC.pb.update(i*100/WMEAC.csvCurrentBatchClosureList.length);
         WMEAC.pb.info("Scanning segments. please wait...");
         // check segments
         
@@ -384,4 +387,26 @@ WMEAC.setCSVMiniLog = function(closure, text, level) // level=0: black 1: green,
         else
             c.UI.children[7].style.color=colors[0];
     }
+};
+
+WMEAC.CSVCheckAll = function (check)
+{
+    WMEAC.csvCurrentClosureList.forEach(function (e) {
+        e.UI.children[0].children[0].checked = check;
+    });
+};
+
+WMEAC.CSVApplyChecked = function ()
+{
+    WMEAC.csvCurrentBatchClosureList = WMEAC.csvCurrentClosureList.filter(function (e) {
+        return (e.UI.children[0].children[0].checked);
+    });
+};
+
+WMEAC.CSVCheckSegsChecked = function ()
+{
+    WMEAC.csvCurrentBatchClosureList = WMEAC.csvCurrentClosureList.filter(function (e) {
+        return (e.UI.children[0].children[0].checked);
+    });
+    WMEAC.csvCheckAllSegments(-1);
 };
