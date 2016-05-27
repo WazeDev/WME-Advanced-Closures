@@ -32,7 +32,7 @@ WMEAC.parseCSV = function (csvString)
         else
         {
             WMEAC.log("CSV is NOT valid!:" + isValid.feedBack + "\n");
-            WMEAC.csvAddLog(isValid.feedBack);
+            WMEAC.csvAddLog(isValid.feedBack + '\n');
             WMEAC.csvShowList(false);
             WMEAC.csvCurrentClosureList = null;
             return false;
@@ -64,6 +64,7 @@ WMEAC.CSVFileChanged = function (evt)
         reader.readAsText(f);
     }
     this.value = null;
+    WMEAC.getId('wmeac-csv-closures-controls-check').checked=false;
 };
 
 WMEAC.ClassCSV = function (options)
@@ -198,61 +199,69 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             return (c.closure.id==cid);
         });
         WMEAC.log('Closure to apply:', closure);
-        var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        Waze.map.setCenter(xy, closure.closure.zoom);
-        function applySuccess(evt)
-        {
-            WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
-            liElt.className="wmeac-csv-closures-list-done";
-            WMEAC.setCSVMiniLog(closure, "OK", 1);
-        };
-        function applyFailure(evt)
-        {
-            //WMEAC.log('evt', evt);
-            var details="";
-            evt.forEach(function (err) {
-                if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
-                    details += err.attributes.details + "\n";
-            });
-            WMEAC.csvAddLog("Closure KO: " + closure.closure.location + " (" + closure.closure.reason + ")\n" + details + "\n");
-            WMEAC.setCSVMiniLog(closure, "KO: " + details, 3);
-            liElt.className="wmeac-csv-closures-list-failed";
-        };
-        var tmp3 = function applyClosure()
-        {
-            WMEAC.log("Now apply closure...");
-            closure.closure.applyInWME(applySuccess, applyFailure);
-        };
+        WMEAC.csvApplyClosure(closure, null);
         
-        var tmp2 = function readyToApply() {
-            WMEAC.log("Test if ready to apply...");
-            if (WMEAC.pendingOps==true)
-            {
-                WMEAC.log("Not yet. Waiting for WME...");
-                window.setTimeout(readyToApply, 500);
-            }
-            else
-            {
-                tmp3();
-            }
-        };
-        var tmp1 = function mapMovedEnd() {
-            WMEAC.log("Test if roads are reloaded...");
-            if (WMEAC.pendingOps==true)
-            {
-                WMEAC.log("Not yet. Waiting for WME...");
-                window.setTimeout(mapMovedEnd, 500);
-            }
-            else
-            {
-                WMEAC.reloadRoadLayer();
-                tmp2();
-            }
-        };
-        window.setTimeout(tmp1, 500);
     });
     return liElt;
 };
+
+WMEAC.csvApplyClosure = function(closure, handler)
+{
+    var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
+    Waze.map.setCenter(xy, closure.closure.zoom);
+    function applySuccess(evt)
+    {
+        WMEAC.csvAddLog("Closure OK: " + closure.closure.location + "(" + closure.closure.reason + ")\n");
+        closure.UI.className="wmeac-csv-closures-list-done";
+        WMEAC.setCSVMiniLog(closure, "OK", 1);
+        handler && handler(true);
+    };
+    function applyFailure(evt)
+    {
+        //WMEAC.log('evt', evt);
+        var details="";
+        evt.forEach(function (err) {
+            if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
+                details += err.attributes.details + "\n";
+        });
+        WMEAC.csvAddLog("Closure KO: " + closure.closure.location + " (" + closure.closure.reason + ")\n" + details + "\n");
+        WMEAC.setCSVMiniLog(closure, "KO: " + details, 3);
+        closure.UI.className="wmeac-csv-closures-list-failed";
+        handler && handler(false);
+    };
+    var tmp3 = function applyClosure()
+    {
+        WMEAC.log("Now apply closure...");
+        closure.closure.applyInWME(applySuccess, applyFailure);
+    };
+    
+    var tmp2 = function readyToApply() {
+        WMEAC.log("Test if ready to apply...");
+        if (WMEAC.pendingOps==true)
+        {
+            WMEAC.log("Not yet. Waiting for WME...");
+            window.setTimeout(readyToApply, 500);
+        }
+        else
+        {
+            tmp3();
+        }
+    };
+    var tmp1 = function mapMovedEnd() {
+        WMEAC.log("Test if roads are reloaded...");
+        if (WMEAC.pendingOps==true)
+        {
+            WMEAC.log("Not yet. Waiting for WME...");
+            window.setTimeout(mapMovedEnd, 500);
+        }
+        else
+        {
+            WMEAC.reloadRoadLayer();
+            tmp2();
+        }
+    };
+    window.setTimeout(tmp1, 500);
+}
 
 WMEAC.csvAddLog = function(text)
 {
@@ -401,12 +410,53 @@ WMEAC.CSVApplyChecked = function ()
     WMEAC.csvCurrentBatchClosureList = WMEAC.csvCurrentClosureList.filter(function (e) {
         return (e.UI.children[0].children[0].checked);
     });
+    WMEAC.csvClearLog();
+    if (WMEAC.csvCurrentBatchClosureList.isEmpty())
+    {
+        WMEAC.csvAddLog("No closure checked!\n");
+    }
+    else
+    {
+        WMEAC.pb.update(0);
+        WMEAC.pb.info("Applying closures. please wait...");
+        WMEAC.pb.show(true);
+        
+        WMEAC.csvAddLog("Start to apply selected closures\n");
+        window.setTimeout(function () { WMEAC.CSVBatchApply(0); });
+    }
+};
+
+WMEAC.CSVBatchApply = function(i)
+{
+    WMEAC.pb.update(i*100/WMEAC.csvCurrentBatchClosureList.length);
+
+    if (i<WMEAC.csvCurrentBatchClosureList.length)
+        WMEAC.csvApplyClosure(WMEAC.csvCurrentBatchClosureList[i], function (success) {
+            if (success)
+                WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+            else
+                WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+            WMEAC.CSVBatchApply(i+1);
+        });
+    else
+    {
+        WMEAC.csvAddLog("Apply selected closures ended\n");
+        WMEAC.pb.show(false);
+    }
 };
 
 WMEAC.CSVCheckSegsChecked = function ()
 {
+    WMEAC.csvClearLog();
     WMEAC.csvCurrentBatchClosureList = WMEAC.csvCurrentClosureList.filter(function (e) {
         return (e.UI.children[0].children[0].checked);
     });
-    WMEAC.csvCheckAllSegments(-1);
+    if (WMEAC.csvCurrentBatchClosureList.isEmpty())
+    {
+        WMEAC.csvAddLog("No closure checked!\n");
+    }
+    else
+    {
+        WMEAC.csvCheckAllSegments(-1);
+    }
 };

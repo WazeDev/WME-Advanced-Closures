@@ -37,8 +37,6 @@
 
 
 
-/**************** URMPT AUTO INJECTED **********************/
-
 function WMEAC_Injected()
 {
 	// WMEAC object and members:
@@ -51,9 +49,6 @@ function WMEAC_Injected()
 	
 	// boostrap and init (wait for waze UI and objects)
 	INCLUDE_FILE('include/init.js');
-	
-	// functions to test if something is in screen
-	INCLUDE_FILE('include/geoUtil.js');
 	
 	// function to setup the UI dom
 	INCLUDE_FILE('include/setupUI.js');
