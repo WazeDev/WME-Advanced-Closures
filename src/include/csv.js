@@ -316,6 +316,9 @@ WMEAC.csvCheckAllSegments = function (i)
         
         var roadTypes = (Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
         
+        var WFVS = require("Waze/Feature/Vector/Segment");
+        var aseg = new WFVS;
+        
         var req = new XMLHttpRequest();
         req.open('GET', document.location.protocol + '//' + document.location.host + Waze.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
@@ -331,10 +334,22 @@ WMEAC.csvCheckAllSegments = function (i)
                                 return (sid == seg.id);
                             })!=null);
                         });
-                        if (existingSegs.length == currentClosure.closure.segIDs.length)
+                        var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
+                            return (data.segments.objects.find(function (seg) {
+                                return (sid == seg.id && (seg.permissions)&aseg.PERMISSIONS.EDIT_CLOSURES);
+                            })!=null);
+                        });
+                        if (existingSegs.length == currentClosure.closure.segIDs.length &&
+                            editableClosuresSegs.length == currentClosure.closure.segIDs.length)
                         {
-                            WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " seg(s) found\n");
-                            WMEAC.setCSVMiniLog(currentClosure, "segs OK: " + existingSegs.length + " seg(s) found", 1);
+                            WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " editable seg(s) found\n");
+                            WMEAC.setCSVMiniLog(currentClosure, "segs OK: " + existingSegs.length + " editable seg(s) found", 1);
+                        }
+                        else if (existingSegs.length == currentClosure.closure.segIDs.length &&
+                            editableClosuresSegs.length != currentClosure.closure.segIDs.length)
+                        {
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.location + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found but " + (currentClosure.closure.segIDs.length-editableClosuresSegs.length) + " are not editable\n");
+                            WMEAC.setCSVMiniLog(currentClosure, "segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found and " + (currentClosure.closure.segIDs.length-editableClosuresSegs.length) + " are not editable", 2);
                         }
                         else
                         {

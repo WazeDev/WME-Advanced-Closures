@@ -58,9 +58,20 @@ WMEAC.ClassClosure = function (options)
         // check if segments are on screen
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         WMEAC.log("Segs: ", segs);
-        
-        var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-        
-        WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs}, successHandler, failureHandler);
+
+        segs = segs.filter(function (seg) {
+            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+        });
+                
+        if (segs.length==0)
+        {
+            failureHandler([{attributes: {details: "No segment. Check permissions or existence."}}]);
+        }
+        else
+        {
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
+            
+            WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs}, successHandler, failureHandler);
+        }
     };
 };
