@@ -161,9 +161,11 @@ WMEAC.showAddAdvancedClosure = function()
 };
 
 WMEAC.HTMLTemplates={};
+// button id="wmeac-advanced-closure-dialog-test-button" TEST ONLY - TO BE REMOVED
 WMEAC.HTMLTemplates.advancedClosureDialog='\
 <h1>Advanced closures</h1>\
 <div class="content">\
+<button id="wmeac-advanced-closure-dialog-test-button">TEST</button>\
 </div>\
 <div class="footer">\
 	<button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
@@ -181,6 +183,18 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 			if (d) d.style.display='none';
 		});
 	}
+
+    // TEST ONLY - TO BE REMOVED
+    e=WMEAC.getId('wmeac-advanced-closure-dialog-test-button');
+	if (e)
+	{
+		e.addEventListener('click', function() {
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
+            WMEAC.addClosureFromSelection({reason: "Test dummyd2", direction: sc.DIRECTION.A_TO_B, startDate: "2016-05-27 00:00", endDate: "2016-05-28 00:00", location: "Somewhere", permanent: true});
+		});
+	}
+    // TEST ONLY - TO BE REMOVED
+    
 };
 
 
