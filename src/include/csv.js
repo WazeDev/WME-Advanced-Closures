@@ -55,7 +55,7 @@ WMEAC.CSVFileChanged = function (evt)
                 if (WMEAC.parseCSV(e.target.result))
                 {
                     WMEAC.csvCurrentBatchClosureList=WMEAC.csvCurrentClosureList.slice();
-                    WMEAC.csvCheckAllSegments(-1);
+                    // WMEAC.csvCheckAllSegments(-1);
                 }
             };
         })(f);
