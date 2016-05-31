@@ -212,7 +212,12 @@ var startTimeAndDuration = '\
         <span class="input-group-addon">\
           <i class="fa fa-step-forward"></i>\
         </span>\
-        <input id="wmeac-advanced-closure-dialog-duration" class="form-control" type="text" name="closure_duration">\
+        <span class="form-control" style="padding: 1px; display: flex">\
+          <input id="wmeac-advanced-closure-dialog-duration-hour" name="value" value=0 size=3/>\
+          <span style="padding: 5px;">H</span>\
+          <input id="wmeac-advanced-closure-dialog-duration-minute" name="value" value=0  size=2/>\
+          <span style="padding: 5px;">M</span>\
+        </span>\
       </div>\
     </div>\
   </div>\
@@ -256,8 +261,37 @@ var ignoreTraffic = '\
   </div>\
 ';
 
+var tabRepeat = '\
+  <div style="width: 150px;" class="input-group">\
+    <div class="controls">\
+      <div class="input-group pull-left">\
+        <input class="form-control" type="text" name="closure_repeat_ntimes">\
+        <span class="input-group-addon" for="closure_repeat_ntimes">times</span>\
+      </div>\
+    </div>\
+  </div>\
+  <div style="width: 150px;" class="input-group">\
+    <div class="controls">\
+      <div style="width: 150px;" class="bootstrap-timepicker input-group">\
+        <span class="input-group-addon">\
+          every\
+        </span>\
+        <span class="form-control" style="padding: 1px; display: flex">\
+          <input id="wmeac-advanced-closure-dialog-repeat-every-hour" name="value" value=0 size=3/>\
+          <span style="padding: 5px;">H</span>\
+          <input id="wmeac-advanced-closure-dialog-repeat-every-minute" name="value" value=0  size=2/>\
+          <span style="padding: 5px;">M</span>\
+        </span>\
+      </div>\
+    </div>\
+  </div>\
+';
+
+var tabEach = '\
+';
+
 var tabs ='\
-  <ul class="nav nav-tabs">\
+  <ul class="nav wmeac-nav-tabs">\
     <li class="active">\
       <a data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
     </li>\
@@ -266,12 +300,14 @@ var tabs ='\
     </li>\
   </ul>\
   <div class="tab-content">\
-    <div class="tab-pane active" id="wmeac-advanced-closure-dialog-tabrepeat">\
+    <div class="tab-pane active wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabrepeat">\
+    ' + tabRepeat + '\
     </div>\
-    <div class="tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
+    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
+    ' + tabEach + '\
     </div>\
   </div>';
-
+  
 var footer = '\
 <div class="footer">\
     <div id="wmeac-csv-closures-preview"></div>\
@@ -323,12 +359,52 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     // TEST ONLY - TO BE REMOVED
     
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
-    $("#wmeac-advanced-closure-dialog-rangestarttime,#wmeac-advanced-closure-dialog-rangeendtime,#wmeac-advanced-closure-dialog-starttime,#wmeac-advanced-closure-dialog-duration").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
+    $("#wmeac-advanced-closure-dialog-rangestarttime,#wmeac-advanced-closure-dialog-rangeendtime,#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
         $(e.target).parent().find("input").focus();
     }).find("i").on("click", function (e) {
         $(e.target).parent().parent().find("input").focus();
     });
+    
+    $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
+        min: 0});
+    $('#wmeac-advanced-closure-dialog-repeat-every-minute').spinner({
+    spin: function (event, ui) {
+             if (ui.value >= 60) {
+                 $(this).spinner('value', ui.value - 60);
+                 $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepUp');
+                 return false;
+             } else if (ui.value < 0) {
+                 $(this).spinner('value', ui.value + 60);
+                 $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepDown');
+                 return false;
+             }
+         },
+         change: function (event) {
+         	if (event.target.value<0 || event.target.value>59)
+          		$(this).spinner('value', 0);
+         }
+     });
+     
+    $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
+        min: 0});
+    $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
+    spin: function (event, ui) {
+             if (ui.value >= 60) {
+                 $(this).spinner('value', ui.value - 60);
+                 $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepUp');
+                 return false;
+             } else if (ui.value < 0) {
+                 $(this).spinner('value', ui.value + 60);
+                 $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
+                 return false;
+             }
+         },
+         change: function (event) {
+         	if (event.target.value<0 || event.target.value>59)
+          		$(this).spinner('value', 0);
+         }
+     });
 };
 
 

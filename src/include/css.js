@@ -16,6 +16,13 @@
         css += ".wmeac-closuredialog .content table { witdh: 100%; border: none; font-size: 10px; text-transform: uppercase;}";
         css += ".wmeac-closuredialog .content table tbody tr { vertical-align: top;}";
         css += ".wmeac-closuredialog .content table tbody tr td { padding-right: 2px; padding-left: 2px;}";
+        css += ".wmeac-nav-tabs>ul { border-bottom: 1px solid #F6C3BE }";
+        css += ".wmeac-nav-tabs>li { float: left; margin-bottom: -1px; }";
+        css += ".wmeac-nav-tabs>li>a { border: 1px solid #F6C3BE; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 2px;}";
+        css += ".wmeac-nav-tabs>li.active>a { background-color: rgba(0, 0, 0, 0); border-bottom: 1px solid #FDEDEB}";
+        css += ".wmeac-nav-tabs>li:not(.active)>a { background-color: #DADBDC}";
+        //css += ".wmeac-nav-tabs>li:not(.active)>a:hover { background-color: #DADBDC}";
+        css += ".wmeac-tab-pane {border: 1px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 0px; border-top-right-radius: 0px; padding: 5px;}";
 		css += ".wmeac-closuredialog .footer { height: 40px; padding: 0 10px;}";
         css += "#wmeac-csv-closures-list ul { list-style-type: none; padding: 0px;}";
         css += "#wmeac-csv-closures-list ul li { width: 100%; height: 42px; border-radius: 4px; margin-top: 1px; }";
@@ -36,7 +43,7 @@
         css += ".wmeac-csv-closures-minilog { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-top: none; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; background-color: #FFFFFF; }";
         css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
         css += "#wmeac-csv-closures-log:before { content: \"Logs\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 2px; }";
-        css += "#wmeac-csv-closures-preview { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
+        css += "#wmeac-csv-closures-preview { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative; min-height: 20px; }";
         css += "#wmeac-csv-closures-preview:before { content: \"Preview\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 2px; }";
 		cssElt.innerHTML = css;
 		document.body.appendChild(cssElt);
