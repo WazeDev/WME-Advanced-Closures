@@ -161,16 +161,143 @@ WMEAC.showAddAdvancedClosure = function()
 };
 
 WMEAC.HTMLTemplates={};
-// button id="wmeac-advanced-closure-dialog-test-button" TEST ONLY - TO BE REMOVED
+
+var rangeStartEnd ='\
+  <div class="form-group">\
+    <label class="control-label" for="closure_rangestartDate">Range start</label>\
+    <div class="controls">\
+      <div  style="width: 62%" class="date date-input-group input-group pull-left">\
+        <input id="wmeac-advanced-closure-dialog-rangestartdate" class="form-control start-date" type="text" name="closure_rangestartDate">\
+        <span class="input-group-addon">\
+          <i class="fa fa-calendar"></i>\
+        </span>\
+      </div>\
+      <div class="bootstrap-timepicker input-group">\
+        <input id="wmeac-advanced-closure-dialog-rangestarttime" class="form-control start-time" type="text" name="closure_rangestartTime">\
+        <span class="input-group-addon">\
+          <i class="fa fa-clock-o"></i>\
+        </span>\
+      </div>\
+    </div>\
+  </div>\
+  <div class="form-group">\
+    <label class="control-label" for="closure_rangeendDate">Range end</label>\
+    <div class="controls">\
+      <div style="width: 62%" class="date date-input-group input-group pull-left">\
+        <input id="wmeac-advanced-closure-dialog-rangeenddate" class="form-control end-date" type="text" name="closure_rangeendDate">\
+        <span class="input-group-addon">\
+          <i class="fa fa-calendar"></i>\
+        </span>\
+      </div>\
+      <div class="bootstrap-timepicker input-group">\
+        <input id="wmeac-advanced-closure-dialog-rangeendtime" class="form-control end-time" type="text" name="closure_rangeendTime">\
+        <span class="input-group-addon">\
+          <i class="fa fa-clock-o"></i>\
+        </span>\
+      </div>\
+    </div>\
+  </div>';
+
+var startTimeAndDuration = '\
+  <div class="form-group">\
+    <label class="control-label" for="closure_startTime">Start and duration</label>\
+    <div class="controls">\
+      <div style="width: 50%;" class="bootstrap-timepicker input-group pull-left">\
+        <input id="wmeac-advanced-closure-dialog-starttime" class="form-control start-time" type="text" name="closure_startTime">\
+        <span class="input-group-addon">\
+          <i class="fa fa-clock-o"></i>\
+        </span>\
+      </div>\
+      <div style="width: 50%;" class="bootstrap-timepicker input-group">\
+        <span class="input-group-addon">\
+          <i class="fa fa-step-forward"></i>\
+        </span>\
+        <input id="wmeac-advanced-closure-dialog-duration" class="form-control" type="text" name="closure_duration">\
+      </div>\
+    </div>\
+  </div>\
+';
+  
+var description = '\
+  <div class="form-group">\
+      <label class="control-label" for="closure_reason">Description</label>\
+      <div class="controls">\
+        <input class="form-control" type="text" name="closure_reason">\
+      </div>\
+    </div>\
+';
+
+var location = '\
+  <div class="form-group">\
+    <label class="control-label" for="closure_location">Location</label>\
+    <div class="controls">\
+      <input class="form-control" type="text" name="closure_location">\
+    </div>\
+  </div>\
+';
+
+var direction = '\
+  <div class="form-group">\
+    <label class="control-label" for="closure_direction">Direction</label>\
+    <div class="controls">\
+      <select style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
+        <option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option><option value="3">Two way (&#xf0ec;)</option>\
+      </select>\
+    </div>\
+  </div>\
+';
+
+var ignoreTraffic = '\
+  <div class="checkbox">\
+    <label class="control-label" style="font-weight: bold;">\
+      <input type="checkbox" name="closure_permanent">\
+      Ignore Traffic\
+    </label>\
+  </div>\
+';
+
+var tabs ='\
+  <ul class="nav nav-tabs">\
+    <li class="active">\
+      <a data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
+    </li>\
+    <li>\
+      <a data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
+    </li>\
+  </ul>\
+  <div class="tab-content">\
+    <div class="tab-pane active" id="wmeac-advanced-closure-dialog-tabrepeat">\
+    </div>\
+    <div class="tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
+    </div>\
+  </div>';
+
+var footer = '\
+<div class="footer">\
+    <div id="wmeac-csv-closures-preview"></div>\
+	<button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
+    <button style="float: right;" id="wmeac-advanced-closure-dialog-apply-button">Apply</button>\
+</div>';
+
 WMEAC.HTMLTemplates.advancedClosureDialog='\
 <h1>Advanced closures</h1>\
 <div class="content">\
-<button id="wmeac-advanced-closure-dialog-test-button">TEST</button>\
-</div>\
-<div class="footer">\
-	<button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
-</div>\
-';
+  <table>\
+  <tr>\
+    <td  style="width: 50%;">' +
+      rangeStartEnd + startTimeAndDuration +
+    '\
+    </td>\
+    <td>' + 
+      description + location + direction + ignoreTraffic +
+    '\
+    </td>\
+  </tr>\
+  </table>' + 
+  tabs + 
+'</div>' + footer;
+
+
 
 WMEAC.connectAdvancedClosureDialogHandlers = function ()
 {
@@ -185,16 +312,23 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 	}
 
     // TEST ONLY - TO BE REMOVED
-    e=WMEAC.getId('wmeac-advanced-closure-dialog-test-button');
+    /*e=WMEAC.getId('wmeac-advanced-closure-dialog-test-button');
 	if (e)
 	{
 		e.addEventListener('click', function() {
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             WMEAC.addClosureFromSelection({reason: "Test dummyd2", direction: sc.DIRECTION.A_TO_B, startDate: "2016-05-27 00:00", endDate: "2016-05-28 00:00", location: "Somewhere", permanent: true});
 		});
-	}
+	}*/
     // TEST ONLY - TO BE REMOVED
     
+    $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
+    $("#wmeac-advanced-closure-dialog-rangestarttime,#wmeac-advanced-closure-dialog-rangeendtime,#wmeac-advanced-closure-dialog-starttime,#wmeac-advanced-closure-dialog-duration").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
+    $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
+        $(e.target).parent().find("input").focus();
+    }).find("i").on("click", function (e) {
+        $(e.target).parent().parent().find("input").focus();
+    });
 };
 
 
