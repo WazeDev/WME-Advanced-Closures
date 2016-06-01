@@ -287,8 +287,16 @@ var tabRepeat = '\
   </div>\
 ';
 
-var tabEach = '\
+var tabEach = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(function (d) {
+    return '<div class="checkbox">\
+    <label class="control-label" style="font-weight: bold;">\
+      <input type="checkbox" name="closure_each_' + d + '">\
+      ' + d + '\
+    </label>\
+  </div>\
 ';
+}).join('');
+  
 
 var tabs ='\
   <ul class="nav wmeac-nav-tabs">\
@@ -310,8 +318,8 @@ var tabs ='\
   
 var footer = '\
 <div class="footer">\
-    <div id="wmeac-csv-closures-preview"></div>\
-	<button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
+    <div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow-y: scroll; max-height: 150px;"></div></div>\
+    <button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
     <button style="float: right;" id="wmeac-advanced-closure-dialog-apply-button">Apply</button>\
 </div>';
 
@@ -367,7 +375,11 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     });
     
     $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
-        min: 0});
+        min: 0,
+        spin: function (event, ui) {
+            $(this).trigger('change');
+        }
+    });
     $('#wmeac-advanced-closure-dialog-repeat-every-minute').spinner({
     spin: function (event, ui) {
              if (ui.value >= 60) {
@@ -379,6 +391,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                  $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepDown');
                  return false;
              }
+             $(this).trigger('change');
          },
          change: function (event) {
          	if (event.target.value<0 || event.target.value>59)
@@ -387,7 +400,11 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
      
     $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
-        min: 0});
+        min: 0,
+        spin: function (event, ui) {
+            $(this).trigger('change');
+        }
+    });
     $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
     spin: function (event, ui) {
              if (ui.value >= 60) {
@@ -399,11 +416,18 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                  $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
                  return false;
              }
+             $(this).trigger('change');
          },
          change: function (event) {
          	if (event.target.value<0 || event.target.value>59)
           		$(this).spinner('value', 0);
          }
+     });
+     
+     $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
+         WMEAC.log('e', e);
+         // compute closures
+         // update preview
      });
 };
 
