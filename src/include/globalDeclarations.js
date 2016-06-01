@@ -16,3 +16,5 @@ WMEAC.csvCurrentBatchClosureList=null;
 WMEAC.pendingOps=false;
 
 WMEAC.pb = null;
+
+WMEAC.daysOfWeek=[ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];

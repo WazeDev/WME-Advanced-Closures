@@ -49,7 +49,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         // if repeat is smaller than duration
         if (evH * 60 + evM < dH * 60 + dM) return {list: list, error: "Repeat must be greater than duration"};
         
-        var firstDateTimeStart = rangeStartDate;
+        var firstDateTimeStart = rangeStartDate.clone();
         if (startTimeM<rangeStartTimeM) // starts the day after
             firstDateTimeStart.addDays(1);
         firstDateTimeStart.setMinutes(startTimeM);
@@ -77,7 +77,31 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     // if mode is EACH
     else if ($('#wmeac-advanced-closure-dialog-tabeach').attr('class').indexOf('active')!=-1)
     {
+        // build bits for a week:
+        var dow = WMEAC.daysOfWeek.map(function (e, i) {
+            return ($('#wmeac-advanced-closure-dialog-each-' + i)).is(':checked');
+        });
+        var dayCount = Math.ceil((rangeEndDate-rangeStartDate+1)/86400000);
         
+        var day0 = rangeStartDate.clone();
+        day0.addMinutes(startTimeM);
+        if (startTimeM<rangeStartTimeM) // starts the day after
+            day0.addDays(1);
+        
+        for (var d=0; d<dayCount; d++)
+        {
+            var start = day0.clone();
+            start.addDays(d);
+            if (dow[start.getUTCDay()])
+            {
+                var end = start.clone();
+                end.addMinutes(dH * 60 + dM);
+                if (end > rangeEndDateTime) // stop if after range end
+                    break;
+                list.push({start: WMEAC.dateToClosureStr(start), end: WMEAC.dateToClosureStr(end)});
+            }
+        }
+        return {list: list, error: ""};
     }
     else
         return {list: list, error: "Wrong tab active"};

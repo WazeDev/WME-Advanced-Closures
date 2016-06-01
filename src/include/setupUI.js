@@ -287,10 +287,12 @@ var tabRepeat = '\
   </div>\
 ';
 
-var tabEach = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(function (d) {
+var daysOfWeek = WMEAC.daysOfWeek.clone();
+daysOfWeek.push(daysOfWeek.shift());
+var tabEach = daysOfWeek.map(function (d, i) {
     return '<div class="checkbox">\
     <label class="control-label" style="font-weight: bold;">\
-      <input type="checkbox" name="closure_each_' + d + '">\
+      <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
       ' + d + '\
     </label>\
   </div>\
