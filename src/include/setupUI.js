@@ -45,7 +45,7 @@ WMEAC.initUI = function ()
 		var tabContent = sidePanelPrefs.parentNode;
 		
 		newtab = WMEAC.createElement({type: 'li'});
-		newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road"></span></a>';
+		newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road slashed"></span></a>';
 		navTabs.appendChild(newtab);
 
 		
@@ -255,7 +255,7 @@ var direction = '\
 var ignoreTraffic = '\
   <div class="checkbox">\
     <label class="control-label" style="font-weight: bold;">\
-      <input type="checkbox" name="closure_permanent">\
+      <input id="wmeac-advanced-closure-dialog-ignoretraffic" type="checkbox" name="closure_permanent">\
       Ignore Traffic\
     </label>\
   </div>\
@@ -303,10 +303,10 @@ var tabEach = daysOfWeek.map(function (d, i) {
 var tabs ='\
   <ul class="nav wmeac-nav-tabs">\
     <li class="active">\
-      <a data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
+      <a id="wmeac-advanced-closure-dialog-repeat" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
     </li>\
     <li>\
-      <a data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
+      <a id="wmeac-advanced-closure-dialog-each" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
     </li>\
   </ul>\
   <div class="tab-content">\
@@ -426,26 +426,30 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
          }
      });
      
+     function refreshClosureList()
+     {
+        var rc = WMEAC.buildClosuresListFromRecurringUI();
+        if (rc.error!="")
+            $('#wmeac-csv-closures-preview-content').html(rc.error);
+        else
+        {
+            var reason = $('#wmeac-advanced-closure-dialog-reason').val();
+            var location = $('#wmeac-advanced-closure-dialog-location').val();
+            var direction = $('#wmeac-advanced-closure-dialog-direction').val();
+            var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
+            var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+            $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e) {
+                return (reason + ' (' + location + '): ' + e.start + ' &#8594; ' + e.end + ' ' + directionStr + ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>');
+            }).join('<br>'));
+        }     
+     }
+     
+     $('#wmeac-advanced-closure-dialog-repeat,#wmeac-advanced-closure-dialog-each').on('click', function(e){
+        window.setTimeout(refreshClosureList);
+     });
+     
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
-        // WMEAC.log('e', e);
-        // compute closures
-        window.setTimeout(function () {
-            var rc = WMEAC.buildClosuresListFromRecurringUI();
-            if (rc.error!="")
-                $('#wmeac-csv-closures-preview-content').html(rc.error);
-            else
-            {
-                var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-                var location = $('#wmeac-advanced-closure-dialog-location').val();
-                var direction = $('#wmeac-advanced-closure-dialog-direction').val();
-                var directionStr = direction==1?"(A&#8594;B)":(direction==2?"(B&#8594;A)":"(&#8646;)");
-                $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e) {
-                    return (reason + ' (' + location + '): ' + e.start + " &#8594; " + e.end + " " + directionStr);
-                }).join('<br>'));
-            }            
-        });
-        
-         // update preview
+        window.setTimeout(refreshClosureList);
      });
 };
 

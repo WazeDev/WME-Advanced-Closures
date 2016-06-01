@@ -1,7 +1,7 @@
 		var cssElt = WMEAC.createElement({type: "style"});
 		cssElt.type = "text/css";
 		var css="";
-        css += ".fa.fa-road:after { content: ''; position: absolute; width: 80%; height: 1px; top: 40%; display: block; background: red; left: 10%; transform: rotate(-30deg); }";
+        css += ".slashed:after { content: ''; position: relative; width: 140%; height: 1px; display: block; background: red; transform: rotate(-30deg); margin-top: -50%; margin-left: -20%; }";
         css += ".wmeac-sidepanel button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
         
         css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
