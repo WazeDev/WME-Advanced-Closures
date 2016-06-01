@@ -225,9 +225,9 @@ var startTimeAndDuration = '\
   
 var description = '\
   <div class="form-group">\
-      <label class="control-label" for="closure_reason">Description</label>\
+      <labelclass="control-label" for="closure_reason">Description</label>\
       <div class="controls">\
-        <input class="form-control" type="text" name="closure_reason">\
+        <input id="wmeac-advanced-closure-dialog-reason" class="form-control" type="text" name="closure_reason">\
       </div>\
     </div>\
 ';
@@ -236,7 +236,7 @@ var location = '\
   <div class="form-group">\
     <label class="control-label" for="closure_location">Location</label>\
     <div class="controls">\
-      <input class="form-control" type="text" name="closure_location">\
+      <input id="wmeac-advanced-closure-dialog-location" class="form-control" type="text" name="closure_location">\
     </div>\
   </div>\
 ';
@@ -245,7 +245,7 @@ var direction = '\
   <div class="form-group">\
     <label class="control-label" for="closure_direction">Direction</label>\
     <div class="controls">\
-      <select style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
+      <select id="wmeac-advanced-closure-dialog-direction" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
         <option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option><option value="3">Two way (&#xf0ec;)</option>\
       </select>\
     </div>\
@@ -265,7 +265,7 @@ var tabRepeat = '\
   <div style="width: 150px;" class="input-group">\
     <div class="controls">\
       <div class="input-group pull-left">\
-        <input class="form-control" type="text" name="closure_repeat_ntimes">\
+        <input id="wmeac-advanced-closure-dialog-repeat-ntimes" class="form-control" type="text" name="closure_repeat_ntimes">\
         <span class="input-group-addon" for="closure_repeat_ntimes">times</span>\
       </div>\
     </div>\
@@ -425,8 +425,24 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
      
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
-         WMEAC.log('e', e);
-         // compute closures
+        // WMEAC.log('e', e);
+        // compute closures
+        window.setTimeout(function () {
+            var rc = WMEAC.buildClosuresListFromRecurringUI();
+            if (rc.error!="")
+                $('#wmeac-csv-closures-preview-content').html(rc.error);
+            else
+            {
+                var reason = $('#wmeac-advanced-closure-dialog-reason').val();
+                var location = $('#wmeac-advanced-closure-dialog-location').val();
+                var direction = $('#wmeac-advanced-closure-dialog-direction').val();
+                var directionStr = direction==1?"(A&#8594;B)":(direction==2?"(B&#8594;A)":"(&#8646;)");
+                $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e) {
+                    return (reason + ' (' + location + '): ' + e.start + " &#8594; " + e.end + " " + directionStr);
+                }).join('<br>'));
+            }            
+        });
+        
          // update preview
      });
 };

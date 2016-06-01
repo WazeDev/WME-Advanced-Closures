@@ -130,6 +130,31 @@ WMEAC.getDuration = function (ts)
 		return Math.ceil((duration-(now-startOfDay)) / 86400000);
 };
 
+WMEAC.isValidDate = function(d) // http://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
+{
+    if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+        // it is a date
+        if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+            return false
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        return false;
+    }  
+};
+
+WMEAC.dateToClosureStr = function(d) {
+   var yyyy = d.getUTCFullYear().toString();
+   var MM = (d.getUTCMonth()+1).toString(); // getMonth() is zero-based
+   var dd  = d.getUTCDate().toString();
+   var hh = d.getUTCHours().toString();
+   var mm = d.getUTCMinutes().toString();
+   return yyyy + '-' + (MM[1]?MM:"0"+MM[0]) + '-' + (dd[1]?dd:"0"+dd[0]) + ' ' + (hh[1]?hh:"0"+hh[0]) + ':' + (mm[1]?mm:"0"+mm[0]); // padding
+};
+
 WMEAC.escapeHtml = function (text) {
 		return text
 		.replace(/&/g, "&amp;")

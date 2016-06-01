@@ -57,6 +57,8 @@ function WMEAC_Injected()
 	
     INCLUDE_FILE('include/class.closure.js');
     
+    INCLUDE_FILE('include/recurringClosures.js');
+    
     INCLUDE_FILE('include/actionClosures.js');
     
 	// functions to load and save settings
