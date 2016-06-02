@@ -16,8 +16,18 @@ WMEAC.initUI = function ()
 		section.innerHTML  = title;
 		addon.appendChild(section);
         
+        var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
+        var addACBtn = WMEAC.createElement({type: 'div',
+            id: 'wmeac-add-advanced-closure-button',
+            className: 'wmeac-button'});
+        addACBtn.style.width='100%';
+        addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
+        
+        addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
+        divAdvCl.appendChild(addACBtn);
+        
         var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
-        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-custom-file-upload">Parse CSV</label>\
+        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-button">Parse CSV</label>\
         <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
         csvHTML += '\
         <div id="wmeac-csv-closures" style="display: none;">\
@@ -35,6 +45,9 @@ WMEAC.initUI = function ()
         </div>';
         
         divCSV.innerHTML = csvHTML;
+        
+        addon.appendChild(divAdvCl);
+        addon.appendChild(WMEAC.createElement({type: 'hr'}));
         addon.appendChild(divCSV);
 
 		
@@ -54,7 +67,7 @@ WMEAC.initUI = function ()
 		addon.style.marginLeft = "-10px";
 		tabContent.appendChild(addon);
 
-		Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+		//Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
         Waze.vent.on("operationPending", function(e) {
             if (e.operation.id!="pending.road_data")
                 return;
@@ -68,80 +81,6 @@ WMEAC.initUI = function ()
         });
 
         window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
-};
-
-WMEAC.selectionChanged = function (e)
-{
-	if (WMEAC.closureTabTimeout!=null)
-	{
-		// unset the timeout
-		window.clearTimeout(WMEAC.closureTabTimeout);
-		WMEAC.closureTabTimeout=null;
-	}
-
-	var roadClosuresLayer = Waze.map.getLayersByName("Road Closures");
-	WMEAC.log("rcl;", roadClosuresLayer);
-	if (roadClosuresLayer.length==1)
-		roadClosuresLayer=roadClosuresLayer[0];
-	else
-		return;
-	WMEAC.log("sel;", e);
-	if (e.selected.length!=0 && e.selected[0].model.type=="segment")
-	{
-		// now setup timeout to wait for active closures tab
-		var tmp = function tmpFunc() {
-			var tabEditClosures = WMEAC.getId('segment-edit-closures');
-			//WMEAC.log("tabEditClosures:", tabEditClosures);
-			//if (tabEditClosures) WMEAC.log("classname", tabEditClosures.className);
-			if (tabEditClosures!=null && tabEditClosures.className.indexOf('active')!=-1 && roadClosuresLayer.visibility==true)
-			{
-				//WMEAC.log("Here we go in closure tab!", tabEditClosures);
-				WMEAC.initInClosureTab({divTab: tabEditClosures});
-				return;
-			}
-			else
-			{
-				WMEAC.closureTabTimeout=window.setTimeout(tmpFunc, 100);
-				//WMEAC.log("waiting for closure tab...");
-			}
-		};
-		WMEAC.closureTabTimeout=window.setTimeout(tmp);
-	}
-};
-
-
-WMEAC.initInClosureTab = function (data)
-{
-	var addACBtn = WMEAC.getId('wmeac-add-advanced-closure-button');
-	if (addACBtn!=null && WMEAC.isDescendant(data.divTab, addACBtn))
-		return; // our button is already there
-	if (addACBtn!=null)
-	{
-		// oops, our button exists but in the wrong place? Delete it
-		addACBtn.parentNode.removeChild(addACBtn);
-	}
-	
-	var addBtn = WMEAC.getElementsByClassName('add-closure-button', data.divTab);
-	if (addBtn.length!=1)
-		return;
-	addBtn = addBtn[0];
-	
-	var btnsContainer = addBtn.parentNode;
-	addACBtn = WMEAC.createElement({type: 'div',
-																	id: 'wmeac-add-advanced-closure-button',
-																	className: 'btn btn-primary'});
-	addACBtn.style.width='100%';
-	addACBtn.style.marginBottom= '10px';
-	addACBtn.innerHTML='<i class="fa fa-clock-o"> Add advanced closure</i>';
-	
-	addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
-	
-	if (addBtn.nextSibling) {
-		btnsContainer.insertBefore(addACBtn, addBtn.nextSibling);
-	}
-	else {
-		btnsContainer.appendChild(addACBtn);
-	}
 };
 
 WMEAC.showAddAdvancedClosure = function()
