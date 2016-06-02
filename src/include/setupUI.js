@@ -311,6 +311,12 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Please, select segment(s) before.");
                 return;
             }
+            if (Waze.selectionManager.selectedItems.every(e => e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES))==false)
+            {
+                alert("You don't have permission to edit closures on all those segments.");
+                return;
+            }
+            
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
             var location = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();

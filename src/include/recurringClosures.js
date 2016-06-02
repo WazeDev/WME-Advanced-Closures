@@ -57,11 +57,10 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         var firstDateTimeEnd = firstDateTimeStart.clone();
         firstDateTimeEnd.addMinutes(dH * 60 + dM);
         
-        WMEAC.log("1st: " + WMEAC.dateToClosureStr(firstDateTimeStart));
+       
+        var now = new Date();
         
-        list.push({start: WMEAC.dateToClosureStr(firstDateTimeStart), end: WMEAC.dateToClosureStr(firstDateTimeEnd)});
-        
-        for (var i=1; i<ntimes; i++)
+        for (var i=0; i<ntimes; i++)
         {
             var start = firstDateTimeStart.clone();
             start.addMinutes((evH * 60 + evM)*i);
@@ -69,6 +68,13 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
             end.addMinutes(dH * 60 + dM);
             if (end > rangeEndDateTime) // stop if after range end
                 break;
+            WMEAC.log('end', end);
+            WMEAC.log('now', now);
+            if (end < now) // do not add closure that ends before now
+            {
+                ntimes++;
+                continue;
+            }
             list.push({start: WMEAC.dateToClosureStr(start), end: WMEAC.dateToClosureStr(end)});
         }
         
