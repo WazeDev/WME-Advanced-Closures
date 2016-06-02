@@ -125,3 +125,10 @@ WMEAC.reloadRoadLayer = function ()
     l.removeBackBuffer();
     Waze.controller.reload();  
 };
+
+WMEAC.reloadClosuresLayer = function ()
+{
+    var l=Waze.map.getLayersBy("uniqueName","closures")[0];
+    l.redraw({force:!0});
+    Waze.controller.reload();  
+};

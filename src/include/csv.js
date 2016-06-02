@@ -456,6 +456,7 @@ WMEAC.CSVBatchApply = function(i)
     else
     {
         WMEAC.csvAddLog("Apply selected closures ended\n");
+        WMEAC.reloadClosuresLayer();
         WMEAC.pb.show(false);
     }
 };

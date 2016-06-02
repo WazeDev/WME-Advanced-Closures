@@ -42,7 +42,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
 {
     if (i>=closureList.length)
     {
-        WMEAC.reloadRoadLayer();
+        WMEAC.reloadClosuresLayer();
         if (endHandler) endHandler();
         return;
     }
