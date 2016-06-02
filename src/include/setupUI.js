@@ -357,6 +357,42 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 		});
 	}
 
+    e=WMEAC.getId('wmeac-advanced-closure-dialog-apply-button');
+	if (e)
+	{
+		e.addEventListener('click', function() {
+            var rc = WMEAC.buildClosuresListFromRecurringUI();
+            if (rc.error!="")
+            {
+                alert("Can't apply closures.\nPlease, check all parameters.");
+                return;
+            }
+            if (Waze.selectionManager.selectedItems.isEmpty() || Waze.selectionManager.selectedItems[0].model.type!="segment")
+            {
+                alert("Please, select segment(s) before.");
+                return;
+            }
+            var reason = $('#wmeac-advanced-closure-dialog-reason').val();
+            var location = $('#wmeac-advanced-closure-dialog-location').val();
+            var direction = $('#wmeac-advanced-closure-dialog-direction').val();
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
+            direction=(direction=="1"?sc.DIRECTION.A_TO_B:(direction=="2"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY));
+            var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
+            var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+            closureList = rc.list.map(function (e) {
+                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: location, permanent: isIT};
+            });
+            
+            WMEAC.addClosureListFromSelection(closureList, function (i, e) {
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
+            }, function (i, e) {
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"});
+            }, function () {
+                alert ('done');
+            }, 0);
+		});
+	}
+    
     // TEST ONLY - TO BE REMOVED
     /*e=WMEAC.getId('wmeac-advanced-closure-dialog-test-button');
 	if (e)
@@ -438,8 +474,13 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e) {
-                return (reason + ' (' + location + '): ' + e.start + ' &#8594; ' + e.end + ' ' + directionStr + ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>');
+            $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e, i) {
+                return (reason +
+                ' (' + location + '): ' + 
+                e.start + ' &#8594; ' + e.end + 
+                ' ' + directionStr + 
+                ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
+                ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
             }).join('<br>'));
         }     
      }

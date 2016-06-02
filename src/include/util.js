@@ -135,7 +135,7 @@ WMEAC.isValidDate = function(d) // http://stackoverflow.com/questions/1353684/de
     if ( Object.prototype.toString.call(d) === "[object Date]" ) {
         // it is a date
         if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
-            return false
+            return false;
         }
         else {
             return true;

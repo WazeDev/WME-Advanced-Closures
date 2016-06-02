@@ -32,7 +32,7 @@ WMEAC.ClassClosure = function (options)
     {
         matches = this.lonlat.match(/lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*)/);
         if (matches && matches.length==3)
-            this.lonlat = {lon: parseFloat(matches[2]), lat: parseFloat(matches[1])}
+            this.lonlat = {lon: parseFloat(matches[2]), lat: parseFloat(matches[1])};
         else
         {
             this.isValid=false;
@@ -71,7 +71,7 @@ WMEAC.ClassClosure = function (options)
         {
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             
-            WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs});
+            WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs}, successHandler, failureHandler);
         }
     };
 };
