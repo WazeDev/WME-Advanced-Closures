@@ -1,102 +1,102 @@
 WMEAC.initUI = function ()
 {
-		var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
-		
-        WMEAC.pb = new WMEAC.ProgressBar('wmeac-progressBarInfo');
-		
-		addon.appendChild(WMEAC.pb.divpbi);
-		
-		
-		var section = WMEAC.createElement({type: 'p', id: 'wmeac-main-title'});
-		section.style.paddingTop = "0px";
-		section.style.marginTop = "-15px";
-		section.style.textIndent = "8px";
-		
-		var title='<b><a target="_blank" href="https://greasyfork.org/fr/scripts/"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=68&t=91786">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=125216">En</a> </b> v' + WMEAC.ac_version;
-		section.innerHTML  = title;
-		addon.appendChild(section);
+    var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
+    
+    WMEAC.pb = new WMEAC.ProgressBar('wmeac-progressBarInfo');
+    
+    addon.appendChild(WMEAC.pb.divpbi);
+    
+    
+    var section = WMEAC.createElement({type: 'p', id: 'wmeac-main-title'});
+    section.style.paddingTop = "0px";
+    section.style.marginTop = "-15px";
+    section.style.textIndent = "8px";
+    
+    var title='<b><a target="_blank" href="https://greasyfork.org/fr/scripts/"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=68&t=91786">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=125216">En</a> </b> v' + WMEAC.ac_version;
+    section.innerHTML  = title;
+    addon.appendChild(section);
+    
+    var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
+    var addACBtn = WMEAC.createElement({type: 'div',
+        id: 'wmeac-add-advanced-closure-button',
+        className: 'wmeac-button'});
+    addACBtn.style.width='100%';
+    addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
-        var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
-        var addACBtn = WMEAC.createElement({type: 'div',
-            id: 'wmeac-add-advanced-closure-button',
-            className: 'wmeac-button'});
-        addACBtn.style.width='100%';
-        addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
-        
-        addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
-        divAdvCl.appendChild(addACBtn);
-        
-        var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
-        var csvHTML = '<label for="wmeac-csv-file" class="wmeac-button">Parse CSV</label>\
-        <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
-        csvHTML += '\
-        <div id="wmeac-csv-closures" style="display: none;">\
-            <div id="wmeac-csv-closures-controls">\
-                <input type="checkbox" id="wmeac-csv-closures-controls-check"> | \
-                <a href="#" id="wmeac-csv-closures-controls-apply">Apply</a> | \
-                <a href="#" id="wmeac-csv-closures-controls-segs">Check segments</a>\
-            </div>\
-            <div id="wmeac-csv-closures-list">\
-                <ul id="wmeac-csv-closures-list-elts">\
-                </ul>\
-            </div>\
+    addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
+    divAdvCl.appendChild(addACBtn);
+    
+    var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
+    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-button">Parse CSV</label>\
+    <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
+    csvHTML += '\
+    <div id="wmeac-csv-closures" style="display: none;">\
+        <div id="wmeac-csv-closures-controls">\
+            <input type="checkbox" id="wmeac-csv-closures-controls-check"> | \
+            <a href="#" id="wmeac-csv-closures-controls-apply">Apply</a> | \
+            <a href="#" id="wmeac-csv-closures-controls-segs">Check segments</a>\
         </div>\
-        <div id="wmeac-csv-closures-log">\
-        </div>';
-        
-        divCSV.innerHTML = csvHTML;
-        
-        addon.appendChild(divAdvCl);
-        addon.appendChild(WMEAC.createElement({type: 'hr'}));
-        addon.appendChild(divCSV);
+        <div id="wmeac-csv-closures-list">\
+            <ul id="wmeac-csv-closures-list-elts">\
+            </ul>\
+        </div>\
+    </div>\
+    <div id="wmeac-csv-closures-log">\
+    </div>';
+    
+    divCSV.innerHTML = csvHTML;
+    
+    addon.appendChild(divAdvCl);
+    addon.appendChild(WMEAC.createElement({type: 'hr'}));
+    addon.appendChild(divCSV);
 
-		
-		var userTabs = WMEAC.getId('user-tabs');
-		var userInfo = WMEAC.getId('user-info');
-		var sidePanelPrefs = WMEAC.getId('sidepanel-prefs');
-		var navTabs = WMEAC.getElementsByClassName('nav-tabs', userTabs)[0];
-		var tabContent = sidePanelPrefs.parentNode;
-		
-		newtab = WMEAC.createElement({type: 'li'});
-		newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road slashed"></span></a>';
-		navTabs.appendChild(newtab);
+    
+    var userTabs = WMEAC.getId('user-tabs');
+    var userInfo = WMEAC.getId('user-info');
+    var sidePanelPrefs = WMEAC.getId('sidepanel-prefs');
+    var navTabs = WMEAC.getElementsByClassName('nav-tabs', userTabs)[0];
+    var tabContent = sidePanelPrefs.parentNode;
+    
+    newtab = WMEAC.createElement({type: 'li'});
+    newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road slashed"></span></a>';
+    navTabs.appendChild(newtab);
 
-		
-		addon.id = "sidepanel-wmeac";
-		addon.className = "tab-pane";
-		addon.style.marginLeft = "-10px";
-		tabContent.appendChild(addon);
+    
+    addon.id = "sidepanel-wmeac";
+    addon.className = "tab-pane";
+    addon.style.marginLeft = "-10px";
+    tabContent.appendChild(addon);
 
-		//Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
-        Waze.vent.on("operationPending", function(e) {
-            if (e.operation.id!="pending.road_data")
-                return;
-            WMEAC.pendingOps = true;
-        });
+    //Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+    Waze.vent.on("operationPending", function(e) {
+        if (e.operation.id!="pending.road_data")
+            return;
+        WMEAC.pendingOps = true;
+    });
 
-        Waze.vent.on("operationDone", function(e) {
-            if (e.operation.id!="pending.road_data")
-                return;
-            WMEAC.pendingOps = false;
-        });
+    Waze.vent.on("operationDone", function(e) {
+        if (e.operation.id!="pending.road_data")
+            return;
+        WMEAC.pendingOps = false;
+    });
 
-        window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
+    window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
 };
 
 WMEAC.showAddAdvancedClosure = function()
 {
-	// init if needed and show modal dialog
-	var ACDiv = WMEAC.getId('wmeac-add-advanced-closure-dialog');
-	if (ACDiv==null)
-	{
-		ACDiv = WMEAC.createElement({type: 'div',
-																 id: 'wmeac-add-advanced-closure-dialog',
-																 className: 'wmeac-closuredialog'});
-		ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
-		Waze.map.div.appendChild(ACDiv);
-		window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
-	}
-	ACDiv.style.display="block";
+    // init if needed and show modal dialog
+    var ACDiv = WMEAC.getId('wmeac-add-advanced-closure-dialog');
+    if (ACDiv==null)
+    {
+        ACDiv = WMEAC.createElement({type: 'div',
+                                     id: 'wmeac-add-advanced-closure-dialog',
+                                     className: 'wmeac-closuredialog'});
+        ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
+        Waze.map.div.appendChild(ACDiv);
+        window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
+    }
+    ACDiv.style.display="block";
 };
 
 WMEAC.HTMLTemplates={};
@@ -286,20 +286,20 @@ WMEAC.HTMLTemplates.advancedClosureDialog='\
 
 WMEAC.connectAdvancedClosureDialogHandlers = function ()
 {
-	var e = null;
-	e=WMEAC.getId('wmeac-advanced-closure-dialog-close-button');
-	if (e)
-	{
-		e.addEventListener('click', function() {
-			var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
-			if (d) d.style.display='none';
-		});
-	}
+    var e = null;
+    e=WMEAC.getId('wmeac-advanced-closure-dialog-close-button');
+    if (e)
+    {
+        e.addEventListener('click', function() {
+            var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
+            if (d) d.style.display='none';
+        });
+    }
 
     e=WMEAC.getId('wmeac-advanced-closure-dialog-apply-button');
-	if (e)
-	{
-		e.addEventListener('click', function() {
+    if (e)
+    {
+        e.addEventListener('click', function() {
             var rc = WMEAC.buildClosuresListFromRecurringUI();
             if (rc.error!="")
             {
@@ -329,19 +329,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             }, function () {
                 alert ('done');
             }, 0);
-		});
-	}
-    
-    // TEST ONLY - TO BE REMOVED
-    /*e=WMEAC.getId('wmeac-advanced-closure-dialog-test-button');
-	if (e)
-	{
-		e.addEventListener('click', function() {
-            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            WMEAC.addClosureFromSelection({reason: "Test dummyd2", direction: sc.DIRECTION.A_TO_B, startDate: "2016-05-27 00:00", endDate: "2016-05-28 00:00", location: "Somewhere", permanent: true});
-		});
-	}*/
-    // TEST ONLY - TO BE REMOVED
+        });
+    }
     
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
     $("#wmeac-advanced-closure-dialog-rangestarttime,#wmeac-advanced-closure-dialog-rangeendtime,#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
@@ -371,8 +360,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
              $(this).trigger('change');
          },
          change: function (event) {
-         	if (event.target.value<0 || event.target.value>59)
-          		$(this).spinner('value', 0);
+            if (event.target.value<0 || event.target.value>59)
+                $(this).spinner('value', 0);
          }
      });
      
@@ -396,8 +385,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
              $(this).trigger('change');
          },
          change: function (event) {
-         	if (event.target.value<0 || event.target.value>59)
-          		$(this).spinner('value', 0);
+            if (event.target.value<0 || event.target.value>59)
+                $(this).spinner('value', 0);
          }
      });
      
@@ -436,23 +425,23 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 
 WMEAC.connectAdvancedClosureTabHandlers = function ()
 {
-	var e = null;
-    
-	e=WMEAC.getId('wmeac-csv-file');
-	if (e)
-		e.addEventListener('change', WMEAC.CSVFileChanged);
-    
+    var e = null;
+
+    e=WMEAC.getId('wmeac-csv-file');
+    if (e)
+        e.addEventListener('change', WMEAC.CSVFileChanged);
+
     e=WMEAC.getId('wmeac-csv-closures-controls-check');
-	if (e)
-		e.addEventListener('change', function (e) { WMEAC.CSVCheckAll(e.target.checked); });
-    
+    if (e)
+        e.addEventListener('change', function (e) { WMEAC.CSVCheckAll(e.target.checked); });
+
     e=WMEAC.getId('wmeac-csv-closures-controls-apply');
-	if (e)
-		e.addEventListener('click', WMEAC.CSVApplyChecked);
+    if (e)
+        e.addEventListener('click', WMEAC.CSVApplyChecked);
 
     e=WMEAC.getId('wmeac-csv-closures-controls-segs');
-	if (e)
-		e.addEventListener('click', WMEAC.CSVCheckSegsChecked);
+    if (e)
+        e.addEventListener('click', WMEAC.CSVCheckSegsChecked);
 
     
 };
