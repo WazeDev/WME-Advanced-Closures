@@ -430,6 +430,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
         window.setTimeout(refreshClosureList);
      });
+     
+     WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), $('#wmeac-add-advanced-closure-dialog h1:first-child'));
 };
 
 
