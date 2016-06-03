@@ -105,7 +105,7 @@ var rangeStartEnd ='\
   <div class="form-group">\
     <label class="control-label" for="closure_rangestartDate">Range start</label>\
     <div class="controls">\
-      <div  style="width: 62%" class="date date-input-group input-group pull-left">\
+      <div  style="width: 58%" class="date date-input-group input-group pull-left">\
         <input id="wmeac-advanced-closure-dialog-rangestartdate" class="form-control start-date" type="text" name="closure_rangestartDate">\
         <span class="input-group-addon">\
           <i class="fa fa-calendar"></i>\
@@ -122,7 +122,7 @@ var rangeStartEnd ='\
   <div class="form-group">\
     <label class="control-label" for="closure_rangeendDate">Range end</label>\
     <div class="controls">\
-      <div style="width: 62%" class="date date-input-group input-group pull-left">\
+      <div style="width: 58%" class="date date-input-group input-group pull-left">\
         <input id="wmeac-advanced-closure-dialog-rangeenddate" class="form-control end-date" type="text" name="closure_rangeendDate">\
         <span class="input-group-addon">\
           <i class="fa fa-calendar"></i>\
@@ -164,7 +164,7 @@ var startTimeAndDuration = '\
   
 var description = '\
   <div class="form-group">\
-      <labelclass="control-label" for="closure_reason">Description</label>\
+      <label class="control-label" for="closure_reason">Description</label>\
       <div class="controls">\
         <input id="wmeac-advanced-closure-dialog-reason" class="form-control" type="text" name="closure_reason">\
       </div>\
@@ -346,55 +346,58 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         $(e.target).parent().parent().find("input").focus();
     });
     
-    $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
-        min: 0,
+    if (typeof $.fn.spinner !== 'undefined')
+    {
+        $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
+            min: 0,
+            spin: function (event, ui) {
+                $(this).trigger('change');
+            }
+        });
+        $('#wmeac-advanced-closure-dialog-repeat-every-minute').spinner({
         spin: function (event, ui) {
-            $(this).trigger('change');
-        }
-    });
-    $('#wmeac-advanced-closure-dialog-repeat-every-minute').spinner({
-    spin: function (event, ui) {
-             if (ui.value >= 60) {
-                 $(this).spinner('value', ui.value - 60);
-                 $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepUp');
-                 return false;
-             } else if (ui.value < 0) {
-                 $(this).spinner('value', ui.value + 60);
-                 $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepDown');
-                 return false;
+                 if (ui.value >= 60) {
+                     $(this).spinner('value', ui.value - 60);
+                     $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepUp');
+                     return false;
+                 } else if (ui.value < 0) {
+                     $(this).spinner('value', ui.value + 60);
+                     $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner('stepDown');
+                     return false;
+                 }
+                 $(this).trigger('change');
+             },
+             change: function (event) {
+                if (event.target.value<0 || event.target.value>59)
+                    $(this).spinner('value', 0);
              }
-             $(this).trigger('change');
-         },
-         change: function (event) {
-            if (event.target.value<0 || event.target.value>59)
-                $(this).spinner('value', 0);
-         }
-     });
-     
-    $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
-        min: 0,
+         });
+         
+        $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
+            min: 0,
+            spin: function (event, ui) {
+                $(this).trigger('change');
+            }
+        });
+        $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
         spin: function (event, ui) {
-            $(this).trigger('change');
-        }
-    });
-    $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
-    spin: function (event, ui) {
-             if (ui.value >= 60) {
-                 $(this).spinner('value', ui.value - 60);
-                 $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepUp');
-                 return false;
-             } else if (ui.value < 0) {
-                 $(this).spinner('value', ui.value + 60);
-                 $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
-                 return false;
+                 if (ui.value >= 60) {
+                     $(this).spinner('value', ui.value - 60);
+                     $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepUp');
+                     return false;
+                 } else if (ui.value < 0) {
+                     $(this).spinner('value', ui.value + 60);
+                     $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
+                     return false;
+                 }
+                 $(this).trigger('change');
+             },
+             change: function (event) {
+                if (event.target.value<0 || event.target.value>59)
+                    $(this).spinner('value', 0);
              }
-             $(this).trigger('change');
-         },
-         change: function (event) {
-            if (event.target.value<0 || event.target.value>59)
-                $(this).spinner('value', 0);
-         }
-     });
+         });
+    }
      
      function refreshClosureList()
      {
