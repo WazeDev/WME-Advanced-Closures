@@ -411,7 +411,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            $('#wmeac-csv-closures-preview-content').html(rc.list.map(function (e, i) {
+            $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
+                rc.list.map(function (e, i) {
                 return (reason +
                 ' (' + location + '): ' + 
                 e.start + ' &#8594; ' + e.end + 
