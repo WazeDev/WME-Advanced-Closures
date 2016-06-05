@@ -238,6 +238,39 @@ var tabEach = daysOfWeek.map(function (d, i) {
 ';
 }).join('');
   
+var tabPresets = '\
+<div class="content">\
+  <table><tr><td style="width: 50%; border-right: 1px solid #F6C3BE; padding-right: 5px;">\
+    <div class="form-group">\
+      <label class="control-label" for="presets_load">Load preset</label>\
+      <div class="controls">\
+        <div class="input-group">\
+          <select style="width: 100%;" id="wmeac-advanced-closure-dialog-presets-list" name="presets_load">\
+          </select>\
+          <span id="wmeac-advanced-closure-dialog-presets-load" class="input-group-addon">\
+           <i class="fa fa-folder-open-o"></i>\
+          </span>\
+          <span id="wmeac-advanced-closure-dialog-presets-delete" class="input-group-addon">\
+           <i class="fa fa-trash"></i>\
+          </span>\
+        </div>\
+      </div>\
+    </div>\
+    </td><td style="padding-left: 5px;">\
+    <div class="form-group">\
+      <label class="control-label" for="presets_save">Save preset</label>\
+      <div class="controls">\
+        <div class="input-group pull-left">\
+        <input id="wmeac-advanced-closure-dialog-presets-name" class="form-control" type="text" name="presets_save">\
+        <span id="wmeac-advanced-closure-dialog-presets-save" class="input-group-addon">\
+          <i class="fa fa-floppy-o"></i>\
+        </span>\
+        </div>\
+      </div>\
+    </div>\
+    </td></tr></table>\
+</div>\
+';
 
 var tabs ='\
   <ul class="nav wmeac-nav-tabs">\
@@ -247,6 +280,9 @@ var tabs ='\
     <li>\
       <a id="wmeac-advanced-closure-dialog-each" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
     </li>\
+    <li style="float: right;">\
+      <a id="wmeac-advanced-closure-dialog-presets" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabpresets"><i class="fa fa-floppy-o"></i></a>\
+    </li>\
   </ul>\
   <div class="tab-content">\
     <div class="tab-pane active wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabrepeat">\
@@ -254,6 +290,9 @@ var tabs ='\
     </div>\
     <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
     ' + tabEach + '\
+    </div>\
+    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabpresets">\
+    ' + tabPresets + '\
     </div>\
   </div>';
   
@@ -431,6 +470,59 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         window.setTimeout(refreshClosureList);
      });
      
+     WMEAC.reloadPresets();
+     
+     $('#wmeac-advanced-closure-dialog-presets-load').on('click', function(e){
+        var presetIndex = parseInt($("#wmeac-advanced-closure-dialog-presets-list").val());
+        $("#wmeac-advanced-closure-dialog-starttime").val(WMEAC.presets[presetIndex].values.starttime);
+        $("#wmeac-advanced-closure-dialog-duration-hour").val(WMEAC.presets[presetIndex].values.duration.hour);
+        $("#wmeac-advanced-closure-dialog-duration-minute").val(WMEAC.presets[presetIndex].values.duration.minute);
+        $("#wmeac-advanced-closure-dialog-reason").val(WMEAC.presets[presetIndex].values.description);
+        $("#wmeac-advanced-closure-dialog-location").val(WMEAC.presets[presetIndex].values.location);
+        $("#wmeac-advanced-closure-dialog-direction").val(WMEAC.presets[presetIndex].values.direction);
+        $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', WMEAC.presets[presetIndex].values.ignoretraffic);
+        $("#wmeac-advanced-closure-dialog-repeat-ntimes").val(WMEAC.presets[presetIndex].values.repeat.ntimes);
+        $("#wmeac-advanced-closure-dialog-repeat-every-hour").val(WMEAC.presets[presetIndex].values.repeat.hour);
+        $("#wmeac-advanced-closure-dialog-repeat-every-minute").val(WMEAC.presets[presetIndex].values.repeat.minute);
+        for (var i=0; i<7; i++)
+            $("#wmeac-advanced-closure-dialog-each-"+i).prop('checked', WMEAC.presets[presetIndex].values.each[i]);
+     });
+
+     $('#wmeac-advanced-closure-dialog-presets-delete').on('click', function(e){
+        var presetIndex = parseInt($("#wmeac-advanced-closure-dialog-presets-list").val());
+        WMEAC.presets.splice(presetIndex, 1);
+        WMEAC.save();
+        WMEAC.reloadPresets();
+     });
+
+     
+     $('#wmeac-advanced-closure-dialog-presets-save').on('click', function(e){
+        var name = $("#wmeac-advanced-closure-dialog-presets-name").val();
+        var presetIndex = WMEAC.presets.findIndex(function (e) {
+            return e.name==name;
+        });
+        var preset = {name: name, values: { duration: {}, repeat: {}, each: []}};
+        if (presetIndex!=-1) // overwrite existing preset
+            preset=WMEAC.presets[presetIndex];
+        
+        preset.values.starttime=$("#wmeac-advanced-closure-dialog-starttime").val();
+        preset.values.duration.hour=$("#wmeac-advanced-closure-dialog-duration-hour").val();
+        preset.values.duration.minute=$("#wmeac-advanced-closure-dialog-duration-minute").val();
+        preset.values.description=$("#wmeac-advanced-closure-dialog-reason").val();
+        preset.values.location=$("#wmeac-advanced-closure-dialog-location").val();
+        preset.values.direction=$("#wmeac-advanced-closure-dialog-direction").val();
+        preset.values.ignoretraffic=$("#wmeac-advanced-closure-dialog-ignoretraffic").is(':checked');
+        preset.values.repeat.ntimes=$("#wmeac-advanced-closure-dialog-repeat-ntimes").val();
+        preset.values.repeat.hour=$("#wmeac-advanced-closure-dialog-repeat-every-hour").val();
+        preset.values.repeat.minute=$("#wmeac-advanced-closure-dialog-repeat-every-minute").val();
+        for (var i=0; i<7; i++)
+            preset.values.each[i]=$("#wmeac-advanced-closure-dialog-each-"+i).is(':checked');
+        if (presetIndex==-1)
+            WMEAC.presets.push(preset);
+        WMEAC.save();
+        WMEAC.reloadPresets();
+     });
+     
      WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), $('#wmeac-add-advanced-closure-dialog h1:first-child'));
 };
 
@@ -456,4 +548,12 @@ WMEAC.connectAdvancedClosureTabHandlers = function ()
         e.addEventListener('click', WMEAC.CSVCheckSegsChecked);
 
     
+};
+
+WMEAC.reloadPresets = function ()
+{
+    var optionList=WMEAC.presets.map(function (p, i) {
+        return '<option value="' + i + '">' + p.name + '</option>';
+    });
+    $("#wmeac-advanced-closure-dialog-presets-list").html(optionList.join(''));
 };

@@ -7,7 +7,11 @@ WMEAC.bootstrapAC = function ()
 WMEAC.initialize = function ()
 {
     WMEAC.log ("init");
-    WMEAC.waitForWaze(WMEAC.initUI);
+    WMEAC.waitForWaze(function () {
+        WMEAC.load();
+        WMEAC.log("presets", WMEAC.presets);
+        WMEAC.initUI();
+    });
     WMEAC.log ("init done");
 };
 
