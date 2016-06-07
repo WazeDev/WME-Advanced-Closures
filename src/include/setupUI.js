@@ -350,7 +350,9 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (Waze.selectionManager.selectedItems.every(e => e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES))==false)
+            if (Waze.selectionManager.selectedItems.every(function (e) {
+                    return e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES);
+                })==false)
             {
                 alert("You don't have permission to edit closures on all those segments.");
                 return;
