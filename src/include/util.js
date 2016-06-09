@@ -133,26 +133,33 @@ WMEAC.reloadClosuresLayer = function ()
     Waze.controller.reload();  
 };
 
-WMEAC.setDraggable = function (element, controller)
+WMEAC.setDraggable = function (element, options)
 {
-    controller.css({cursor: 'move'});
-    controller.on("mousedown", function(e) {
-        var	x = e.pageX-element.offset().left;
-        var	y = e.pageY-element.offset().top;
+    if (!options.hasOwnProperty('controller'))
+        options.controller=element;
+    if (!options.hasOwnProperty('container'))
+        options.container=$('body');
+    
+    options.controller.css({cursor: 'move'});
+
+    options.controller.on("mousedown", function(e) {
+        var x = e.pageX-element.offset().left;
+        var y = e.pageY-element.offset().top;
 
         $('body').on("mouseup", function(e) {
-            $('body').off("mousemove", elemmousemove);
+            options.container.off("mousemove", elemmousemove);
                
         });
     
         function elemmousemove (e) {
+            e.preventDefault();
             element.offset({
                 top: e.pageY  - y,
                 left: e.pageX - x
             });
         }
     
-        $('body').on("mousemove",  elemmousemove);
+        options.container.on("mousemove",  elemmousemove);
 
     });
 };

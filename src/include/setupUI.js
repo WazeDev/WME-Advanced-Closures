@@ -96,7 +96,12 @@ WMEAC.showAddAdvancedClosure = function()
         Waze.map.div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
     }
-    ACDiv.style.display="block";
+    if (ACDiv.style.display=="block") // already shown => reset position
+    {
+        $(ACDiv).css({left: '80px', top: '10px'});
+    }
+    else
+        ACDiv.style.display="block";
 };
 
 WMEAC.HTMLTemplates={};
@@ -525,7 +530,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         WMEAC.reloadPresets();
      });
      
-     WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), $('#wmeac-add-advanced-closure-dialog h1:first-child'));
+     WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'), container: $('#WazeMap') });
 };
 
 
