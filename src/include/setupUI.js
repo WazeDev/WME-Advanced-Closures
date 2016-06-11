@@ -106,7 +106,7 @@ WMEAC.showAddAdvancedClosure = function()
 
 WMEAC.HTMLTemplates={};
 
-var rangeStartEnd ='\
+var rangeStartEndUI ='\
   <div class="form-group">\
     <label class="control-label" for="closure_rangestartDate">Range start</label>\
     <div class="controls">\
@@ -142,7 +142,7 @@ var rangeStartEnd ='\
     </div>\
   </div>';
 
-var startTimeAndDuration = '\
+var startTimeAndDurationUI = '\
   <div class="form-group">\
     <label class="control-label" for="closure_startTime">Start and duration</label>\
     <div class="controls">\
@@ -167,7 +167,7 @@ var startTimeAndDuration = '\
   </div>\
 ';
   
-var description = '\
+var descriptionUI = '\
   <div class="form-group">\
       <label class="control-label" for="closure_reason">Description</label>\
       <div class="controls">\
@@ -176,7 +176,7 @@ var description = '\
     </div>\
 ';
 
-var location = '\
+var locationUI = '\
   <div class="form-group">\
     <label class="control-label" for="closure_location">Location</label>\
     <div class="controls">\
@@ -185,7 +185,7 @@ var location = '\
   </div>\
 ';
 
-var direction = '\
+var directionUI = '\
   <div class="form-group">\
     <label class="control-label" for="closure_direction">Direction</label>\
     <div class="controls">\
@@ -196,7 +196,7 @@ var direction = '\
   </div>\
 ';
 
-var ignoreTraffic = '\
+var ignoreTrafficUI = '\
   <div class="checkbox">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-ignoretraffic" type="checkbox" name="closure_permanent">\
@@ -205,7 +205,7 @@ var ignoreTraffic = '\
   </div>\
 ';
 
-var tabRepeat = '\
+var tabRepeatUI = '\
   <div style="width: 150px;" class="input-group">\
     <div class="controls">\
       <div class="input-group pull-left">\
@@ -231,9 +231,9 @@ var tabRepeat = '\
   </div>\
 ';
 
-var daysOfWeek = WMEAC.daysOfWeek.clone();
-daysOfWeek.push(daysOfWeek.shift());
-var tabEach = daysOfWeek.map(function (d, i) {
+var daysOfWeekUI = WMEAC.daysOfWeek.clone();
+daysOfWeekUI.push(daysOfWeekUI.shift());
+var tabEachUI = daysOfWeekUI.map(function (d, i) {
     return '<div class="checkbox">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
@@ -243,7 +243,7 @@ var tabEach = daysOfWeek.map(function (d, i) {
 ';
 }).join('');
   
-var tabPresets = '\
+var tabPresetsUI = '\
 <div class="content">\
   <table><tr><td style="width: 50%; border-right: 1px solid #F6C3BE; padding-right: 5px;">\
     <div class="form-group">\
@@ -277,7 +277,7 @@ var tabPresets = '\
 </div>\
 ';
 
-var tabs ='\
+var tabsUI ='\
   <ul class="nav wmeac-nav-tabs">\
     <li class="active">\
       <a id="wmeac-advanced-closure-dialog-repeat" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
@@ -291,17 +291,17 @@ var tabs ='\
   </ul>\
   <div class="tab-content">\
     <div class="tab-pane active wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabrepeat">\
-    ' + tabRepeat + '\
+    ' + tabRepeatUI + '\
     </div>\
     <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
-    ' + tabEach + '\
+    ' + tabEachUI + '\
     </div>\
     <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabpresets">\
-    ' + tabPresets + '\
+    ' + tabPresetsUI + '\
     </div>\
   </div>';
   
-var footer = '\
+var footerUI = '\
 <div class="footer">\
     <div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow-y: scroll; max-height: 150px;"></div></div>\
     <button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
@@ -314,17 +314,17 @@ WMEAC.HTMLTemplates.advancedClosureDialog='\
   <table>\
   <tr>\
     <td  style="width: 50%;">' +
-      rangeStartEnd + startTimeAndDuration +
+      rangeStartEndUI + startTimeAndDurationUI +
     '\
     </td>\
     <td>' + 
-      description + location + direction + ignoreTraffic +
+      descriptionUI + locationUI + directionUI + ignoreTrafficUI +
     '\
     </td>\
   </tr>\
   </table>' + 
-  tabs + 
-'</div>' + footer;
+  tabsUI + 
+'</div>' + footerUI;
 
 
 
@@ -364,14 +364,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             }
             
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-            var location = $('#wmeac-advanced-closure-dialog-location').val();
+            var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             direction=(direction=="1"?sc.DIRECTION.A_TO_B:(direction=="2"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             closureList = rc.list.map(function (e) {
-                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: location, permanent: isIT};
+                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
             });
             
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
@@ -453,14 +453,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         else
         {
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-            var location = $('#wmeac-advanced-closure-dialog-location').val();
+            var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                 return (reason +
-                ' (' + location + '): ' + 
+                ' (' + cllocation + '): ' + 
                 e.start + ' &#8594; ' + e.end + 
                 ' ' + directionStr + 
                 ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
