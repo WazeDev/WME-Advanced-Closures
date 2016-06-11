@@ -318,7 +318,7 @@ WMEAC.HTMLTemplates.advancedClosureDialog='\
     '\
     </td>\
     <td>' + 
-      descriptionUI + locationUI + directionUI + ignoreTrafficUI +
+      descriptionUI + directionUI + ignoreTrafficUI +
     '\
     </td>\
   </tr>\
@@ -364,14 +364,15 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             }
             
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-            var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
+            //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             direction=(direction=="1"?sc.DIRECTION.A_TO_B:(direction=="2"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             closureList = rc.list.map(function (e) {
-                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
+                //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
+                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
             });
             
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
@@ -453,14 +454,15 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         else
         {
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-            var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
+            //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                 return (reason +
-                ' (' + cllocation + '): ' + 
+                //' (' + cllocation + '): ' + 
+                ': ' +
                 e.start + ' &#8594; ' + e.end + 
                 ' ' + directionStr + 
                 ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
@@ -485,7 +487,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         $("#wmeac-advanced-closure-dialog-duration-hour").val(WMEAC.presets[presetIndex].values.duration.hour);
         $("#wmeac-advanced-closure-dialog-duration-minute").val(WMEAC.presets[presetIndex].values.duration.minute);
         $("#wmeac-advanced-closure-dialog-reason").val(WMEAC.presets[presetIndex].values.description);
-        $("#wmeac-advanced-closure-dialog-location").val(WMEAC.presets[presetIndex].values.location);
+        //$("#wmeac-advanced-closure-dialog-location").val(WMEAC.presets[presetIndex].values.location);
         $("#wmeac-advanced-closure-dialog-direction").val(WMEAC.presets[presetIndex].values.direction);
         $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', WMEAC.presets[presetIndex].values.ignoretraffic);
         $("#wmeac-advanced-closure-dialog-repeat-ntimes").val(WMEAC.presets[presetIndex].values.repeat.ntimes);
@@ -516,7 +518,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         preset.values.duration.hour=$("#wmeac-advanced-closure-dialog-duration-hour").val();
         preset.values.duration.minute=$("#wmeac-advanced-closure-dialog-duration-minute").val();
         preset.values.description=$("#wmeac-advanced-closure-dialog-reason").val();
-        preset.values.location=$("#wmeac-advanced-closure-dialog-location").val();
+        //preset.values.location=$("#wmeac-advanced-closure-dialog-location").val();
         preset.values.direction=$("#wmeac-advanced-closure-dialog-direction").val();
         preset.values.ignoretraffic=$("#wmeac-advanced-closure-dialog-ignoretraffic").is(':checked');
         preset.values.repeat.ntimes=$("#wmeac-advanced-closure-dialog-repeat-ntimes").val();
