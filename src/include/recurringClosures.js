@@ -15,17 +15,19 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     
     if (dH==0 && dM==0) return {list: list, error: "Duration is null"};
     
-    var rangeStartTimeM = $('#wmeac-advanced-closure-dialog-rangestarttime').val().split(':').map(function (e) {
-        return parseInt(e);
-    }).reduce(function (p, c, i) {
-        return (p*60+c);
-    });
+    // var rangeStartTimeM = $('#wmeac-advanced-closure-dialog-rangestarttime').val().split(':').map(function (e) {
+        // return parseInt(e);
+    // }).reduce(function (p, c, i) {
+        // return (p*60+c);
+    // });
+    var rangeStartTimeM = 0;
     
-    var rangeEndTimeM = $('#wmeac-advanced-closure-dialog-rangeendtime').val().split(':').map(function (e) {
-        return parseInt(e);
-    }).reduce(function (p, c, i) {
-        return (p*60+c);
-    });
+    // var rangeEndTimeM = $('#wmeac-advanced-closure-dialog-rangeendtime').val().split(':').map(function (e) {
+        // return parseInt(e);
+    // }).reduce(function (p, c, i) {
+        // return (p*60+c);
+    // });
+    var rangeEndTimeM = 1440;
     
     var rangeEndDateTime = rangeEndDate.clone();
     rangeEndDateTime.addMinutes(rangeEndTimeM);
@@ -112,4 +114,41 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     else
         return {list: list, error: "Wrong tab active"};
 
+};
+
+WMEAC.refreshClosureList = function ()
+{
+    var rc = WMEAC.buildClosuresListFromRecurringUI();
+    if (rc.error!="")
+        $('#wmeac-csv-closures-preview-content').html(rc.error);
+    else
+    {
+        var reason = $('#wmeac-advanced-closure-dialog-reason').val();
+        //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
+        var direction = $('#wmeac-advanced-closure-dialog-direction').val();
+        var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
+        var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+        var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
+            var isReversed = Waze.selectionManager.getReversedSegments().hasOwnProperty(c.model.attributes.id);
+            var realWay = isReversed?(direction==1?2:1):direction;
+            return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
+                return (e.segID==c.model.attributes.id &&
+                (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
+            }));
+        }, []);
+        $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
+            rc.list.map(function (e, i) {
+                var overlap = existingClosures.reduce(function (p, c, i) {
+                    return p || WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
+                }, false);
+                return (reason +
+                //' (' + cllocation + '): ' + 
+                ': ' +
+                e.start + ' &#8594; ' + e.end + 
+                ' ' + directionStr + 
+                ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
+                (overlap?' <i title="Warning: overlap on existing closure!" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
+                ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
+        }).join('<br>'));
+    }     
 };

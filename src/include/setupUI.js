@@ -95,20 +95,24 @@ WMEAC.showAddAdvancedClosure = function()
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
         Waze.map.div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
+        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
         $(ACDiv).css({left: '80px', top: '10px'});
     }
     else
+    {
         ACDiv.style.display="block";
+        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+    }
 };
 
 WMEAC.HTMLTemplates={};
 
 var rangeStartEndUI ='\
   <div class="form-group">\
-    <label class="control-label" for="closure_rangestartDate">Range start</label>\
+    <label class="control-label" for="closure_rangestartDate">Range start (included)</label>\
     <div class="controls">\
       <div  style="width: 58%" class="date date-input-group input-group pull-left">\
         <input id="wmeac-advanced-closure-dialog-rangestartdate" class="form-control start-date" type="text" name="closure_rangestartDate">\
@@ -116,27 +120,15 @@ var rangeStartEndUI ='\
           <i class="fa fa-calendar"></i>\
         </span>\
       </div>\
-      <div class="bootstrap-timepicker input-group">\
-        <input id="wmeac-advanced-closure-dialog-rangestarttime" class="form-control start-time" type="text" name="closure_rangestartTime">\
-        <span class="input-group-addon">\
-          <i class="fa fa-clock-o"></i>\
-        </span>\
-      </div>\
     </div>\
   </div>\
   <div class="form-group">\
-    <label class="control-label" for="closure_rangeendDate">Range end</label>\
+    <label class="control-label" for="closure_rangeendDate">Range end (included)</label>\
     <div class="controls">\
       <div style="width: 58%" class="date date-input-group input-group pull-left">\
         <input id="wmeac-advanced-closure-dialog-rangeenddate" class="form-control end-date" type="text" name="closure_rangeendDate">\
         <span class="input-group-addon">\
           <i class="fa fa-calendar"></i>\
-        </span>\
-      </div>\
-      <div class="bootstrap-timepicker input-group">\
-        <input id="wmeac-advanced-closure-dialog-rangeendtime" class="form-control end-time" type="text" name="closure_rangeendTime">\
-        <span class="input-group-addon">\
-          <i class="fa fa-clock-o"></i>\
         </span>\
       </div>\
     </div>\
@@ -348,7 +340,11 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     {
         e.addEventListener('click', function() {
             var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
-            if (d) d.style.display='none';
+            if (d) 
+            {
+                Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
+                d.style.display='none';
+            }
         });
     }
 
@@ -398,7 +394,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     }
     
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
-    $("#wmeac-advanced-closure-dialog-rangestarttime,#wmeac-advanced-closure-dialog-rangeendtime,#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
+    $("#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
         $(e.target).parent().find("input").focus();
     }).find("i").on("click", function (e) {
@@ -458,49 +454,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
          });
     }
      
-     function refreshClosureList()
-     {
-        var rc = WMEAC.buildClosuresListFromRecurringUI();
-        if (rc.error!="")
-            $('#wmeac-csv-closures-preview-content').html(rc.error);
-        else
-        {
-            var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-            //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
-            var direction = $('#wmeac-advanced-closure-dialog-direction').val();
-            var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
-            var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
-                var isReversed = Waze.selectionManager.getReversedSegments().hasOwnProperty(c.model.attributes.id);
-                var realWay = isReversed?(direction==1?2:1):direction;
-                return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
-                    return (e.segID==c.model.attributes.id &&
-                    (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
-                }));
-            }, []);
-            $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
-                rc.list.map(function (e, i) {
-                    var overlap = existingClosures.reduce(function (p, c, i) {
-                        return p || WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
-                    }, false);
-                    return (reason +
-                    //' (' + cllocation + '): ' + 
-                    ': ' +
-                    e.start + ' &#8594; ' + e.end + 
-                    ' ' + directionStr + 
-                    ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
-                    (overlap?' <i title="Warning: overlap on existing closure!" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
-                    ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
-            }).join('<br>'));
-        }     
-     }
+     
      
      $('#wmeac-advanced-closure-dialog-repeat,#wmeac-advanced-closure-dialog-each').on('click', function(e){
-        window.setTimeout(refreshClosureList);
+        window.setTimeout(WMEAC.refreshClosureList);
      });
      
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
-        window.setTimeout(refreshClosureList);
+        window.setTimeout(WMEAC.refreshClosureList);
      });
      
      WMEAC.reloadPresets();
@@ -557,6 +518,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
      
      WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'), container: $('#WazeMap') });
+     
 };
 
 
