@@ -205,6 +205,18 @@ var ignoreTrafficUI = '\
   </div>\
 ';
 
+var overlapModeUI = '\
+  <div class="form-group">\
+    <label class="control-label" for="closure_overlap">Overlap action</label>\
+    <div class="controls">\
+      <select id="wmeac-advanced-closure-dialog-overlap" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_overlap">\
+        <option value="0">Keep existing</option><option value="1">Delete existing</option><option value="2">Fill with new</option><option value="3">Force new</option>\
+      </select>\
+    </div>\
+  </div>\
+';
+
+
 var tabRepeatUI = '\
   <div style="width: 150px;" class="input-group">\
     <div class="controls">\
@@ -318,7 +330,7 @@ WMEAC.HTMLTemplates.advancedClosureDialog='\
     '\
     </td>\
     <td>' + 
-      descriptionUI + directionUI + ignoreTrafficUI +
+      descriptionUI + directionUI + ignoreTrafficUI + // overlapModeUI +
     '\
     </td>\
   </tr>\
@@ -458,15 +470,27 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+            var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
+                var isReversed = Waze.selectionManager.getReversedSegments().hasOwnProperty(c.model.attributes.id);
+                var realWay = isReversed?(direction==1?2:1):direction;
+                return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
+                    return (e.segID==c.model.attributes.id &&
+                    (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
+                }));
+            }, []);
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
-                return (reason +
-                //' (' + cllocation + '): ' + 
-                ': ' +
-                e.start + ' &#8594; ' + e.end + 
-                ' ' + directionStr + 
-                ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
-                ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
+                    var overlap = existingClosures.reduce(function (p, c, i) {
+                        return p || WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
+                    }, false);
+                    return (reason +
+                    //' (' + cllocation + '): ' + 
+                    ': ' +
+                    e.start + ' &#8594; ' + e.end + 
+                    ' ' + directionStr + 
+                    ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
+                    (overlap?' <i title="Warning: overlap on existing closure!" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
+                    ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
             }).join('<br>'));
         }     
      }

@@ -163,3 +163,126 @@ WMEAC.setDraggable = function (element, options)
 
     });
 };
+
+WMEAC.dateTimeOverlaps = function ( dt1, dt2 )
+{
+    return (dt1.startDate < dt2.endDate && dt1.endDate > dt2.startDate );
+};
+
+WMEAC.solveOverlaps = function (closureToAdd, existingClosureList, mode)
+{
+    // sort existing closures:
+    var ecs = existingClosureList.map(function (e) {
+        return { isNew: false, ref: e, startDate: e.startDate, endDate: e.endDate};
+    }); 
+    // append new
+    closureToAdd.isNew=true;
+    ecs.push(closureToAdd);
+    var changes=true;
+    
+    while (changes)
+    {
+        changes=false;
+        ecs.sort(function (a, b) {
+            return (new Date(a.startDate) - new Date(b.startDate));
+        });
+
+        for (var i=1; i<ecs.length; i++)
+        {
+            if (WMEAC.dateTimeOverlaps(ecs[i-1], ecs[i]))
+            {
+                var indexOfNew = i-1;
+                var indexOfExisting = i;
+                if (ecs[i].isNew)
+                {
+                    indexOfNew=i;
+                    indexOfExisting=i-1;
+                }
+                var r1 = ecs[indexOfNew];
+                var r2 = ecs[indexOfExisting];
+                var range1={};
+                var range2={};
+                switch (mode)
+                {
+                    case 0: // keep existing. return empty
+                    return [];
+                    break;
+                    
+                    case 1: // delete existing.
+                    ecs.splice(indexOfExisting, 1);
+                    changes=true;
+                    break;
+                    
+                    case 2: // fill: keep all existing and cut/split new
+                    range1.start=new Date(r1.startDate);
+                    range1.end=new Date(r1.endDate);
+                    range2.start=new Date(r2.startDate);
+                    range2.end=new Date(r2.endDate);
+                    changes=true;
+                    if (range1.start>=range2.start && range1.end<=range2.end)
+                    {
+                        ecs.splice(indexOfNew, 1);
+                    }
+                    else if (range1.start<range2.start && range1.end>range2.end)
+                    {
+                        ecs.push({isNew: true, startDate: r2.endDate, endDate: r1.endDate});
+                        r1.endDate=r2.startDate;
+                    }
+                    else if (range1.start<range2.start)
+                    {
+                        r1.endDate=r2.startDate;
+                    }
+                    else //if (range1.end>range2.end)
+                    {
+                        r1.startDate = r2.endDate;
+                    }
+                    break;
+                    
+                    case 3: // force: cut/split/delete existing and keep new
+                    range1.start=new Date(r1.startDate);
+                    range1.end=new Date(r1.endDate);
+                    range2.start=new Date(r2.startDate);
+                    range2.end=new Date(r2.endDate);
+                    changes=true;
+                    if (range1.start>range2.start && range1.end<range2.end)
+                    {
+                        ecs.push({isNew: false, startDate: r1.endDate, endDate: r2.endDate, ref: r2.ref});
+                        r2.endDate=r1.startDate;
+                    }
+                    else if (range1.start<=range2.start && range1.end>=range2.end)
+                    {
+                        ecs.splice(indexOfExisting, 1);
+                    }
+                    else if (range1.start<range2.start)
+                    {
+                        r2.startDate=r1.endDate;
+                    }
+                    else //if (range1.end>range2.end)
+                    {
+                        r2.endDate = r1.startDate;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return ecs;
+};
+
+// tests:
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-15 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-15 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-12 00:00', endDate: '2016-01-18 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-10 00:00', reason: 'bla bla'},
+      // {startDate: '2016-01-20 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
+// WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
+    // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-15 00:00', reason: 'bla bla'},
+      // {startDate: '2016-01-16 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
