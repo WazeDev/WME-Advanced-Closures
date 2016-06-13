@@ -129,7 +129,8 @@ WMEAC.refreshClosureList = function ()
         var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
         var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
         var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
-            var isReversed = Waze.selectionManager.getReversedSegments().hasOwnProperty(c.model.attributes.id);
+            var revSegs = Waze.selectionManager.getReversedSegments();
+            var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
             var realWay = isReversed?(direction==1?2:1):direction;
             return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
                 return (e.segID==c.model.attributes.id &&
@@ -138,16 +139,23 @@ WMEAC.refreshClosureList = function ()
         }, []);
         $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
             rc.list.map(function (e, i) {
-                var overlap = existingClosures.reduce(function (p, c, i) {
-                    return p || WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
-                }, false);
+                var overlap = existingClosures.filter(function (c) {
+                    return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
+                }).map(function (c) {
+                    if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return '' + c.segID;
+                    if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return '' + c.segID;
+                    if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return '' + c.segID;
+                    var street = Waze.model.streets.objects[Waze.model.segments.objects[c.segID].attributes.primaryStreetID];
+                    if (street.isEmpty) return '' + c.segID;
+                    return street.name + ' (' + c.segID + ')';
+                });
                 return (reason +
                 //' (' + cllocation + '): ' + 
                 ': ' +
                 e.start + ' &#8594; ' + e.end + 
                 ' ' + directionStr + 
                 ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
-                (overlap?' <i title="Warning: overlap on existing closure!" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
+                (overlap.length!=0?' <i title="Warning: overlap on existing closure!\n' + overlap.join('\n') + '" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
                 ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
         }).join('<br>'));
     }     
