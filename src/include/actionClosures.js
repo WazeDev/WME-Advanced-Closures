@@ -42,8 +42,9 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
 {
     if (i>=closureList.length)
     {
-        WMEAC.reloadClosuresLayer();
-        if (endHandler) endHandler();
+        WMEAC.reloadClosuresLayer(function () {
+            if (endHandler) endHandler();
+        });
         return;
     }
     

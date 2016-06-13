@@ -126,11 +126,27 @@ WMEAC.reloadRoadLayer = function ()
     Waze.controller.reload();  
 };
 
-WMEAC.reloadClosuresLayer = function ()
+WMEAC.reloadClosuresLayer = function (endHandler)
 {
     var l=Waze.map.getLayersBy("uniqueName","closures")[0];
     l.redraw({force:!0});
-    Waze.controller.reload();  
+    Waze.controller.reload();
+    if (endHandler)
+    {
+        var tmp = function reloaded() {
+            WMEAC.log("Test if reloaded...");
+            if (WMEAC.pendingOps==true)
+            {
+                WMEAC.log("Not yet. Waiting for WME...");
+                window.setTimeout(reloaded, 500);
+            }
+            else
+            {
+                endHandler();
+            }
+        };
+        window.setTimeout(tmp, 500);
+    }
 };
 
 WMEAC.setDraggable = function (element, options)

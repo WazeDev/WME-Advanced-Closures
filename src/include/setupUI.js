@@ -95,7 +95,8 @@ WMEAC.showAddAdvancedClosure = function()
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
         Waze.map.div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
-        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+        ACDiv.style.display="none";
+        //Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
@@ -383,12 +384,24 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
             });
             
+            // save selection list
+            var selection = _.pluck(Waze.selectionManager.selectedItems, 'model');
+            Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
             }, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"});
             }, function () {
-                alert ('done');
+                Waze.selectionManager.select(selection);
+                //alert ('done');
+                var tmp = function selectionReady()
+                {
+                    if (Waze.selectionManager.selectedItems.isEmpty())
+                        window.setTimeout(selectionReady, 500);
+                    else
+                        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+                };
+                window.setTimeout(tmp, 500);
             }, 0);
         });
     }
