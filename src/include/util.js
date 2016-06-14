@@ -149,6 +149,13 @@ WMEAC.reloadClosuresLayer = function (endHandler)
     }
 };
 
+
+WMEAC.showClosuresLayer = function(show)
+{
+    var l = Waze.map.getLayersBy("uniqueName", "closures");
+    if (l.length==1) l[0].setVisibility(show);
+};
+
 WMEAC.setDraggable = function (element, options)
 {
     if (!options.hasOwnProperty('controller'))

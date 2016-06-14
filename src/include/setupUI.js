@@ -107,6 +107,7 @@ WMEAC.showAddAdvancedClosure = function()
         ACDiv.style.display="block";
         Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
     }
+    WMEAC.showClosuresLayer(true);
 };
 
 WMEAC.HTMLTemplates={};
