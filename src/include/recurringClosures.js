@@ -142,12 +142,13 @@ WMEAC.refreshClosureList = function ()
                 var overlap = existingClosures.filter(function (c) {
                     return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
                 }).map(function (c) {
-                    if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return '' + c.segID;
-                    if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return '' + c.segID;
-                    if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return '' + c.segID;
+                    var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
+                    if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
+                    if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
+                    if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
                     var street = Waze.model.streets.objects[Waze.model.segments.objects[c.segID].attributes.primaryStreetID];
-                    if (street.isEmpty) return '' + c.segID;
-                    return street.name + ' (' + c.segID + ')';
+                    if (!street.isEmpty) msg = street.name + ': ' + msg;
+                    return msg;
                 });
                 return (reason +
                 //' (' + cllocation + '): ' + 
