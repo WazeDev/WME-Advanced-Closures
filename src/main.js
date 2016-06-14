@@ -65,6 +65,8 @@ function WMEAC_Injected()
     INCLUDE_FILE('include/saveLoad.js');
 
     INCLUDE_FILE('include/csv.js');
+    
+    INCLUDE_FILE('include/highlight.js');
 
     WMEAC.log("Ready");
     WMEAC.bootstrapAC();

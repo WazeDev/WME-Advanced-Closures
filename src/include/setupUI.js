@@ -80,6 +80,8 @@ WMEAC.initUI = function ()
         WMEAC.pendingOps = false;
     });
 
+    Waze.model.events.register("mergeend", null, WMEAC.refreshHighlight);
+    WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
 };
 
