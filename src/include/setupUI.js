@@ -402,7 +402,10 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                     if (Waze.selectionManager.selectedItems.isEmpty())
                         window.setTimeout(selectionReady, 500);
                     else
+                    {
                         Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+                        $('a[href="#segment-edit-closures"]').click();
+                    }
                 };
                 window.setTimeout(tmp, 500);
             }, 0);
