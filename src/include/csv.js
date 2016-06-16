@@ -96,12 +96,13 @@ WMEAC.ClassCSV = function (options)
     this.filter = function(data)
     {
         return data.filter(function (line) {
-            return (line.length>=1 && line[0]!="header" && line[0]!="comment");
+            // return (line.length>=1 && line[0]!="header" && line[0]!="comment");
+            return (line.length>=1 && ['add','remove'].indexOf(line[0])!=-1);
         });
     };
 };
 
-WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/(^header$)|(^comment$)|(^add$)/, // 1st cell
+WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st cell: action is free keyword. It will be filtered later
                                                                   /.*/, // reason is free
                                                                   /.*/, // location is free
                                                                   /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, // start date
@@ -487,13 +488,24 @@ WMEAC.CSVBatchApply = function(i)
     WMEAC.pb.update(i*100/WMEAC.csvCurrentBatchClosureList.length);
 
     if (i<WMEAC.csvCurrentBatchClosureList.length)
-        WMEAC.csvApplyClosure(WMEAC.csvCurrentBatchClosureList[i], function (success) {
-            if (success)
-                WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
-            else
-                WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+    {
+        if (WMEAC.csvCurrentBatchClosureList[i].action!='add')
+        {
+            WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + "): action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet\n");
+            WMEAC.setCSVMiniLog(WMEAC.csvCurrentBatchClosureList[i], "KO: action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet", 2);
             WMEAC.CSVBatchApply(i+1);
-        });
+        }
+        else
+        {
+            WMEAC.csvApplyClosure(WMEAC.csvCurrentBatchClosureList[i], function (success) {
+                if (success)
+                    WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+                else
+                    WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.location + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+                WMEAC.CSVBatchApply(i+1);
+            });
+        }
+    }
     else
     {
         WMEAC.csvAddLog("Apply selected closures ended\n");
