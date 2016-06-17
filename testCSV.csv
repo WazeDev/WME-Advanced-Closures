@@ -1,4 +1,5 @@
-﻿header,reason,location,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10)
-add,"Closure test, by dummyd2","somewhere","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6
-add,"Closure test 2, by dummyd2","somewhere","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6
-add,"Closure test, by dummyd2","somewhere","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"121878257","lon=-1.81442&lat=51.03715",4
+﻿header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10)
+add,"Closure test, by dummyd2 avec un texte super long pour voir","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6
+add,"Closure test 2, by dummyd2 avec un texte super super mega long long pour voir","2016-06-13 00:00","2016-06-14 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6
+add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"121878257","lon=-1.81442&lat=51.03715",4
+add,"Closure test, by dummyd2","2016-06-16 12:00","2016-06-16 14:00","A to B",Yes,"235158286","lon=-0.71149&lat=44.92095",6
