@@ -1,0 +1,101 @@
+Bonjour,
+
+Seb-D59 et moi-même vous présentons un nouveau script pour ajouter des fermetures de segments à partir de fichier CSV ou de règle de récurrences.
+
+Lien greasyfork: 
+
+Le script ajoute un onglet (icone route barrée) dans le panneau de gauche ainsi qu'un highlight sur la carte.
+
+Dedans:
+[list=0]
+[*]un bouton "add advanced closure"
+[*]un bouton "parse CSV" avec une fenêtre de logs
+[/list]
+
+[list=0]
+[*][size=150]Add advanced closure[/size]
+
+ouvre une fenêtre permettant de créer des fermetures récurrentes:
+la fenêtre est déplaçable via son titre. Pour réinitialier la position, re-cliquer sur le bouton.
+[list]
+[*]Range (start date et end date) est la plage de temps sur laquelle toutes les fermetures doivent rentrer. En d'autres termes, avant start et après end, le script ne générera pas de fermeture.
+[*]Start and duration:
+[list]
+[*]start est l'heure de début de la fermeture dans la journée
+[*]duration est la durée de la fermeture
+[/list]
+[*]Description: texte libre
+[*]Direction: sur une sélection multiple, c'est le même ordre que celui donné par WME sur la carte
+[*]Ignore traffic
+[*]Puis, un choix dans les onglets dessous:
+[list]
+[*]Repeat:
+[list]
+[*]Times: le nombre de fois
+[*]Every: temps entre la date/heure de début d'une fermeture et la date/heure du début de la fermeture suivante
+[/list]
+[*]Each:
+jours de la semaine: concerne la date/heure de début de la fermeture (si la durée de la fermeture dépasse minuit et que la date de fin tombe un jour de la semaine non coché, la fermeture est quand même appliquée)
+[/list]
+[*]L'onglet de sauvegarde vous permet d'enregistrer tous ces paramètres sauf le range, et de les recharger.
+[*]Une fois que vous avez tout saisi correctement, un aperçu des fermetures prêtes à être appliquées est visible dans la fenêtre preview en dessous. Ca affiche aussi les messages d'erreur et un warning orange s'il y a une superposition avec une fermeture existante (info bulle pour les détails).
+
+[*]Sélectionner les segments
+
+[*]Enfin Apply pour valider. La preview affichera OK ou les messages d'erreur éventuels. Avant de cliquer sur apply, il faut avoir choisi le bon onglet (Repeat ou Each). Après le processus, le script sélectionnera tous les segments et affichera l'onglet closures dans le panneau de gauche.
+[/list]
+Exemples d'utilisation:
+
+Tous les jours de 12h00 à 14h00 entre le 13/06 et le 26/06 inclus
+range: 2016-06-13 -> 2016-06-26
+start: 12h00
+duration: 2h00
+Repeat: 500 times (le script ne dépassera pas le range end)
+Every: 24h00
+
+Du lundi au vendredi de 20h00 à 06h00 le lendemain pour les 6 prochains mois:
+range: 2016-06-07  2016-12-07
+start: 20h00
+duration: 10h00
+Each: mon, tue, wed, thu, fri
+
+
+
+[*][size=150]CSV[/size]
+
+permet d'appliquer les fermetures définies dans un fichier csv.
+Format:
+[code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10)
+add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6
+add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6
+[/code]
+
+[list]
+[*]Si la 1ère ligne commence par 'add' ou 'remove' elle est traitée dans le script, sachant que 'remove' n'est pas encore supporté.
+[*]Tout autre mot clef, notamment 'header' sera ignoré.
+[*]Ensuite, le format est décrit dans le header sauf la colonne 1.
+[*]Il faut s'assurer que le zoom vous permet de "voir" tous les segments à l'écran. Donc un même CSV peut bien marcher sur un écran avec une grosse résolution, et ne pas marcher sur un autre PC avec résolution plus petite.
+[/list]
+[list=0]
+[*]Ouvrir le CSV
+[*]La liste des fermetures s'affiche en dessous
+[*]Vous pouvez tester les segments: cocher toutes les cases et cliquer sur "check segments". Le script va simuler un déplacement de la carte sur les positions lon/lat et zoom spécifiées dans le csv et vérifier que les segments sont présents, que vous avez les droits dessus, et vous avertir de possibles superpositions avec des fermetures existantes.
+[*]Sur chaque fermeture
+[list]
+[*]target déplace la carte et sélectionne les segments (sans appliquer la fermeture)
+[*]la flèche -> déplace la carte et applique la fermeture (sans sélectionner)
+[/list]
+[*]Apply applique les fermetures cochées
+[/list]
+Si les textes sont tronqués, il y a des infos-bulles
+Un mini log sous chaque fermeture affiche toute sorte d'info liée à la fermeture elle-même. Le log en dessous est général à toutes les fermetures.
+
+[color=#FF0000]ATTENTION: les fermetures en CSV s'appliquent SEGMENT PAR SEGMENT. Cela signifie que le sens A->B (ou B->A) n'est pas forcément celui d'une sélection multiple!
+Donc si vous avez plusieurs segments à fermer que dans un sens, il faut peut-être faire 2 fermetures: une avec les segments A->B, l'autre avec les segments B->A.
+[/color]
+
+[*][size=150]Highlight[/size]
+Les fermetures faites avec ce script sont identifiées grâce à un espace insécable ajouté en fin de description. Le script ajoute une icone "route" à coté du sens interdit sur la carte. Cet espace insécable est invisible sur l'app.
+
+[/list]
+Merci aux beta testeurs (Priso19, fafa114, JohnDoe75 et les autres).
