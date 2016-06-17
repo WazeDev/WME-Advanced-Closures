@@ -9,7 +9,7 @@ WMEAC.parseCSV = function (csvString)
         {
             WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
-                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], location:"", startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i}), UI: null};
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i, comment: (e.length==10?e[9]:'')}), UI: null};
             });
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
@@ -119,7 +119,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
     var liElt = WMEAC.createElement({type: 'li', className: 'wmeac-csv-closures-list-' + action});
     liElt.setAttribute('closureID', closure.id);
     liElt.innerHTML='<div class="wmeac-csv-closures-list-col-action"><input type="checkbox" /></div>\
-                    <div class="wmeac-csv-closures-list-col-lr"><div title="' + closure.reason + '">' + closure.reason + '</div></div>\
+                    <div class="wmeac-csv-closures-list-col-lr"><div title="' + closure.reason + '">' + closure.reason + '</div><div title="' + closure.comment + '">' + closure.comment + '</div></div>\
                     <div class="wmeac-csv-closures-list-col-dates"><div title="' + closure.startDate + '">' + closure.startDate + '</div><div title="' + closure.endDate + '">' + closure.endDate + '</div></div>\
                     <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
                     <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
@@ -145,19 +145,19 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             {
                 if (segs.length==0)
                 {
-                    WMEAC.csvAddLog("No segment found: " + closure.closure.reason + "\n");
+                    WMEAC.csvAddLog("No segment found: " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
                     WMEAC.setCSVMiniLog(closure, "Selection failed: no segment found", 3);
                 }
                 else
                 {
-                    WMEAC.csvAddLog("Partial selection (" + segs.length + "/" + closure.closure.segIDs.length + "): " + closure.closure.reason + "\n");
+                    WMEAC.csvAddLog("Partial selection (" + segs.length + "/" + closure.closure.segIDs.length + "): " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
                     WMEAC.setCSVMiniLog(closure, "Partial selection: " + segs.length + "/" + closure.closure.segIDs.length, 2);
                 }
                 alert ("Warning: missing segments.\nFound " + segs.length + "/" + closure.closure.segIDs.length + " segment(s)");
             }
             else
             {
-                WMEAC.csvAddLog("Selection ok (" + segs.length + "): " + closure.closure.reason + "\n");
+                WMEAC.csvAddLog("Selection ok (" + segs.length + "): " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
                 WMEAC.setCSVMiniLog(closure, "Selection OK: " + segs.length, 1);
             }
             if (segs.length!=0)
@@ -212,7 +212,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     Waze.map.setCenter(xy, closure.closure.zoom);
     function applySuccess(evt)
     {
-        WMEAC.csvAddLog("Closure OK: " + closure.closure.reason + "\n");
+        WMEAC.csvAddLog("Closure OK: " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
         closure.UI.className="wmeac-csv-closures-list-done";
         WMEAC.setCSVMiniLog(closure, "OK", 1);
         handler && handler(true);
@@ -225,7 +225,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
             if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
                 details += err.attributes.details + "\n";
         });
-        WMEAC.csvAddLog("Closure KO: " + closure.closure.reason + "\n" + details + "\n");
+        WMEAC.csvAddLog("Closure KO: " + closure.closure.comment + " (" + closure.closure.reason + ")\n" + details + "\n");
         WMEAC.setCSVMiniLog(closure, "KO: " + details, 3);
         closure.UI.className="wmeac-csv-closures-list-failed";
         handler && handler(false);
@@ -377,39 +377,39 @@ WMEAC.csvCheckAllSegments = function (i)
                             editableClosuresSegs.length == currentClosure.closure.segIDs.length &&
                             overlaps.length==0)
                         {
-                            WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.reason + ":\n" + existingSegs.length + " editable seg(s) found\n");
+                            WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " editable seg(s) found\n");
                             WMEAC.setCSVMiniLog(currentClosure, "segs OK: " + existingSegs.length + " editable seg(s) found", 1);
                         }
                         else if (existingSegs.length == currentClosure.closure.segIDs.length &&
                             editableClosuresSegs.length == currentClosure.closure.segIDs.length &&
                             overlaps.length!=0)
                         {
-                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\nOverlap detected on existing closures:\n" + overlaps.join('\n') + '\n');
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\nOverlap detected on existing closures:\n" + overlaps.join('\n') + '\n');
                             WMEAC.setCSVMiniLog(currentClosure, "segs KO: " + overlaps.length + " overlap(s) detected", 2);
                         }
                         else if (existingSegs.length == currentClosure.closure.segIDs.length &&
                             editableClosuresSegs.length != currentClosure.closure.segIDs.length)
                         {
-                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found but " + (currentClosure.closure.segIDs.length-editableClosuresSegs.length) + " are not editable\n");
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found but " + (currentClosure.closure.segIDs.length-editableClosuresSegs.length) + " are not editable\n");
                             WMEAC.setCSVMiniLog(currentClosure, "segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found and " + (currentClosure.closure.segIDs.length-editableClosuresSegs.length) + " are not editable", 2);
                         }
                         else
                         {
-                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found\n");
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found\n");
                             WMEAC.setCSVMiniLog(currentClosure, "segs KO: " + existingSegs.length + "/" + currentClosure.closure.segIDs.length + " seg(s) found", 3);
                         }
                     }
                     catch (err)
                     {
                         WMEAC.log("Failed to parse Waze's server response: " + req.responseText);
-                        WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\nFailed to parse response from Waze\n");
+                        WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\nFailed to parse response from Waze\n");
                         WMEAC.setCSVMiniLog(currentClosure, "segs KO: Failed to parse response from Waze", 3);
                     }
                 }
                 else
                 {
                     WMEAC.log("Error on road tile: " + e.target.status);
-                    WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\nCommunication failed with Waze\n");
+                    WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze\n");
                     WMEAC.setCSVMiniLog(currentClosure, "segs KO: Communication failed with Waze", 3);
                 }
                 continueSegmentCheck();
@@ -417,7 +417,7 @@ WMEAC.csvCheckAllSegments = function (i)
         };
         req.onError = function (e) {
             WMEAC.log("Error on road tile: " + e.target.status);
-            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.reason + ":\nCommunication failed with Waze's server\n");
+            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\nCommunication failed with Waze's server\n");
             WMEAC.setCSVMiniLog(currentClosure, "segs KO: Communication failed with Waze", 3);
             continueSegmentCheck();
         };
@@ -491,7 +491,7 @@ WMEAC.CSVBatchApply = function(i)
     {
         if (WMEAC.csvCurrentBatchClosureList[i].action!='add')
         {
-            WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ": action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet\n");
+            WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + "): action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet\n");
             WMEAC.setCSVMiniLog(WMEAC.csvCurrentBatchClosureList[i], "KO: action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet", 2);
             WMEAC.CSVBatchApply(i+1);
         }
@@ -499,9 +499,9 @@ WMEAC.CSVBatchApply = function(i)
         {
             WMEAC.csvApplyClosure(WMEAC.csvCurrentBatchClosureList[i], function (success) {
                 if (success)
-                    WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.reason + "\n");
+                    WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
                 else
-                    WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.reason + "\n");
+                    WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
                 WMEAC.CSVBatchApply(i+1);
             });
         }

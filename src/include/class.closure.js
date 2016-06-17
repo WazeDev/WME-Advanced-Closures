@@ -3,7 +3,7 @@ WMEAC.ClassClosure = function (options)
     WMEAC.log("options", options);
     this.isValid=false;
     this.errorMessage='';
-    var validProperties=['reason', 'location', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent', 'id', 'zoom'];
+    var validProperties=['reason', 'startDate', 'endDate', 'direction', 'segIDs', 'lonlat', 'permanent', 'id', 'zoom'];
     var goodOptions=0;
     validProperties.forEach(function (p) {
         if (options.hasOwnProperty(p))
@@ -24,6 +24,8 @@ WMEAC.ClassClosure = function (options)
     {
         return;
     }
+    this.comment="";
+    if (options.hasOwnProperty('comment')) this.comment=options.comment;
     this.segIDs = this.segIDs.split(';');
     var matches = this.lonlat.match(/lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*)/);
     if (matches && matches.length==3)
