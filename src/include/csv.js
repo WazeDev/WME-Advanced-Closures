@@ -261,7 +261,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
             tmp2();
         }
     };
-    window.setTimeout(tmp1, 500);
+    window.setTimeout(tmp1, 1500);
 };
 
 WMEAC.csvAddLog = function(text)
