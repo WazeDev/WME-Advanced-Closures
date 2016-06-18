@@ -1,8 +1,8 @@
 Bonjour,
 
-Seb-D59 et moi-même vous présentons un nouveau script pour ajouter des fermetures de segments à partir de fichier CSV ou de règle de récurrences.
+D2 et moi-même vous présentons un nouveau script pour ajouter des fermetures de segments à partir de fichier CSV ou de règle de récurrences.
 
-Lien greasyfork: 
+Lien greasyfork: https://greasyfork.org/scripts/20705-wme-advanced-closures
 
 Le script ajoute un onglet (icone route barrée) dans le panneau de gauche ainsi qu'un highlight sur la carte.
 
@@ -54,7 +54,7 @@ Repeat: 500 times (le script ne dépassera pas le range end)
 Every: 24h00
 
 Du lundi au vendredi de 20h00 à 06h00 le lendemain pour les 6 prochains mois:
-range: 2016-06-07  2016-12-07
+range: 2016-06-01  2016-12-31
 start: 20h00
 duration: 10h00
 Each: mon, tue, wed, thu, fri
