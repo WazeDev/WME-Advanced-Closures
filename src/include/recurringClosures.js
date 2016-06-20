@@ -111,6 +111,19 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         }
         return {list: list, error: ""};
     }
+    else if ($('#wmeac-advanced-closure-dialog-tabholiday').attr('class').indexOf('active')!=-1)
+    {
+        WMEAC.lastGeneratedHolidays.forEach(function (e, i) {
+            if (($('#wmeac-advanced-closure-dialog-holidays-' + i)).is(':checked'))
+            {
+                var start = new Date(e.date).addMinutes(startTimeM);
+                var end = start.clone();
+                end.addMinutes(dH * 60 + dM);
+                list.push({start: WMEAC.dateToClosureStr(start), end: WMEAC.dateToClosureStr(end)});
+            }
+        });
+        return {list: list, error: ""};
+    }
     else
         return {list: list, error: "Wrong tab active"};
 
@@ -161,3 +174,5 @@ WMEAC.refreshClosureList = function ()
         }).join('<br>'));
     }     
 };
+
+INCLUDE_FILE('include/holidays.js');

@@ -250,7 +250,16 @@ var tabEachUI = daysOfWeekUI.map(function (d, i) {
   </div>\
 ';
 }).join('');
-  
+
+var tabHolidayUI = '\
+<div class="content">\
+  <a id="wmeac-advanced-closure-dialog-holiday-refresh" href="#">Refresh holidays</a><br>\
+  <i id="wmeac-advanced-closure-dialog-holiday-refresh-spinner" class="fa fa-spinner fa-pulse fa-3x fa-fw" style="display: none;"></i>\
+  <div id="wmeac-advanced-closure-dialog-holiday-list" class="form-group" style="overflow-y: scroll; max-height: 200px;">\
+  </div>\
+</div>\
+';
+
 var tabPresetsUI = '\
 <div class="content">\
   <table><tr><td style="width: 50%; border-right: 1px solid #F6C3BE; padding-right: 5px;">\
@@ -293,6 +302,9 @@ var tabsUI ='\
     <li>\
       <a id="wmeac-advanced-closure-dialog-each" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
     </li>\
+    <li>\
+      <a id="wmeac-advanced-closure-dialog-holiday" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabholiday">Holidays</a>\
+    </li>\
     <li style="float: right;">\
       <a id="wmeac-advanced-closure-dialog-presets" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabpresets"><i class="fa fa-floppy-o"></i></a>\
     </li>\
@@ -303,6 +315,9 @@ var tabsUI ='\
     </div>\
     <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
     ' + tabEachUI + '\
+    </div>\
+    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabholiday">\
+    ' + tabHolidayUI + '\
     </div>\
     <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabpresets">\
     ' + tabPresetsUI + '\
@@ -475,8 +490,43 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      
      
      
-     $('#wmeac-advanced-closure-dialog-repeat,#wmeac-advanced-closure-dialog-each').on('click', function(e){
+     $('#wmeac-advanced-closure-dialog-repeat,#wmeac-advanced-closure-dialog-each,#wmeac-advanced-closure-dialog-holiday').on('click', function(e){
         window.setTimeout(WMEAC.refreshClosureList);
+     });
+     
+     $('#wmeac-advanced-closure-dialog-holiday-refresh').on('click', function (e) {
+         var hDiv = $('#wmeac-advanced-closure-dialog-holiday-list');
+        $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'block'});
+        WMEAC.removeChildElements(hDiv[0]);
+        window.setTimeout(function () {
+            WMEAC.getHolidays({
+                rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
+                rangeEnd: $('#wmeac-advanced-closure-dialog-rangeenddate').val(),
+                countries: _.pluck(WMEAC.getCountriesFromSegmentSet(_.pluck(Waze.selectionManager.selectedItems, 'model')), 'abbr'),
+                handlerFinished: function (holidays)
+                {
+                    WMEAC.lastGeneratedHolidays = holidays;
+                    if (holidays.isEmpty())
+                        hDiv.html("No holiday found.")
+                    else
+                    {
+                        holidays.forEach(function (h, i) {
+                        var chkBx = WMEAC.createElement({type: "div", className: "checkbox"});
+                        chkBx.innerHTML='<label class="control-label" style="font-weight: bold;">\
+                                            <input id="wmeac-advanced-closure-dialog-holidays-' + i + '" type="checkbox">\
+                                            ' + h.date +  ': ' + h.name + ' (' + h.country + ')\
+                                        </label>\
+                                        ';
+                        $(chkBx).on('click', function(e){
+                            window.setTimeout(WMEAC.refreshClosureList);
+                        });
+                        hDiv.append(chkBx);
+                        });
+                    }
+                    $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'none'});
+                }
+            });
+        });
      });
      
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){

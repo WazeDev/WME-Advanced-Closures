@@ -309,3 +309,30 @@ WMEAC.solveOverlaps = function (closureToAdd, existingClosureList, mode)
 // WMEAC.solveOverlaps({startDate: '2016-01-10 00:00', endDate: '2016-01-20 00:00'},
     // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-15 00:00', reason: 'bla bla'},
       // {startDate: '2016-01-16 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
+
+
+WMEAC.getCountriesFromSegmentSet = function (segs)
+{
+    var cids = segs.map(function (s) {
+        if (s.attributes.hasOwnProperty('primaryStreetID') && s.attributes.primaryStreetID!=null)
+        {
+            var stid = s.attributes.primaryStreetID;
+            if (Waze.model.streets.objects.hasOwnProperty(stid))
+            {
+                var st = Waze.model.streets.objects[stid];
+                if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
+                {
+                    var ctid = st.cityID;
+                    if (Waze.model.cities.objects.hasOwnProperty(ctid))
+                        return Waze.model.cities.objects[ctid].countryID;
+                }
+            }
+        }
+        return null;
+    }).filter(function (cid) {
+        return (cid!=null);
+    });
+    return (Waze.model.countries.getObjectArray(function (c) {
+        return cids.indexOf(c.id)!=-1;
+    }));
+};
