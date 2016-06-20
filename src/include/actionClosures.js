@@ -126,3 +126,31 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
     }
     return false;
 };
+
+WMEAC.removeClosure = function (closures, successHandler, failureHandler)
+{
+    var fail = function (e) {
+        return function (f) {
+            if (failureHandler)
+                failureHandler(f);
+            else
+                WMEAC.log("Failed to delete closure:", f);
+        };
+    };
+    var done = function (e) {
+        return function (f) {
+            if (successHandler)
+                successHandler(f);
+            else
+                WMEAC.log("Closure deletion successful:", f);
+        };
+    };
+
+    var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+    var sc = require("Waze/Modules/Closures/Models/SharedClosure");
+    var t = {};
+    var c = new sc({closures: [].concat(closures)});
+    t.actions=[cab.delete(c)];
+    W.controller.save(t).done(done()).fail(fail());
+    return true;
+};

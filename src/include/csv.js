@@ -233,7 +233,10 @@ WMEAC.csvApplyClosure = function(closure, handler)
     var tmp3 = function applyClosure()
     {
         WMEAC.log("Now apply closure...");
-        closure.closure.applyInWME(applySuccess, applyFailure);
+        if (closure.action=="add")
+            closure.closure.applyInWME(applySuccess, applyFailure);
+        else if (closure.action=='remove')
+            closure.closure.removeInWME(applySuccess, applyFailure);
     };
     
     var tmp2 = function readyToApply() {
@@ -474,6 +477,7 @@ WMEAC.CSVApplyChecked = function ()
     }
     else
     {
+        WMEAC.showClosuresLayer(true);
         WMEAC.pb.update(0);
         WMEAC.pb.info("Applying closures. please wait...");
         WMEAC.pb.show(true);
@@ -489,7 +493,8 @@ WMEAC.CSVBatchApply = function(i)
 
     if (i<WMEAC.csvCurrentBatchClosureList.length)
     {
-        if (WMEAC.csvCurrentBatchClosureList[i].action!='add')
+        if (WMEAC.csvCurrentBatchClosureList[i].action!='add' &&
+            WMEAC.csvCurrentBatchClosureList[i].action!='remove')
         {
             WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + "): action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet\n");
             WMEAC.setCSVMiniLog(WMEAC.csvCurrentBatchClosureList[i], "KO: action " + WMEAC.csvCurrentBatchClosureList[i].action + " not supported yet", 2);

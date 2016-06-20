@@ -75,5 +75,38 @@ WMEAC.ClassClosure = function (options)
             
             WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs}, successHandler, failureHandler);
         }
-    };
+    }
+    this.removeInWME = function(successHandler, failureHandler)
+    {
+        var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
+        segs = segs.filter(function (seg) {
+            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+        });
+        
+        var allClosuresToRemove=[];
+        var countToMatch=this.segIDs.length*(this.direction=="TWO WAY"?2:1); // two way = 2 closures in WME
+        segs.forEach(function (s) {
+            // look for closure(s)
+            var that = this;
+            var closures = Waze.model.roadClosures.getObjectArray(function (c) {
+                return (c.startDate==that.startDate &&
+                        c.endDate==that.endDate &&
+                        c.reason.trim()==that.reason &&
+                        c.segID==s.attributes.id &&
+                        c.permanent == (that.permanent=='Yes'));
+            });
+            if ((this.direction=="TWO WAY" && closures.length==2 && closures[0].forward!=closures[1].forward) ||
+                (this.direction=="A to B" && closures.length==1 && closures[0].forward==true) ||
+                (this.direction=="B to A" && closures.length==1 && closures[0].forward==false))
+            {
+                allClosuresToRemove=allClosuresToRemove.concat(closures);
+            }
+        }, this);
+        if (allClosuresToRemove.isEmpty())
+        {
+            failureHandler([{attributes: {details: "No segment. Check permissions or existence."}}]);
+        }
+        else
+            WMEAC.removeClosure(allClosuresToRemove, successHandler, failureHandler);
+    }
 };
