@@ -24,8 +24,13 @@ WMEAC.ClassClosure = function (options)
     {
         return;
     }
+    
+    // optional options:
     this.comment="";
     if (options.hasOwnProperty('comment')) this.comment=options.comment;
+    this.eventId=null;
+    if (options.hasOwnProperty('eventId')) this.eventId=options.eventId;
+    
     this.segIDs = this.segIDs.split(';');
     var matches = this.lonlat.match(/lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*)/);
     if (matches && matches.length==3)
@@ -72,10 +77,11 @@ WMEAC.ClassClosure = function (options)
         else
         {
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            
-            WMEAC.addClosure({reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs}, successHandler, failureHandler);
+            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs};
+            if (this.eventId!=null) closureDetails.eventId = this.eventId;
+            WMEAC.addClosure(closureDetails, successHandler, failureHandler);
         }
-    }
+    };
     this.removeInWME = function(successHandler, failureHandler)
     {
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
@@ -108,5 +114,5 @@ WMEAC.ClassClosure = function (options)
         }
         else
             WMEAC.removeClosure(allClosuresToRemove, successHandler, failureHandler);
-    }
+    };
 };

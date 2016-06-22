@@ -119,7 +119,9 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
         var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
-        var c = new sc({reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()});
+        var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
+        if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
+        var c = new sc(closureDetails);
         t.actions=[cab.add(c)];
         W.controller.save(t).done(done()).fail(fail());
         return true;

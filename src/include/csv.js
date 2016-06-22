@@ -9,7 +9,7 @@ WMEAC.parseCSV = function (csvString)
         {
             WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
-                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i, comment: (e.length==10?e[9]:'')}), UI: null};
+                return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i, eventId: e[9], comment: (e.length==11?e[10]:'')}), UI: null};
             });
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
@@ -111,7 +111,8 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st c
                                                                   /(Yes)|(No)/, // ignore trafic = permanent
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
-                                                                  /^\d$/ // zoom
+                                                                  /^\d$/, // zoom
+                                                                  /(^$)|(^\d+\.\d+\.\d+$)/ // MTE ID is empty or digits.digits.digits
                                                                   ]}));
                                                                   
 WMEAC.buildInlineClosureUI = function (closure, action)
