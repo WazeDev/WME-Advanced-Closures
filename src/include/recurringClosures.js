@@ -150,6 +150,7 @@ WMEAC.refreshClosureList = function ()
                 (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
             }));
         }, []);
+        var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
         $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
             rc.list.map(function (e, i) {
                 var overlap = existingClosures.filter(function (c) {
@@ -163,6 +164,7 @@ WMEAC.refreshClosureList = function ()
                     if (!street.isEmpty) msg = street.name + ': ' + msg;
                     return msg;
                 });
+                var mteOK=!(mte && (new Date(e.start) < new Date(mte.attributes.startDate) || new Date(e.end) > new Date(mte.attributes.endDate)));
                 return (reason +
                 //' (' + cllocation + '): ' + 
                 ': ' +
@@ -170,9 +172,42 @@ WMEAC.refreshClosureList = function ()
                 ' ' + directionStr + 
                 ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
                 (overlap.length!=0?' <i title="Warning: overlap on existing closure!\n' + overlap.join('\n') + '" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
+                (mteOK?'':' <i title="Warning: closure dates not inside MTE date!" class="fa fa-exclamation-circle" style="color: orange"></i>') +
                 ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
         }).join('<br>'));
     }     
+};
+
+WMEAC.refreshMTEList = function ()
+{
+    var currentMTEid = $("#wmeac-advanced-closure-dialog-mteid").val();
+    var rangeStart = new Date($("#wmeac-advanced-closure-dialog-rangestartdate").val());
+    var rangeEnd = new Date($("#wmeac-advanced-closure-dialog-rangeenddate").val());
+    var options=[{name: 'none', value: ''}];
+    $("#wmeac-advanced-closure-dialog-mteid").empty();
+    if (WMEAC.isValidDate(rangeStart) && WMEAC.isValidDate(rangeEnd))
+    {
+        rangeEnd.addDays(1);
+        // filter MTE loaded in WME:
+        Waze.model.majorTrafficEvents.getObjectArray(function (mte) {
+            // check if ranges overlap
+            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new Date(mte.attributes.startDate), endDate: new Date(mte.attributes.endDate)}));
+        }).forEach(function (mte) {
+            options.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
+        });
+    }
+    options.forEach(function (o) {
+        var el = WMEAC.createElement({type: 'option'});
+        el.setAttribute('value', o.value);
+        if (currentMTEid==o.value)
+            el.setAttribute('selected', '');
+        el.innerHTML = o.name;
+        $("#wmeac-advanced-closure-dialog-mteid").append(el);
+    });
+    if (options.length>1)
+        $("#wmeac-advanced-closure-dialog-mteid").removeAttr('disabled');
+    else
+        $("#wmeac-advanced-closure-dialog-mteid").attr('disabled', '');
 };
 
 INCLUDE_FILE('include/holidays.js');

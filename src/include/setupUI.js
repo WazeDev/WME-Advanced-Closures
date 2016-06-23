@@ -201,6 +201,16 @@ var ignoreTrafficUI = '\
   </div>\
 ';
 
+var MTEUI = '\
+  <div class="form-group">\
+    <label class="control-label control-label-inline" for="closure_MTE">Link to MTE</label>\
+    <div class="controls">\
+      <select id="wmeac-advanced-closure-dialog-mteid" class="form-control" name="closure_MTE" disabled><option value="">None</option></select>\
+    </div>\
+  </div>\
+';
+
+
 var overlapModeUI = '\
   <div class="form-group">\
     <label class="control-label" for="closure_overlap">Overlap action</label>\
@@ -341,7 +351,7 @@ WMEAC.HTMLTemplates.advancedClosureDialog='\
     '\
     </td>\
     <td>' + 
-      descriptionUI + directionUI + ignoreTrafficUI + // overlapModeUI +
+      descriptionUI + directionUI + ignoreTrafficUI + MTEUI +// overlapModeUI +
     '\
     </td>\
   </tr>\
@@ -397,9 +407,13 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             direction=(direction=="1"?sc.DIRECTION.A_TO_B:(direction=="2"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+            var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
-                return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
+                var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
+                if (mte)
+                    details.eventId = mte.id;
+                return details;
             });
             
             // save selection list
@@ -428,6 +442,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     }
     
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
+    $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").on("change", function () { WMEAC.refreshMTEList(); });
     $("#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
         $(e.target).parent().find("input").focus();

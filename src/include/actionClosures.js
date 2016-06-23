@@ -85,7 +85,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var t = {};
     var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
     var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureList[i].location, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
-    if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
+    if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
     var c = new sc(closureDetails);
     t.actions=[cab.add(c)];
     W.controller.save(t).done(done()).fail(fail());
