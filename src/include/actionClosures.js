@@ -30,7 +30,10 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var c = new sc({reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}});
+        var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}};
+        if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
+        var c = new sc(closureDetails);
+        
         t.actions=[cab.add(c)];
         W.controller.save(t).done(done()).fail(fail());
         return true;
@@ -81,8 +84,9 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
-   
-    var c = new sc({reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureList[i].location, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()});
+    var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureList[i].location, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
+    if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
+    var c = new sc(closureDetails);
     t.actions=[cab.add(c)];
     W.controller.save(t).done(done()).fail(fail());
 };
