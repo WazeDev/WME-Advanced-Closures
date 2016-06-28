@@ -251,15 +251,22 @@ var tabRepeatUI = '\
 
 var daysOfWeekUI = WMEAC.daysOfWeek.clone();
 daysOfWeekUI.push(daysOfWeekUI.shift());
-var tabEachUI = daysOfWeekUI.map(function (d, i) {
-    return '<div class="checkbox">\
+var tabEachUI = '<div class="checkbox">\
+    <label class="control-label" style="font-weight: bold;">\
+      <input id="wmeac-advanced-closure-dialog-each-dayall" type="checkbox" name="closure_each_dayall">\
+      All\
+    </label>\
+  </div>\
+  ' + 
+    daysOfWeekUI.map(function (d, i) {
+        return '<div class="checkbox">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
       ' + d + '\
     </label>\
   </div>\
 ';
-}).join('');
+    }).join('');
 
 var tabHolidayUI = '\
 <div class="content">\
@@ -449,7 +456,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     }).find("i").on("click", function (e) {
         $(e.target).parent().parent().find("input").focus();
     });
-    
+    $('#wmeac-advanced-closure-dialog-each-dayall').on('click', function () {
+        var atLeastOneChecked=false;
+        for (var i=0; i<7; i++)
+            atLeastOneChecked = atLeastOneChecked || $("#wmeac-advanced-closure-dialog-each-"+i).is(':checked');
+        for (var i=0; i<7; i++)
+            $("#wmeac-advanced-closure-dialog-each-"+i).prop('checked', !atLeastOneChecked);
+        $('#wmeac-advanced-closure-dialog-each-dayall').prop('checked', !atLeastOneChecked);
+    });
     if (typeof $.fn.spinner !== 'undefined')
     {
         $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
