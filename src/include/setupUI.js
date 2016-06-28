@@ -67,6 +67,29 @@ WMEAC.initUI = function ()
     addon.style.marginLeft = "-10px";
     tabContent.appendChild(addon);
 
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            function rescurse(node)
+            {
+                if (node.id=='segment-edit-closures')
+                    WMEAC.installButtonInClosureTab(node);
+                else
+                {
+                    for (var j=0; j<node.childNodes.length; j++)
+                        rescurse(node.childNodes[j]);
+                }
+            }
+            for (var i=0; i<mutation.addedNodes.length; i++)
+            {
+                rescurse(mutation.addedNodes[i]);
+            }
+        });    
+    });
+    observer.observe(WMEAC.getId('edit-panel'), {childList: true, subtree: true});
+    
+    // test now if closure tab exists. It happens if WME is opened with a segment id in the url:
+    WMEAC.installButtonInClosureTab();
+    
     //Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
     Waze.vent.on("operationPending", function(e) {
         if (e.operation.id!="pending.road_data")
@@ -83,6 +106,25 @@ WMEAC.initUI = function ()
     Waze.model.events.register("mergeend", null, WMEAC.refreshHighlight);
     WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
+};
+
+WMEAC.installButtonInClosureTab = function (node)
+{
+    if (!node)
+        node=WMEAC.getId('segment-edit-closures');
+    if (!node) return;
+    // test if we already there
+    if ($(node).find('#wmeac-closuretab-add-advanced-closure-button').length==0)
+    {
+        var addACBtn = WMEAC.createElement({type: 'div',
+            id: 'wmeac-closuretab-add-advanced-closure-button',
+            className: 'wmeac-button'});
+        addACBtn.style.width='100%';
+        addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
+        
+        addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
+        $(node).find('.main').append(addACBtn);
+    }
 };
 
 WMEAC.showAddAdvancedClosure = function()
