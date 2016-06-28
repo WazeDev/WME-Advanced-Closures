@@ -17,7 +17,7 @@ WMEAC.pendingOps=false;
 
 WMEAC.pb = null;
 
-WMEAC.daysOfWeek=[ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+WMEAC.daysOfWeek=[ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 WMEAC.lastGeneratedHolidays = [];
 
