@@ -120,10 +120,11 @@ WMEAC.installButtonInClosureTab = function (node)
             id: 'wmeac-closuretab-add-advanced-closure-button',
             className: 'wmeac-button'});
         addACBtn.style.width='100%';
+        addACBtn.style.marginBottom='10px';
         addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
         addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
-        $(node).find('.main').append(addACBtn);
+        $(node).find('.main').prepend(addACBtn);
     }
 };
 
@@ -150,6 +151,8 @@ WMEAC.showAddAdvancedClosure = function()
     {
         ACDiv.style.display="block";
         Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
+        WMEAC.refreshClosureListFromSelection();
     }
     WMEAC.showClosuresLayer(true);
 };
@@ -329,10 +332,20 @@ var tabPresetsUI = '\
           <select style="width: 100%;" id="wmeac-advanced-closure-dialog-presets-list" name="presets_load">\
           </select>\
           <span id="wmeac-advanced-closure-dialog-presets-load" class="input-group-addon">\
-           <i class="fa fa-folder-open-o"></i>\
+            <i class="fa fa-folder-open-o"></i>\
           </span>\
           <span id="wmeac-advanced-closure-dialog-presets-delete" class="input-group-addon">\
-           <i class="fa fa-trash"></i>\
+            <i class="fa fa-trash"></i>\
+          </span>\
+        </div>\
+      </div>\
+      <label class="control-label" for="seg_load">Load from segment</label>\
+      <div class="controls">\
+        <div class="input-group">\
+          <select style="width: 100%;" id="wmeac-advanced-closure-dialog-segclosure-list" name="presets_load">\
+          </select>\
+          <span id="wmeac-advanced-closure-dialog-presets-load-fromseg" class="input-group-addon">\
+            <i class="fa fa-share"></i>\
           </span>\
         </div>\
       </div>\
@@ -421,6 +434,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             if (d) 
             {
                 Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
+                Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
                 d.style.display='none';
             }
         });
@@ -622,6 +636,27 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             $("#wmeac-advanced-closure-dialog-each-"+i).prop('checked', WMEAC.presets[presetIndex].values.each[i]);
      });
 
+     $('#wmeac-advanced-closure-dialog-presets-load-fromseg').on('click', function () {
+        closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
+        if (closureId)
+        {
+            var c = Waze.model.roadClosures.objects[closureId];
+            if (c)
+            {
+                $("#wmeac-advanced-closure-dialog-starttime").val(c.startDate.split(' ')[1]);
+                var duration=new Date(c.endDate) - new Date(c.startDate);
+                 $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
+                 $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
+                 $("#wmeac-advanced-closure-dialog-reason").val(c.reason.trim());
+                 if (WMEAC.getOppositeClosure(c).isEmpty()) // oneway
+                    $("#wmeac-advanced-closure-dialog-direction").val(c.forward?1:2);
+                else
+                    $("#wmeac-advanced-closure-dialog-direction").val(3);
+                $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.permanent);
+            }
+         }
+     });
+     
      $('#wmeac-advanced-closure-dialog-presets-delete').on('click', function(e){
         var presetIndex = parseInt($("#wmeac-advanced-closure-dialog-presets-list").val());
         WMEAC.presets.splice(presetIndex, 1);

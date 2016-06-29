@@ -131,51 +131,57 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
 
 WMEAC.refreshClosureList = function ()
 {
-    var rc = WMEAC.buildClosuresListFromRecurringUI();
-    if (rc.error!="")
-        $('#wmeac-csv-closures-preview-content').html(rc.error);
-    else
+    try {
+        var rc = WMEAC.buildClosuresListFromRecurringUI();
+        if (rc.error!="")
+            $('#wmeac-csv-closures-preview-content').html(rc.error);
+        else
+        {
+            var reason = $('#wmeac-advanced-closure-dialog-reason').val();
+            //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
+            var direction = $('#wmeac-advanced-closure-dialog-direction').val();
+            var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
+            var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
+            var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
+                var revSegs = Waze.selectionManager.getReversedSegments();
+                var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
+                var realWay = isReversed?(direction==1?2:1):direction;
+                return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
+                    return (e.segID==c.model.attributes.id &&
+                    (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
+                }));
+            }, []);
+            var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
+            $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
+                rc.list.map(function (e, i) {
+                    var overlap = existingClosures.filter(function (c) {
+                        return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
+                    }).map(function (c) {
+                        var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
+                        if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
+                        if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
+                        if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
+                        var street = Waze.model.streets.objects[Waze.model.segments.objects[c.segID].attributes.primaryStreetID];
+                        if (!street.isEmpty) msg = street.name + ': ' + msg;
+                        return msg;
+                    });
+                    var mteOK=!(mte && (new Date(e.start) < new Date(mte.attributes.startDate) || new Date(e.end) > new Date(mte.attributes.endDate)));
+                    return (reason +
+                    //' (' + cllocation + '): ' + 
+                    ': ' +
+                    e.start + ' &#8594; ' + e.end + 
+                    ' ' + directionStr + 
+                    ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
+                    (overlap.length!=0?' <i title="Warning: overlap on existing closure!\n' + overlap.join('\n') + '" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
+                    (mteOK?'':' <i title="Warning: closure dates not inside MTE date!" class="fa fa-exclamation-circle" style="color: orange"></i>') +
+                    ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
+            }).join('<br>'));
+        }
+    }
+    catch (e)
     {
-        var reason = $('#wmeac-advanced-closure-dialog-reason').val();
-        //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
-        var direction = $('#wmeac-advanced-closure-dialog-direction').val();
-        var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
-        var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-        var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
-            var revSegs = Waze.selectionManager.getReversedSegments();
-            var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
-            var realWay = isReversed?(direction==1?2:1):direction;
-            return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
-                return (e.segID==c.model.attributes.id &&
-                (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
-            }));
-        }, []);
-        var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
-        $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
-            rc.list.map(function (e, i) {
-                var overlap = existingClosures.filter(function (c) {
-                    return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
-                }).map(function (c) {
-                    var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
-                    if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
-                    if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
-                    if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
-                    var street = Waze.model.streets.objects[Waze.model.segments.objects[c.segID].attributes.primaryStreetID];
-                    if (!street.isEmpty) msg = street.name + ': ' + msg;
-                    return msg;
-                });
-                var mteOK=!(mte && (new Date(e.start) < new Date(mte.attributes.startDate) || new Date(e.end) > new Date(mte.attributes.endDate)));
-                return (reason +
-                //' (' + cllocation + '): ' + 
-                ': ' +
-                e.start + ' &#8594; ' + e.end + 
-                ' ' + directionStr + 
-                ' <i class="fa fa-car' + (isIT?" slashed":"") + '"></i>' +
-                (overlap.length!=0?' <i title="Warning: overlap on existing closure!\n' + overlap.join('\n') + '" class="fa fa-exclamation-circle" style="color: orange"></i>':'') +
-                (mteOK?'':' <i title="Warning: closure dates not inside MTE date!" class="fa fa-exclamation-circle" style="color: orange"></i>') +
-                ' <span id="wmeac-advanced-closure-dialog-preview-' + i + '"></span>');
-        }).join('<br>'));
-    }     
+        WMEAC.logError("Error while refreshing closure list: ", e);
+    }
 };
 
 WMEAC.refreshMTEList = function ()
@@ -208,6 +214,43 @@ WMEAC.refreshMTEList = function ()
         $("#wmeac-advanced-closure-dialog-mteid").removeAttr('disabled');
     else
         $("#wmeac-advanced-closure-dialog-mteid").attr('disabled', '');
+};
+
+WMEAC.refreshClosureListFromSelection = function ()
+{
+    try
+    {
+        var currentSegClosure = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
+        $("#wmeac-advanced-closure-dialog-segclosure-list").empty();
+        if (Waze.selectionManager.selectedItems.length!=0)
+        {
+            var blackList=[];
+            Waze.model.roadClosures.getObjectArray(function (c) {
+                return c.segID==Waze.selectionManager.selectedItems[0].model.attributes.id;
+            }).sort(function (a,b) {
+                return (new Date(a.startDate)-new Date(b.startDate));
+            }).forEach(function (c) {
+                if (blackList.indexOf(c.id)!=-1) return;
+                var direction = c.forward?"A to B":"B to A";
+                var oppositeClosure = WMEAC.getOppositeClosure(c);
+                if (!oppositeClosure.isEmpty())
+                {
+                    direction = "Two way";
+                    blackList.push(oppositeClosure[0].id);
+                }
+                var el = WMEAC.createElement({type: 'option'});
+                el.setAttribute('value', c.id);
+                if (currentSegClosure==c.id)
+                    el.setAttribute('selected', '');
+                el.innerHTML = c.reason.trim() + ' ' + direction + ' ' + c.startDate + '&#8594;' + c.endDate;
+                $("#wmeac-advanced-closure-dialog-segclosure-list").append(el);
+            });
+        }
+    }
+    catch (e)
+    {
+        WMEAC.logError("Error while refreshing closure list from selection: ", e);
+    }
 };
 
 INCLUDE_FILE('include/holidays.js');

@@ -48,6 +48,11 @@ WMEAC.logDebug = function (msg, obj)
     if (WMEAC.isDebug) WMEAC.log("DEBUG - " + msg, obj);
 };
 
+WMEAC.logError = function (msg, obj)
+{
+    console.error("Advanced closures v" + WMEAC.ac_version + " - " + msg, obj);
+};
+
 
 WMEAC.log = function (msg, obj)
 {
@@ -335,4 +340,15 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
     return (Waze.model.countries.getObjectArray(function (c) {
         return cids.indexOf(c.id)!=-1;
     }));
+};
+
+WMEAC.getOppositeClosure = function (closure)
+{
+    return Waze.model.roadClosures.getObjectArray(function (c) {
+        return (closure.reason == c.reason &&
+                closure.startDate == c.startDate &&
+                closure.endDate == c.endDate &&
+                closure.segID == c.segID && 
+                closure.forward != c.forward);
+    });
 };
