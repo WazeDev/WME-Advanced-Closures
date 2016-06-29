@@ -592,7 +592,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 {
                     WMEAC.lastGeneratedHolidays = holidays;
                     if (holidays.isEmpty())
-                        hDiv.html("No holiday found.")
+                        hDiv.html("No holiday found.");
                     else
                     {
                         holidays.forEach(function (h, i) {

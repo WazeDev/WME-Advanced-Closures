@@ -61,7 +61,7 @@ WMEAC.getHolidays = function (options)
             }
         window.WMEAC_downloadHelper.add(
             //"https://holidayapi.com/v1/holidays?country=" + WMEAC.abbrToISO3166_1alpha2(options.countries[currentCountryIndex]) + "&year=" + dateToNext.substring(0, 4) + "&month=" + dateToNext.substring(5, 7) + "&day=" + dateToNext.substring(8) + "&upcoming",
-            "https://holidayapi.com/v1/holidays?country=" + WMEAC.abbrToISO3166_1alpha2(options.countries[currentCountryIndex]) + "&year=" + years[currentYearIndex],
+            "https://holidayapi.com/v1/holidays?key=ca1a7925-0045-47da-bcf6-ee0de583e384&country=" + WMEAC.abbrToISO3166_1alpha2(options.countries[currentCountryIndex]) + "&year=" + years[currentYearIndex],
             function (data) {
                 if (data.status=='success')
                 {
