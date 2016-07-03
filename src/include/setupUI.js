@@ -231,7 +231,7 @@ var directionUI = '\
     <label class="control-label" for="closure_direction">Direction</label>\
     <div class="controls">\
       <select id="wmeac-advanced-closure-dialog-direction" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
-        <option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option><option value="3">Two way (&#xf0ec;)</option>\
+        <option value="3">Two way (&#xf0ec;)</option><option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option>\
       </select>\
     </div>\
   </div>\
