@@ -99,7 +99,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         for (var d=0; d<dayCount; d++)
         {
             var start = day0.clone();
-            start.addDays(d);
+            start.addMinutes(d*1440);
             if (dow[start.getUTCDay()])
             {
                 var end = start.clone();
