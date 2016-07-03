@@ -398,7 +398,7 @@ var tabsUI ='\
   
 var footerUI = '\
 <div class="footer">\
-    <div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow-y: scroll; max-height: 150px;"></div></div>\
+    <div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow: scroll; max-height: 150px;"></div></div>\
     <button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
     <button style="float: right;" id="wmeac-advanced-closure-dialog-apply-button">Apply</button>\
 </div>';
