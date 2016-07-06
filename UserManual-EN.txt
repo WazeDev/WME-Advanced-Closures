@@ -12,6 +12,8 @@ In the panel:
 [*]a button "parse CSV" with a log console.
 [/list]
 
+In the closure panel of a segments selection: a button "add advanced closure".
+
 [list=0]
 [*][size=150]Add advanced closure[/size]
 
@@ -28,6 +30,7 @@ The window is draggable through its title. To reset the position, click again th
 [*]Description: free text
 [*]Direction: on a multiple selection, it is the same direction as shown on the map.
 [*]Ignore traffic
+[*](new in V1.1) MTE: MTE list of MTE loaded in WME and whose dates overlaps the defined range
 [*]Then, choose a tab:
 [list]
 [*]Repeat:
@@ -37,9 +40,11 @@ The window is draggable through its title. To reset the position, click again th
 [/list]
 [*]Each:
 day of the week of the start date/time (if the duration exceeds midnight, the end date/time will be the next day (or some days after), the closure will be applied even if the day of the closure end is not checked)
+[*](new in V1.1) Holidays: holidays list based on holidayapi.com. You must select at least 1 segment before to detect the country, and then, click on "Refresh holidays". If your country is not supported, you can contribute to holidayapi.com. The country abbreviation in WME is not the same as holidayapi.com. So we may need to translate it in the code to get it work. Let us know!
 [/list]
-[*]The save tab allows you to save all presets but the range and to load them.
-[*]Once all set correctly, the preview area will show all closures ready to apply. It shows error messages and an orange warning if a closure overlaps on an existing closure (tooltiptext for details).
+[*]The save tab allows you to save all presets but the range and MTE, and to load them.
+New in V1.1: closure details loaded from an existing closure: select 1 segment. If more than 1 segment is selected, closures a read from the first segment only.
+[*]Once all set correctly, the preview area will show all closures ready to apply. It shows error messages and an orange warning if a closure overlaps on an existing closure, and if a closure is not included in dates of the selected MTE (tooltiptext for details).
 
 [*]Select segments
 
@@ -65,14 +70,15 @@ Each: mon, tue, wed, thu, fri
 [*][size=150]CSV[/size]
 
 apply closures defined in a CSV file.
+New in V1.1: added a column (requiered) MTE ID before 'comment'. Keep empty if no MTE.
 Format:
 [code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),comment (optional)
-add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6
-add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6,It's cold here...
+add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6,
+add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6,,It's cold here...
 [/code]
 
 [list]
-[*]If the fisrt column starts with 'add' or 'remove', it is processed by the script. Note that 'remove' is not supported yet.
+[*]If the fisrt column starts with 'add' or 'remove', it is processed by the script. (new in V1.1: remove is now supported)
 [*]Any other keyword is ignored, including 'header'.
 [*]The, the format is described in the header.
 [*]You must ensure that the map zoom is wide enough to "see" all segments. So, the same CSV can work fine on a screen with a big resolution and doesn't work on another computer with a lower resolution.

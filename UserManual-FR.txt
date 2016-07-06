@@ -12,6 +12,8 @@ Dedans:
 [*]un bouton "parse CSV" avec une fenêtre de logs
 [/list]
 
+Dans le panneau des fermetures d'une sélection de segments: un bouton "add advanced closure".
+
 [list=0]
 [*][size=150]Add advanced closure[/size]
 
@@ -27,6 +29,7 @@ la fenêtre est déplaçable via son titre. Pour réinitialier la position, re-c
 [*]Description: texte libre
 [*]Direction: sur une sélection multiple, c'est le même ordre que celui donné par WME sur la carte
 [*]Ignore traffic
+[*](nouveau V1.1) MTE: liste des MTE chargés dans WME et dont les dates se chevauchent avec le range définit
 [*]Puis, un choix dans les onglets dessous:
 [list]
 [*]Repeat:
@@ -36,9 +39,11 @@ la fenêtre est déplaçable via son titre. Pour réinitialier la position, re-c
 [/list]
 [*]Each:
 jours de la semaine: concerne la date/heure de début de la fermeture (si la durée de la fermeture dépasse minuit et que la date de fin tombe un jour de la semaine non coché, la fermeture est quand même appliquée)
+[*](nouveau V1.1) Holidays: Liste des jours fériés basé sur le site holidayapi.com. Il faut avoir au moins un segment sélectionné pour la détection du pays, et cliquer sur "Refresh holidays"
 [/list]
-[*]L'onglet de sauvegarde vous permet d'enregistrer tous ces paramètres sauf le range, et de les recharger.
-[*]Une fois que vous avez tout saisi correctement, un aperçu des fermetures prêtes à être appliquées est visible dans la fenêtre preview en dessous. Ca affiche aussi les messages d'erreur et un warning orange s'il y a une superposition avec une fermeture existante (info bulle pour les détails).
+[*]L'onglet de sauvegarde vous permet d'enregistrer tous ces paramètres sauf le range et le MTE, et de les recharger.
+Nouveau V1.1: chargement des détails d'une fermeture existante: sélectionner 1 segment. Si plusieurs segments sont sélectionnés, seul le 1er est lu.
+[*]Une fois que vous avez tout saisi correctement, un aperçu des fermetures prêtes à être appliquées est visible dans la fenêtre preview en dessous. Ca affiche aussi les messages d'erreur et un warning orange s'il y a une superposition avec une fermeture existante (info bulle pour les détails) ou si une fermeture est hors dates du MTE sélectionné.
 
 [*]Sélectionner les segments
 
@@ -63,15 +68,16 @@ Each: mon, tue, wed, thu, fri
 
 [*][size=150]CSV[/size]
 
-permet d'appliquer les fermetures définies dans un fichier csv.
+permet d'appliquer les fermetures définies dans un fichier csv
+nouveau V1.1: ajout d'une colonne obligatoire MTE ID avant 'comment'. Laisser vide si pas de MTE.
 Format:
-[code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),comment (optional)
-add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6
-add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6,It's cold here...
+[code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),MTE ID,comment (optional)
+add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6,
+add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6,,It's cold here...
 [/code]
 
 [list]
-[*]Si la 1ère ligne commence par 'add' ou 'remove' elle est traitée dans le script, sachant que 'remove' n'est pas encore supporté.
+[*]Si la 1ère ligne commence par 'add' ou 'remove' elle est traitée dans le script. (nouveau V1.1: remove est supporté)
 [*]Tout autre mot clef, notamment 'header' sera ignoré.
 [*]Ensuite, le format est décrit dans le header sauf la colonne 1.
 [*]Il faut s'assurer que le zoom vous permet de "voir" tous les segments à l'écran. Donc un même CSV peut bien marcher sur un écran avec une grosse résolution, et ne pas marcher sur un autre PC avec résolution plus petite.
