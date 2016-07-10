@@ -87,7 +87,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
-            if (s=='noStreet') return I18n.translations[I18n.locale].segment.address.none;
+            if (s=='noStreet') return I18n.translations[I18n.locale].edit.address.no_street;
             return s;
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
