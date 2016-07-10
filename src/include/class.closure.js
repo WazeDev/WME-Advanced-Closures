@@ -76,8 +76,16 @@ WMEAC.ClassClosure = function (options)
         }
         else
         {
+            var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
+            var closureLocation = Object.keys(cityStreets).map(function (c) {
+                return (Object.keys(cityStreets[c]).map(function (s) {
+                    if (s=='noStreet') return I18n.translations[I18n.locale].segment.address.none;
+                    return s;
+                }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
+            }).join(' ; ');
+            
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: this.location, permanent: this.permanent=='Yes', segments: segs};
+            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?sc.DIRECTION.A_TO_B:(this.direction=="B to A"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
             if (this.eventId!=null) closureDetails.eventId = this.eventId;
             WMEAC.addClosure(closureDetails, successHandler, failureHandler);
         }

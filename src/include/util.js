@@ -352,3 +352,40 @@ WMEAC.getOppositeClosure = function (closure)
                 closure.forward != c.forward);
     });
 };
+
+WMEAC.getCityStreetsFromSegmentSet = function (segs)
+{
+    var r={};
+    function add(city, street)
+    {
+        if (!r.hasOwnProperty(city))
+            r[city]={};
+        if (!r[city].hasOwnProperty(street))
+            r[city][street]=0;
+        r[city][street]++; 
+    }
+    
+    segs.forEach(function (s) {
+        var city='noCity';
+        if (s.attributes.primaryStreetID!=null &&
+            Waze.model.streets.objects.hasOwnProperty(s.attributes.primaryStreetID))
+        {
+            var st = Waze.model.streets.objects[s.attributes.primaryStreetID];
+            if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
+            {
+                var ctid = st.cityID;
+                if (Waze.model.cities.objects.hasOwnProperty(ctid))
+                {
+                    if (!Waze.model.cities.objects[ctid].isEmpty)
+                        city=Waze.model.cities.objects[ctid].name;
+                }
+            }
+            if (Waze.model.streets.objects[s.attributes.primaryStreetID].isEmpty)
+                add(city, 'noStreet');
+            else
+                add(city, Waze.model.streets.objects[s.attributes.primaryStreetID].name);
+        }
+            
+    });
+    return r;
+};

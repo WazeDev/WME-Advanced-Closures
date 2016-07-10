@@ -84,7 +84,15 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
-    var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureList[i].location, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
+    var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
+    var closureLocation = Object.keys(cityStreets).map(function (c) {
+        return (Object.keys(cityStreets[c]).map(function (s) {
+            if (s=='noStreet') return I18n.translations[I18n.locale].segment.address.none;
+            return s;
+        }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
+    }).join(' ; ');
+        
+    var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
     var c = new sc(closureDetails);
     t.actions=[cab.add(c)];
