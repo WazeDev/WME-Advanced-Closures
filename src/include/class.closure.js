@@ -29,7 +29,7 @@ WMEAC.ClassClosure = function (options)
     this.comment="";
     if (options.hasOwnProperty('comment')) this.comment=options.comment;
     this.eventId=null;
-    if (options.hasOwnProperty('eventId')) this.eventId=options.eventId;
+    if (options.hasOwnProperty('eventId') && options.eventId!='') this.eventId=options.eventId;
     
     this.segIDs = this.segIDs.split(';');
     var matches = this.lonlat.match(/lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*)/);
