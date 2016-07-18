@@ -18,7 +18,7 @@ Dans le panneau des fermetures d'une sélection de segments: un bouton "add adva
 [*][size=150]Add advanced closure[/size]
 
 ouvre une fenêtre permettant de créer des fermetures récurrentes:
-la fenêtre est déplaçable via son titre. Pour réinitialier la position, re-cliquer sur le bouton.
+la fenêtre est déplaçable via son titre. Pour réinitialiser la position, re-cliquer sur le bouton.
 [list]
 [*]Range (start date et end date) est la plage de temps sur laquelle toutes les fermetures doivent rentrer. En d'autres termes, avant start et après end, le script ne générera pas de fermeture.
 [*]Start and duration:

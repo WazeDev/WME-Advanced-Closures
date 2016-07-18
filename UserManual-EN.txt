@@ -72,7 +72,7 @@ Each: mon, tue, wed, thu, fri
 apply closures defined in a CSV file.
 New in V1.1: added a column (requiered) MTE ID before 'comment'. Keep empty if no MTE.
 Format:
-[code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),comment (optional)
+[code]header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),MTE ID,comment (optional)
 add,"Closure test, by dummyd2","2016-05-27 00:00","2016-05-28 00:00","A to B",Yes,"297004533;297004532","lon=25.53629&lat=-76.47602",6,
 add,"Closure test 2, by dummyd2","2016-05-29 00:00","2016-05-30 00:00","B to A",No,"297004533;297004532","lon=25.53629&lat=-76.47602",6,,It's cold here...
 [/code]
