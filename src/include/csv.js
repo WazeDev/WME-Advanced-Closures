@@ -162,7 +162,19 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                 WMEAC.setCSVMiniLog(closure, "Selection OK: " + segs.length, 1);
             }
             if (segs.length!=0)
+            {
                 Waze.selectionManager.select(segs);
+                var tmp = function selectionReady()
+                {
+                    if (Waze.selectionManager.selectedItems.isEmpty())
+                        window.setTimeout(selectionReady, 500);
+                    else
+                    {
+                        $('a[href="#segment-edit-closures"]').click();
+                    }
+                };
+                window.setTimeout(tmp, 500);
+            }
         };
         var tmp2 = function readyToSelect() {
             WMEAC.log("Test if ready to select...");
