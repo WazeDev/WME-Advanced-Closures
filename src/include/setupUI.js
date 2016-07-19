@@ -73,6 +73,12 @@ WMEAC.initUI = function ()
             {
                 if (node.id=='segment-edit-closures')
                     WMEAC.installButtonInClosureTab(node);
+                else if (node.className=='closures-list')
+                {
+                    var target = WMEAC.getId('segment-edit-closures');
+                    if (target)
+                        WMEAC.installButtonInClosureTab(target);
+                }
                 else
                 {
                     for (var j=0; j<node.childNodes.length; j++)
