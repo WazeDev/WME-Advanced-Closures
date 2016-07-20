@@ -7,6 +7,8 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     var rangeEndDate = new Date($('#wmeac-advanced-closure-dialog-rangeenddate').val());
     if (!WMEAC.isValidDate(rangeEndDate)) return {list: list, error: "Range end date is not valid"};
     
+    if (rangeEndDate<rangeStartDate) return {list: list, error: "Range end date is before range start date"};
+    
     var dH = parseInt($('#wmeac-advanced-closure-dialog-duration-hour').val());
     if (isNaN(dH) || dH<0) return {list: list, error: "Duration hour is invalid"};
     
