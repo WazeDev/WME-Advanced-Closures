@@ -109,7 +109,7 @@ WMEAC.ClassClosure = function (options)
                         c.segID==s.attributes.id &&
                         c.permanent == (that.permanent=='Yes'));
             });
-            if ((this.direction=="TWO WAY" && closures.length==2 && closures[0].forward!=closures[1].forward) ||
+            if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
                 (this.direction=="A to B" && closures.length==1 && closures[0].forward==true) ||
                 (this.direction=="B to A" && closures.length==1 && closures[0].forward==false))
             {
