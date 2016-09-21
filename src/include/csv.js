@@ -112,7 +112,7 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st c
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
                                                                   /^\d$/, // zoom
-                                                                  /(^$)|(^\d+\.\d+\.\d+$)/ // MTE ID is empty or digits.digits.digits
+                                                                  /(^$)|(^-?\d+\.-?\d+\.-?\d+$)/ // MTE ID is empty or digits.digits.digits
                                                                   ]}));
                                                                   
 WMEAC.buildInlineClosureUI = function (closure, action)
