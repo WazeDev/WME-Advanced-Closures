@@ -190,24 +190,33 @@ var rangeStartEndUI ='\
   </div>';
 
 var startTimeAndDurationUI = '\
-  <div class="form-group">\
-    <label class="control-label" for="closure_startTime">Start and duration</label>\
+  <div class="wmeac-closuredialog-fromgroup">\
+    <label class="control-label" for="closure_startTime">Start</label>\
     <div class="controls">\
-      <div style="width: 50%;" class="bootstrap-timepicker input-group pull-left">\
+      <div style="width: 58%;" class="bootstrap-timepicker input-group pull-left">\
         <input id="wmeac-advanced-closure-dialog-starttime" class="form-control start-time" type="text" name="closure_startTime">\
         <span class="input-group-addon">\
           <i class="fa fa-clock-o"></i>\
         </span>\
       </div>\
-      <div style="width: 50%;" class="bootstrap-timepicker input-group">\
-        <span class="input-group-addon">\
+    </div>\
+  </div>\
+  <div class="wmeac-closuredialog-fromgroup">\
+    <label class="control-label">Duration</label>\
+    <div style="width: 58%;" class="bootstrap-timepicker input-group">\
+      <div class="controls" style="display: flex;">\
+        <span class="input-group-addon pull-left">\
           <i class="fa fa-step-forward"></i>\
         </span>\
         <span class="form-control" style="padding: 1px; display: flex">\
-          <input id="wmeac-advanced-closure-dialog-duration-hour" name="value" value=0 size=3/>\
-          <span style="padding: 5px;">H</span>\
-          <input id="wmeac-advanced-closure-dialog-duration-minute" name="value" value=0  size=2/>\
-          <span style="padding: 5px;">M</span>\
+          <input id="wmeac-advanced-closure-dialog-duration-day" name="value" value=0 size=3/>\
+          <span style="padding: 5px;">D</span>\
+        </span>\
+      </div>\
+      <div class="bootstrap-timepicker input-group pull-left">\
+        <input id="wmeac-advanced-closure-dialog-durationtime" class="form-control start-time" type="text" name="closure_durationTime">\
+        <span class="input-group-addon">\
+          <i class="fa fa-clock-o"></i>\
         </span>\
       </div>\
     </div>\
@@ -290,6 +299,8 @@ var tabRepeatUI = '\
           every\
         </span>\
         <span class="form-control" style="padding: 1px; display: flex">\
+          <input id="wmeac-advanced-closure-dialog-repeat-every-day" name="value" value=0 size=3/>\
+          <span style="padding: 5px;">D</span>\
           <input id="wmeac-advanced-closure-dialog-repeat-every-hour" name="value" value=0 size=3/>\
           <span style="padding: 5px;">H</span>\
           <input id="wmeac-advanced-closure-dialog-repeat-every-minute" name="value" value=0  size=2/>\
@@ -518,7 +529,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 format: "YYYY-MM-DD"
         }});
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").on("change", function () { WMEAC.refreshMTEList(); });
-    $("#wmeac-advanced-closure-dialog-starttime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
+    $("#wmeac-advanced-closure-dialog-starttime,#wmeac-advanced-closure-dialog-durationtime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
         $(e.target).parent().find("input").focus();
     }).find("i").on("click", function (e) {
@@ -534,9 +545,24 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     });
     if (typeof $.fn.spinner !== 'undefined')
     {
+        $('#wmeac-advanced-closure-dialog-repeat-every-day').spinner({
+            min: 0,
+            spin: function (event, ui) {
+                $(this).trigger('change');
+            }
+        });
         $('#wmeac-advanced-closure-dialog-repeat-every-hour').spinner({
             min: 0,
             spin: function (event, ui) {
+                if (ui.value >= 24) {
+                     $(this).spinner('value', ui.value - 24);
+                     $('#wmeac-advanced-closure-dialog-repeat-every-day').spinner('stepUp');
+                     return false;
+                 } else if (ui.value < 0) {
+                     $(this).spinner('value', ui.value + 24);
+                     $('#wmeac-advanced-closure-dialog-repeat-every-day').spinner('stepDown');
+                     return false;
+                 }
                 $(this).trigger('change');
             }
         });
@@ -558,31 +584,37 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                     $(this).spinner('value', 0);
              }
          });
-         
-        $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
+        
+        $('#wmeac-advanced-closure-dialog-duration-day').spinner({
             min: 0,
             spin: function (event, ui) {
                 $(this).trigger('change');
             }
         });
-        $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
-        spin: function (event, ui) {
-                 if (ui.value >= 60) {
-                     $(this).spinner('value', ui.value - 60);
-                     $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepUp');
-                     return false;
-                 } else if (ui.value < 0) {
-                     $(this).spinner('value', ui.value + 60);
-                     $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
-                     return false;
-                 }
-                 $(this).trigger('change');
-             },
-             change: function (event) {
-                if (event.target.value<0 || event.target.value>59)
-                    $(this).spinner('value', 0);
-             }
-         });
+        // $('#wmeac-advanced-closure-dialog-duration-hour').spinner({
+            // min: 0,
+            // spin: function (event, ui) {
+                // $(this).trigger('change');
+            // }
+        // });
+        // $('#wmeac-advanced-closure-dialog-duration-minute').spinner({
+        // spin: function (event, ui) {
+                 // if (ui.value >= 60) {
+                     // $(this).spinner('value', ui.value - 60);
+                     // $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepUp');
+                     // return false;
+                 // } else if (ui.value < 0) {
+                     // $(this).spinner('value', ui.value + 60);
+                     // $('#wmeac-advanced-closure-dialog-duration-hour').spinner('stepDown');
+                     // return false;
+                 // }
+                 // $(this).trigger('change');
+             // },
+             // change: function (event) {
+                // if (event.target.value<0 || event.target.value>59)
+                    // $(this).spinner('value', 0);
+             // }
+         // });
     }
      
      
@@ -635,15 +667,25 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      $('#wmeac-advanced-closure-dialog-presets-load').on('click', function(e){
         var presetIndex = parseInt($("#wmeac-advanced-closure-dialog-presets-list").val());
         $("#wmeac-advanced-closure-dialog-starttime").val(WMEAC.presets[presetIndex].values.starttime);
-        $("#wmeac-advanced-closure-dialog-duration-hour").val(WMEAC.presets[presetIndex].values.duration.hour);
-        $("#wmeac-advanced-closure-dialog-duration-minute").val(WMEAC.presets[presetIndex].values.duration.minute);
+        // $("#wmeac-advanced-closure-dialog-duration-hour").val(WMEAC.presets[presetIndex].values.duration.hour);
+        // $("#wmeac-advanced-closure-dialog-duration-minute").val(WMEAC.presets[presetIndex].values.duration.minute);
+        if (WMEAC.presets[presetIndex].values.duration.hasOwnProperty('day'))
+            $("#wmeac-advanced-closure-dialog-duration-day").val(WMEAC.presets[presetIndex].values.duration.day);
+        else
+            $("#wmeac-advanced-closure-dialog-duration-day").val(Math.floor(WMEAC.presets[presetIndex].values.duration.hour/24));
+        $("#wmeac-advanced-closure-dialog-durationtime").val('' + (WMEAC.presets[presetIndex].values.duration.hour%24) + ':' + WMEAC.presets[presetIndex].values.duration.minute);
         $("#wmeac-advanced-closure-dialog-reason").val(WMEAC.presets[presetIndex].values.description);
         //$("#wmeac-advanced-closure-dialog-location").val(WMEAC.presets[presetIndex].values.location);
         $("#wmeac-advanced-closure-dialog-direction").val(WMEAC.presets[presetIndex].values.direction);
         $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', WMEAC.presets[presetIndex].values.ignoretraffic);
         $("#wmeac-advanced-closure-dialog-repeat-ntimes").val(WMEAC.presets[presetIndex].values.repeat.ntimes);
-        $("#wmeac-advanced-closure-dialog-repeat-every-hour").val(WMEAC.presets[presetIndex].values.repeat.hour);
+        if (WMEAC.presets[presetIndex].values.repeat.hasOwnProperty('day'))
+            $("#wmeac-advanced-closure-dialog-repeat-every-day").val(WMEAC.presets[presetIndex].values.repeat.day);
+        else
+            $("#wmeac-advanced-closure-dialog-repeat-every-day").val(Math.floor(WMEAC.presets[presetIndex].values.repeat.hour/24));
+        $("#wmeac-advanced-closure-dialog-repeat-every-hour").val(WMEAC.presets[presetIndex].values.repeat.hour%24);
         $("#wmeac-advanced-closure-dialog-repeat-every-minute").val(WMEAC.presets[presetIndex].values.repeat.minute);
+        
         for (var i=0; i<7; i++)
             $("#wmeac-advanced-closure-dialog-each-"+i).prop('checked', WMEAC.presets[presetIndex].values.each[i]);
      });
@@ -657,8 +699,10 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             {
                 $("#wmeac-advanced-closure-dialog-starttime").val(c.startDate.split(' ')[1]);
                 var duration=new Date(c.endDate) - new Date(c.startDate);
-                 $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
-                 $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
+                 // $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
+                 // $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
+                 $("#wmeac-advanced-closure-dialog-duration-day").val(Math.floor(duration/86400000));
+                 $("#wmeac-advanced-closure-dialog-durationtime").val('' + new Date(duration).getHours() + ':' + new Date(duration).getMinutes());
                  $("#wmeac-advanced-closure-dialog-reason").val(c.reason.trim());
                  if (WMEAC.getOppositeClosure(c).isEmpty()) // oneway
                     $("#wmeac-advanced-closure-dialog-direction").val(c.forward?1:2);
@@ -687,13 +731,15 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             preset=WMEAC.presets[presetIndex];
         
         preset.values.starttime=$("#wmeac-advanced-closure-dialog-starttime").val();
-        preset.values.duration.hour=$("#wmeac-advanced-closure-dialog-duration-hour").val();
-        preset.values.duration.minute=$("#wmeac-advanced-closure-dialog-duration-minute").val();
+        preset.values.duration.day=$("#wmeac-advanced-closure-dialog-duration-day").val();
+        preset.values.duration.hour=parseInt($("#wmeac-advanced-closure-dialog-durationtime").val().split(':')[0]);
+        preset.values.duration.minute=parseInt($("#wmeac-advanced-closure-dialog-durationtime").val().split(':')[1]);
         preset.values.description=$("#wmeac-advanced-closure-dialog-reason").val();
         //preset.values.location=$("#wmeac-advanced-closure-dialog-location").val();
         preset.values.direction=$("#wmeac-advanced-closure-dialog-direction").val();
         preset.values.ignoretraffic=$("#wmeac-advanced-closure-dialog-ignoretraffic").is(':checked');
         preset.values.repeat.ntimes=$("#wmeac-advanced-closure-dialog-repeat-ntimes").val();
+        preset.values.repeat.day=$("#wmeac-advanced-closure-dialog-repeat-every-day").val();
         preset.values.repeat.hour=$("#wmeac-advanced-closure-dialog-repeat-every-hour").val();
         preset.values.repeat.minute=$("#wmeac-advanced-closure-dialog-repeat-every-minute").val();
         for (var i=0; i<7; i++)

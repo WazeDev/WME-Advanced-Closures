@@ -15,6 +15,7 @@ css += ".wmeac-closuredialog .content { padding: 10px;}";
 css += ".wmeac-closuredialog .content table { witdh: 100%; border: none; font-size: 10px; text-transform: uppercase;}";
 css += ".wmeac-closuredialog .content table tbody tr { vertical-align: top;}";
 css += ".wmeac-closuredialog .content table tbody tr td { padding-right: 2px; padding-left: 2px;}";
+css += ".wmeac-closuredialog-fromgroup { display: inline-block; }";
 css += ".wmeac-nav-tabs>ul { border-bottom: 1px solid #F6C3BE }";
 css += ".wmeac-nav-tabs>li { float: left; margin-bottom: -1px; }";
 css += ".wmeac-nav-tabs>li>a { border: 1px solid #F6C3BE; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 2px;}";
