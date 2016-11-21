@@ -69,9 +69,12 @@ function WMEAC_Injected()
     INCLUDE_FILE('include/csv.js');
     
     INCLUDE_FILE('include/highlight.js');
-
+    
+    INCLUDE_FILE('include/requirePatch.js');
+    
     WMEAC.log("Ready");
-    WMEAC.bootstrapAC();
+    
+    //WMEAC.bootstrapAC();
 }
 
 var WMEAC_Injected_script = document.createElement("script");
