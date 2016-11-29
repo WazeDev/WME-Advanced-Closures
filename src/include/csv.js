@@ -322,11 +322,9 @@ WMEAC.csvCheckAllSegments = function (i)
         // catch window tile
         var c = OpenLayers.Layer.SphericalMercator.forwardMercator(currentClosure.closure.lonlat.lon, currentClosure.closure.lonlat.lat);
         var b = Waze.map.calculateBounds();
-        
         var zoomRatio = Math.pow(2, Waze.map.zoom - currentClosure.closure.zoom);
-
-        var w = b.getWidth()*Waze.controller.ratio*zoomRatio;
-        var h = b.getHeight()*Waze.controller.ratio*zoomRatio;
+        var w = b.getWidth()*1.7*zoomRatio;
+        var h = b.getHeight()*1.7*zoomRatio;
 
         var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
         tileBounds=tileBounds.transform(Waze.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
@@ -337,6 +335,7 @@ WMEAC.csvCheckAllSegments = function (i)
         var aseg = new WFVS;
         
         var req = new XMLHttpRequest();
+        
         req.open('GET', document.location.protocol + '//' + document.location.host + Waze.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
             if (req.readyState == 4) {
