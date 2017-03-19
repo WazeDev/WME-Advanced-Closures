@@ -773,6 +773,16 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 else
                     $("#wmeac-advanced-closure-dialog-direction").val(3);
                 $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.permanent);
+                // MTE
+                if (c.eventId!=null)
+                {
+                    var options = [];
+                    $("#wmeac-advanced-closure-dialog-mteid option").each(function () { options.push($(this).val()); });
+                    if (options.indexOf(c.eventId)!=-1)
+                        $("#wmeac-advanced-closure-dialog-mteid").val(c.eventId);
+                    else
+                        $("#wmeac-advanced-closure-dialog-mteid").val('');
+                }
             }
          }
      });
