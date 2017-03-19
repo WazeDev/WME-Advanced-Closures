@@ -762,8 +762,11 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 var duration=new Date(c.endDate) - new Date(c.startDate);
                  // $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
                  // $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
-                 $("#wmeac-advanced-closure-dialog-duration-day").val(Math.floor(duration/86400000));
-                 $("#wmeac-advanced-closure-dialog-durationtime").val('' + new Date(duration).getHours() + ':' + new Date(duration).getMinutes());
+                 var days = Math.floor(duration/86400000);
+                 $("#wmeac-advanced-closure-dialog-duration-day").val(days);
+                 var hours = Math.floor((duration - days * 86400000)/3600000);
+                 var minutes = Math.floor((duration - days * 86400000 - hours * 3600000)/60000);
+                 $("#wmeac-advanced-closure-dialog-durationtime").val('' + hours + ':' + minutes);
                  $("#wmeac-advanced-closure-dialog-reason").val(c.reason.trim());
                  if (WMEAC.getOppositeClosure(c).isEmpty()) // oneway
                     $("#wmeac-advanced-closure-dialog-direction").val(c.forward?1:2);
