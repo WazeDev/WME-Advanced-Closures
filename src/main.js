@@ -3,8 +3,8 @@
 // @version     <WMEACVERSION>
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
-// @include     https://www.waze.com/editor/*
-// @include     https://www.waze.com/*/editor/*
+// @include     https://www.waze.com/editor*
+// @include     https://www.waze.com/*/editor*
 // @include     https://beta.waze.com/*
 // @exclude     https://www.waze.com/user/*
 // @exclude     https://www.waze.com/*/user/*
