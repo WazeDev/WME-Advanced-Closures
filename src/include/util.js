@@ -400,3 +400,16 @@ WMEAC.download = function (data, filename)
     element.click();
     document.body.removeChild(element);
 };
+
+WMEAC.buildPermalink = function (data)
+{
+    var getvars = [];
+    for (var m in data)
+    {
+        if (data.hasOwnProperty(m))
+        {
+            getvars.push('' + m + '=' + data[m]);
+        }
+    }
+    return document.location.protocol + '//' + document.location.host + document.location.pathname + '?' + getvars.join('&amp;');
+};
