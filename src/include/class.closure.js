@@ -102,7 +102,7 @@ WMEAC.ClassClosure = function (options)
         segs.forEach(function (s) {
             // look for closure(s)
             var that = this;
-            var closures = Waze.model.roadClosures.getObjectArray(function (c) {
+            var closures = W.model.roadClosures.getObjectArray(function (c) {
                 return (c.startDate==that.startDate &&
                         c.endDate==that.endDate &&
                         c.reason.trim()==that.reason &&

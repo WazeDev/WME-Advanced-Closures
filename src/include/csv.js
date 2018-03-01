@@ -137,7 +137,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         });
         WMEAC.log('Closure to target:', closure);
         var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        Waze.map.setCenter(xy, closure.closure.zoom);
+        W.map.setCenter(xy, closure.closure.zoom);
         var tmp3 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
@@ -163,10 +163,10 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             }
             if (segs.length!=0)
             {
-                Waze.selectionManager.select(segs);
+                W.selectionManager.select(segs);
                 var tmp = function selectionReady()
                 {
-                    if (Waze.selectionManager.selectedItems.isEmpty())
+                    if (W.selectionManager.selectedItems.isEmpty())
                         window.setTimeout(selectionReady, 500);
                     else
                     {
@@ -222,7 +222,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
 WMEAC.csvApplyClosure = function(closure, handler)
 {
     var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-    Waze.map.setCenter(xy, closure.closure.zoom);
+    W.map.setCenter(xy, closure.closure.zoom);
     function applySuccess(evt)
     {
         WMEAC.csvAddLog("Closure OK: " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
@@ -234,7 +234,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     {
         //WMEAC.log('evt', evt);
         var details="";
-        evt.forEach(function (err) {
+        evt.errors.forEach(function (err) {
             if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
                 details += err.attributes.details + "\n";
         });
@@ -321,22 +321,22 @@ WMEAC.csvCheckAllSegments = function (i)
         
         // catch window tile
         var c = OpenLayers.Layer.SphericalMercator.forwardMercator(currentClosure.closure.lonlat.lon, currentClosure.closure.lonlat.lat);
-        var b = Waze.map.calculateBounds();
-        var zoomRatio = Math.pow(2, Waze.map.zoom - currentClosure.closure.zoom);
+        var b = W.map.calculateBounds();
+        var zoomRatio = Math.pow(2, W.map.zoom - currentClosure.closure.zoom);
         var w = b.getWidth()*1.7*zoomRatio;
         var h = b.getHeight()*1.7*zoomRatio;
 
         var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
-        tileBounds=tileBounds.transform(Waze.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
+        tileBounds=tileBounds.transform(W.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
         
-        var roadTypes = (Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):Waze.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
+        var roadTypes = (W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
         
         var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
-        var aseg = new WFVS;
+        var aseg = new WFVS.default;
         
         var req = new XMLHttpRequest();
         
-        req.open('GET', document.location.protocol + '//' + document.location.host + Waze.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
+        req.open('GET', document.location.protocol + '//' + document.location.host + W.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
             if (req.readyState == 4) {
                 if(req.status == 200)

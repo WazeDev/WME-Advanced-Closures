@@ -2,7 +2,7 @@ WMEAC.refreshHighlight = function ()
 {
     try
     {
-        var l = Waze.map.getLayersBy("uniqueName", "closures");
+        var l = W.map.getLayersBy("uniqueName", "closures");
         if (l.length==1) l=l[0];
         for (var m in l.markers)
         {

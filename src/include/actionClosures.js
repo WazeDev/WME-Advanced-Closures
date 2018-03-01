@@ -34,7 +34,7 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc.default(closureDetails);
         t.actions=[cab.add(c)];
-        W.controller.save(t).done(done()).fail(fail());
+        W.controller.save(t).then(done()).catch(fail());
         return true;
     }
     return false;
@@ -56,7 +56,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
             if (failureHandler)
             {
                 var details = [];
-                f.forEach(function (err) {
+                f.errors.forEach(function (err) {
                     if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
                         details.push(err.attributes.details);
                 });
@@ -82,7 +82,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
+    var segs = _.pluck(W.selectionManager.selectedItems, 'model');
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
@@ -91,11 +91,11 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
         
-    var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
+    var closureDetails = {reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
     var c = new sc.default(closureDetails);
     t.actions=[cab.add(c)];
-    W.controller.save(t).done(done()).fail(fail());
+    W.controller.save(t).then(done()).catch(fail());
 };
 
 WMEAC.addClosureFromSelection = function (options, successHandler, failureHandler)
@@ -129,12 +129,12 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var segs = _.pluck(Waze.selectionManager.selectedItems, 'model');
-        var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: Waze.selectionManager.getReversedSegments()};
+        var segs = _.pluck(W.selectionManager.selectedItems, 'model');
+        var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc.default(closureDetails);
         t.actions=[cab.add(c)];
-        W.controller.save(t).done(done()).fail(fail());
+        W.controller.save(t).then(done()).catch(fail());
         return true;
     }
     return false;
@@ -164,6 +164,6 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var t = {};
     var c = new sc.default({closures: [].concat(closures)});
     t.actions=[cab.delete(c)];
-    W.controller.save(t).done(done()).fail(fail());
+    W.controller.save(t).then(done()).catch(fail());
     return true;
 };

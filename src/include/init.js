@@ -18,10 +18,13 @@ WMEAC.initialize = function ()
 
 WMEAC.waitForWaze = function(handler)
 {
-    var APIRequired=[{o: "Waze"},
-                     {o: "Waze.model"},
-                     {o: "Waze.map"},
-                     {o: "Waze.loginManager"}
+    var APIRequired=[{o: "W"},
+                     {o: "W.model"},
+                     {o: "W.map"},
+                     {o: "W.loginManager"},
+                     {o: "W.vent"},
+                     {o: "W.Config"},
+                     {o: "W.controller"}
                     ];
     for (var i=0; i<APIRequired.length; i++)
     {

@@ -12,7 +12,7 @@
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
 // @connect     holidayapi.com
-// @copyright   2016, dummyd2, seb-d59
+// @copyright   2018, dummyd2, seb-d59
 // @author      dummyd2, seb-d59
 // ==/UserScript==
 

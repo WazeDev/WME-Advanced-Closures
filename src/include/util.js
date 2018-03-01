@@ -117,25 +117,25 @@ WMEAC.CSVtoArray = function (text) {
 WMEAC.segmentsIDsToSegments = function (ids)
 {
     return ids.filter(function (e) {
-        return (Waze.model.segments.objects.hasOwnProperty(e));
+        return (W.model.segments.objects.hasOwnProperty(e));
     }).map (function (e) {
-        return (Waze.model.segments.objects[e]);
+        return (W.model.segments.objects[e]);
     });
 };
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=Waze.map.getLayersBy("uniqueName","roads")[0];
+    var l=W.map.getLayersBy("uniqueName","roads")[0];
     l.redraw({force:!0});
     l.removeBackBuffer();
-    Waze.controller.reload();  
+    W.controller.reload();  
 };
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=Waze.map.getLayersBy("uniqueName","closures")[0];
+    var l=W.map.getLayersBy("uniqueName","closures")[0];
     l.redraw({force:!0});
-    Waze.controller.reload();
+    W.controller.reload();
     if (endHandler)
     {
         var tmp = function reloaded() {
@@ -157,7 +157,7 @@ WMEAC.reloadClosuresLayer = function (endHandler)
 
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = Waze.map.getLayersBy("uniqueName", "closures");
+    var l = W.map.getLayersBy("uniqueName", "closures");
     if (l.length==1) l[0].setVisibility(show);
 };
 
@@ -322,14 +322,14 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
         if (s.attributes.hasOwnProperty('primaryStreetID') && s.attributes.primaryStreetID!=null)
         {
             var stid = s.attributes.primaryStreetID;
-            if (Waze.model.streets.objects.hasOwnProperty(stid))
+            if (W.model.streets.objects.hasOwnProperty(stid))
             {
-                var st = Waze.model.streets.objects[stid];
+                var st = W.model.streets.objects[stid];
                 if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
                 {
                     var ctid = st.cityID;
-                    if (Waze.model.cities.objects.hasOwnProperty(ctid))
-                        return Waze.model.cities.objects[ctid].countryID;
+                    if (W.model.cities.objects.hasOwnProperty(ctid))
+                        return W.model.cities.objects[ctid].countryID;
                 }
             }
         }
@@ -337,14 +337,14 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
     }).filter(function (cid) {
         return (cid!=null);
     });
-    return (Waze.model.countries.getObjectArray(function (c) {
+    return (W.model.countries.getObjectArray(function (c) {
         return cids.indexOf(c.id)!=-1;
     }));
 };
 
 WMEAC.getOppositeClosure = function (closure)
 {
-    return Waze.model.roadClosures.getObjectArray(function (c) {
+    return W.model.roadClosures.getObjectArray(function (c) {
         return (closure.reason == c.reason &&
                 closure.startDate == c.startDate &&
                 closure.endDate == c.endDate &&
@@ -368,22 +368,22 @@ WMEAC.getCityStreetsFromSegmentSet = function (segs)
     segs.forEach(function (s) {
         var city='noCity';
         if (s.attributes.primaryStreetID!=null &&
-            Waze.model.streets.objects.hasOwnProperty(s.attributes.primaryStreetID))
+            W.model.streets.objects.hasOwnProperty(s.attributes.primaryStreetID))
         {
-            var st = Waze.model.streets.objects[s.attributes.primaryStreetID];
+            var st = W.model.streets.objects[s.attributes.primaryStreetID];
             if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
             {
                 var ctid = st.cityID;
-                if (Waze.model.cities.objects.hasOwnProperty(ctid))
+                if (W.model.cities.objects.hasOwnProperty(ctid))
                 {
-                    if (!Waze.model.cities.objects[ctid].isEmpty)
-                        city=Waze.model.cities.objects[ctid].name;
+                    if (!W.model.cities.objects[ctid].isEmpty)
+                        city=W.model.cities.objects[ctid].name;
                 }
             }
-            if (Waze.model.streets.objects[s.attributes.primaryStreetID].isEmpty)
+            if (W.model.streets.objects[s.attributes.primaryStreetID].isEmpty)
                 add(city, 'noStreet');
             else
-                add(city, Waze.model.streets.objects[s.attributes.primaryStreetID].name);
+                add(city, W.model.streets.objects[s.attributes.primaryStreetID].name);
         }
             
     });

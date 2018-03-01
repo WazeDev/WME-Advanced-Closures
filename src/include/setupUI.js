@@ -96,20 +96,20 @@ WMEAC.initUI = function ()
     // test now if closure tab exists. It happens if WME is opened with a segment id in the url:
     WMEAC.installButtonInClosureTab();
     
-    //Waze.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
-    Waze.vent.on("operationPending", function(e) {
+    //W.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+    W.vent.on("operationPending", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = true;
     });
 
-    Waze.vent.on("operationDone", function(e) {
+    W.vent.on("operationDone", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = false;
     });
 
-    Waze.model.events.register("mergeend", null, WMEAC.refreshHighlight);
+    W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
     WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
 };
@@ -144,10 +144,10 @@ WMEAC.showAddAdvancedClosure = function()
                                      id: 'wmeac-add-advanced-closure-dialog',
                                      className: 'wmeac-closuredialog'});
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
-        Waze.map.div.appendChild(ACDiv);
+        W.map.div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
         ACDiv.style.display="none";
-        //Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+        //W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
@@ -156,10 +156,12 @@ WMEAC.showAddAdvancedClosure = function()
     else
     {
         ACDiv.style.display="block";
-        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
-        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
+        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
         WMEAC.refreshClosureListFromSelection();
     }
+    //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
+    $(ACDiv).find('.input-group-addon').css({display:"table-cell"});
     WMEAC.showClosuresLayer(true);
 };
 
@@ -455,7 +457,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (Waze.selectionManager.selectedItems.isEmpty() || Waze.selectionManager.selectedItems[0].model.type!="segment")
+            if (W.selectionManager.selectedItems.isEmpty() || W.selectionManager.selectedItems[0].model.type!="segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
@@ -465,7 +467,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
-            var mte = Waze.model.majorTrafficEvents.get(mteId);
+            var mte = W.model.majorTrafficEvents.get(mteId);
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
@@ -475,11 +477,11 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(Waze.selectionManager.selectedItems, 'model');
+            var selection = _.pluck(W.selectionManager.selectedItems, 'model');
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
-                var rev = Waze.selectionManager.getReversedSegments();
+                var rev = W.selectionManager.getReversedSegments();
                 selection=selection.filter(function (e) {
                     if (rev[e.attributes.id])
                     {
@@ -489,15 +491,15 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                     return true;
                 });
             }
-            var lonlat=Waze.map.center.transform(Waze.map.projection.projCode, "EPSG:4326");
+            var lonlat=W.map.center.transform(W.map.projection.projCode, "EPSG:4326");
             var csv = 'header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (2 to 10),MTE id (empty cell if not),comment (optional)\n';
             closureList.forEach(function (e) {
-                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + Waze.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
             });
             if (!selectionReversed.isEmpty())
             {
                 closureList.forEach(function (e) {
-                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + Waze.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
                 });
             }
             WMEAC.download(csv, 'closures.csv');
@@ -511,8 +513,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
             if (d) 
             {
-                Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
-                Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
+                W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
+                W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
                 d.style.display='none';
             }
         });
@@ -528,12 +530,12 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (Waze.selectionManager.selectedItems.isEmpty() || Waze.selectionManager.selectedItems[0].model.type!="segment")
+            if (W.selectionManager.selectedItems.isEmpty() || W.selectionManager.selectedItems[0].model.type!="segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (Waze.selectionManager.selectedItems.every(function (e) {
+            if (W.selectionManager.selectedItems.every(function (e) {
                     return e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES);
                 })==false)
             {
@@ -548,7 +550,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             direction=(direction=="1"?sc.DIRECTION.A_TO_B:(direction=="2"?sc.DIRECTION.B_TO_A:sc.DIRECTION.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
+            var mte = W.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
@@ -558,22 +560,22 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(Waze.selectionManager.selectedItems, 'model');
-            Waze.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
+            var selection = _.pluck(W.selectionManager.selectedItems, 'model');
+            W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
             }, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"});
             }, function () {
-                Waze.selectionManager.select(selection);
+                W.selectionManager.select(selection);
                 //alert ('done');
                 var tmp = function selectionReady()
                 {
-                    if (Waze.selectionManager.selectedItems.isEmpty())
+                    if (W.selectionManager.selectedItems.isEmpty())
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        Waze.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+                        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
                         $('a[href="#segment-edit-closures"]').click();
                     }
                 };
@@ -692,7 +694,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             WMEAC.getHolidays({
                 rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
                 rangeEnd: $('#wmeac-advanced-closure-dialog-rangeenddate').val(),
-                countries: _.pluck(WMEAC.getCountriesFromSegmentSet(_.pluck(Waze.selectionManager.selectedItems, 'model')), 'abbr'),
+                countries: _.pluck(WMEAC.getCountriesFromSegmentSet(_.pluck(W.selectionManager.selectedItems, 'model')), 'abbr'),
                 handlerFinished: function (holidays)
                 {
                     WMEAC.lastGeneratedHolidays = holidays;
@@ -755,7 +757,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         if (closureId)
         {
-            var c = Waze.model.roadClosures.objects[closureId];
+            var c = W.model.roadClosures.objects[closureId];
             if (c)
             {
                 $("#wmeac-advanced-closure-dialog-starttime").val(c.startDate.split(' ')[1]);

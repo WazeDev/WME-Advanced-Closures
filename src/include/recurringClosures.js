@@ -148,26 +148,26 @@ WMEAC.refreshClosureList = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var existingClosures = Waze.selectionManager.selectedItems.reduce(function (p, c, i) {
-                var revSegs = Waze.selectionManager.getReversedSegments();
+            var existingClosures = W.selectionManager.selectedItems.reduce(function (p, c, i) {
+                var revSegs = W.selectionManager.getReversedSegments();
                 var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
                 var realWay = isReversed?(direction==1?2:1):direction;
-                return p.concat(Waze.model.roadClosures.getObjectArray(function (e) {
+                return p.concat(W.model.roadClosures.getObjectArray(function (e) {
                     return (e.segID==c.model.attributes.id &&
                     (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
                 }));
             }, []);
-            var mte = Waze.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
+            var mte = W.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                     var overlap = existingClosures.filter(function (c) {
                         return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
                     }).map(function (c) {
                         var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
-                        if (Waze.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
-                        if (Waze.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
-                        if (Waze.model.streets.objects.hasOwnProperty(Waze.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
-                        var street = Waze.model.streets.objects[Waze.model.segments.objects[c.segID].attributes.primaryStreetID];
+                        if (W.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
+                        if (W.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
+                        if (W.model.streets.objects.hasOwnProperty(W.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
+                        var street = W.model.streets.objects[W.model.segments.objects[c.segID].attributes.primaryStreetID];
                         if (!street.isEmpty) msg = street.name + ': ' + msg;
                         return msg;
                     });
@@ -201,7 +201,7 @@ WMEAC.refreshMTEList = function ()
     {
         rangeEnd.addDays(1);
         // filter MTE loaded in WME:
-        Waze.model.majorTrafficEvents.getObjectArray(function (mte) {
+        W.model.majorTrafficEvents.getObjectArray(function (mte) {
             // check if ranges overlap
             return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new Date(mte.attributes.startDate), endDate: new Date(mte.attributes.endDate)}));
         }).forEach(function (mte) {
@@ -228,11 +228,11 @@ WMEAC.refreshClosureListFromSelection = function ()
     {
         var currentSegClosure = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         $("#wmeac-advanced-closure-dialog-segclosure-list").empty();
-        if (Waze.selectionManager.selectedItems.length!=0)
+        if (W.selectionManager.selectedItems.length!=0)
         {
             var blackList=[];
-            Waze.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==Waze.selectionManager.selectedItems[0].model.attributes.id;
+            W.model.roadClosures.getObjectArray(function (c) {
+                return c.segID==W.selectionManager.selectedItems[0].model.attributes.id;
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {
