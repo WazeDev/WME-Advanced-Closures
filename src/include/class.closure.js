@@ -116,7 +116,7 @@ WMEAC.ClassClosure = function (options)
                 allClosuresToRemove=allClosuresToRemove.concat(closures);
             }
         }, this);
-        if (allClosuresToRemove.isEmpty())
+        if (allClosuresToRemove.length==0)
         {
             failureHandler([{attributes: {details: "No segment. Check permissions or existence."}}]);
         }

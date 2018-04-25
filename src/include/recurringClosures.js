@@ -148,7 +148,7 @@ WMEAC.refreshClosureList = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var existingClosures = W.selectionManager.selectedItems.reduce(function (p, c, i) {
+            var existingClosures = W.selectionManager.getSelectedFeatures().reduce(function (p, c, i) {
                 var revSegs = W.selectionManager.getReversedSegments();
                 var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
                 var realWay = isReversed?(direction==1?2:1):direction;
@@ -228,18 +228,18 @@ WMEAC.refreshClosureListFromSelection = function ()
     {
         var currentSegClosure = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         $("#wmeac-advanced-closure-dialog-segclosure-list").empty();
-        if (W.selectionManager.selectedItems.length!=0)
+        if (W.selectionManager.getSelectedFeatures().length!=0)
         {
             var blackList=[];
             W.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==W.selectionManager.selectedItems[0].model.attributes.id;
+                return c.segID==W.selectionManager.getSelectedFeatures()[0].model.attributes.id;
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {
                 if (blackList.indexOf(c.id)!=-1) return;
                 var direction = c.forward?"A to B":"B to A";
                 var oppositeClosure = WMEAC.getOppositeClosure(c);
-                if (!oppositeClosure.isEmpty())
+                if (!oppositeClosure.length==0)
                 {
                     direction = "Two way";
                     blackList.push(oppositeClosure[0].id);

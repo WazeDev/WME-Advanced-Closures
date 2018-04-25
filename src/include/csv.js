@@ -166,7 +166,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                 W.selectionManager.select(segs);
                 var tmp = function selectionReady()
                 {
-                    if (W.selectionManager.selectedItems.isEmpty())
+                    if (W.selectionManager.getSelectedFeatures().length==0)
                         window.setTimeout(selectionReady, 500);
                     else
                     {
@@ -483,7 +483,7 @@ WMEAC.CSVApplyChecked = function ()
         return (e.UI.children[0].children[0].checked);
     });
     WMEAC.csvClearLog();
-    if (WMEAC.csvCurrentBatchClosureList.isEmpty())
+    if (WMEAC.csvCurrentBatchClosureList.length==0)
     {
         WMEAC.csvAddLog("No closure checked!\n");
     }
@@ -537,7 +537,7 @@ WMEAC.CSVCheckSegsChecked = function ()
     WMEAC.csvCurrentBatchClosureList = WMEAC.csvCurrentClosureList.filter(function (e) {
         return (e.UI.children[0].children[0].checked);
     });
-    if (WMEAC.csvCurrentBatchClosureList.isEmpty())
+    if (WMEAC.csvCurrentBatchClosureList.length==0)
     {
         WMEAC.csvAddLog("No closure checked!\n");
     }
