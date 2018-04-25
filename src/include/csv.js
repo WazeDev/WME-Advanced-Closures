@@ -163,7 +163,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             }
             if (segs.length!=0)
             {
-                W.selectionManager.select(segs);
+                W.selectionManager.setSelectedModels(segs);
                 var tmp = function selectionReady()
                 {
                     if (W.selectionManager.getSelectedFeatures().length==0)

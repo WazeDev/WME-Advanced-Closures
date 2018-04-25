@@ -567,7 +567,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             }, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"});
             }, function () {
-                W.selectionManager.select(selection);
+                W.selectionManager.setSelectedModels(selection);
                 //alert ('done');
                 var tmp = function selectionReady()
                 {
