@@ -166,7 +166,7 @@ WMEAC.setDraggable = function (element, options)
     if (!options.hasOwnProperty('controller'))
         options.controller=element;
     if (!options.hasOwnProperty('container'))
-        options.container=$('body');
+        options.container=[$('body')];
     
     options.controller.css({cursor: 'move'});
 
@@ -175,7 +175,9 @@ WMEAC.setDraggable = function (element, options)
         var y = e.pageY-element.offset().top;
 
         $('body').on("mouseup", function(e) {
-            options.container.off("mousemove", elemmousemove);
+            options.container.forEach(function (c) {
+                c.off("mousemove", elemmousemove);
+            });
                
         });
     
@@ -187,7 +189,9 @@ WMEAC.setDraggable = function (element, options)
             });
         }
     
-        options.container.on("mousemove",  elemmousemove);
+        options.container.forEach(function (c) {
+            c.on("mousemove",  elemmousemove);
+        });
 
     });
 };

@@ -826,7 +826,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         WMEAC.reloadPresets();
      });
      
-     WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'), container: $('#WazeMap') });
+     WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'),  container: [$('#OpenLayers_Map_200_OpenLayers_ViewPort'), $('#WazeMap')]  });
      
 };
 
