@@ -89,7 +89,7 @@ myecho ("info", 'Build ended' . PHP_EOL);
 
 myecho ("info", 'Write code...');
 file_put_contents("wme-ac.js", $js);
-file_put_contents("ac-v" . $version . ".user.js", $js);
+#file_put_contents("ac-v" . $version . ".user.js", $js);
 myecho ("continuous", '	done' . PHP_EOL);
 
 ?>
