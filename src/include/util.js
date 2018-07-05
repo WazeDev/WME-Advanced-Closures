@@ -417,3 +417,9 @@ WMEAC.buildPermalink = function (data)
     }
     return document.location.protocol + '//' + document.location.host + document.location.pathname + '?' + getvars.join('&amp;');
 };
+
+WMEAC.sharedClosureDirection = { 
+    A_TO_B: 1,
+    B_TO_A: 2,
+    TWO_WAY: 3
+};
