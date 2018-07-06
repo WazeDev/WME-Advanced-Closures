@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2018.07.05.03
+// @version     2018.07.06.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2018.07.05.03";
+WMEAC.ac_version="2018.07.06.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -786,10 +786,10 @@ WMEAC.initUI = function ()
     
     var section = WMEAC.createElement({type: 'p', id: 'wmeac-main-title'});
     section.style.paddingTop = "0px";
-    section.style.marginTop = "-15px";
+    section.style.marginTop = "0px";
     section.style.textIndent = "8px";
     
-    var title='<b><a target="_blank" href="https://greasyfork.org/scripts/20705-wme-advanced-closures"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=1316&t=193462">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=193465">En</a> </b> v' + WMEAC.ac_version;
+    var title='<b><a target="_blank" href="https://greasyfork.org/scripts/370072-wme-advanced-closures"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=1316&t=193462">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=261114">En</a> </b> v' + WMEAC.ac_version;
     section.innerHTML  = title;
     addon.appendChild(section);
     
@@ -928,7 +928,7 @@ WMEAC.showAddAdvancedClosure = function()
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
-        $(ACDiv).css({left: '80px', top: '10px'});
+        $(ACDiv).css({left: '80px', top: '20px'});
     }
     else
     {
@@ -1090,24 +1090,25 @@ var tabRepeatUI = '\
   </div>\
 ';
 
-var daysOfWeekUI = _(WMEAC.daysOfWeek).clone();
+var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
 daysOfWeekUI.push(daysOfWeekUI.shift());
-var tabEachUI = '<div class="checkbox">\
+var tabEachUI = '<div class="box" style="display:flex; flex-wrap:wrap;">\
+    <div style="width:100%;">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-dayall" type="checkbox" name="closure_each_dayall">\
       All\
     </label>\
   </div>\
-  ' + 
+    ' +
     daysOfWeekUI.map(function (d, i) {
-        return '<div class="checkbox">\
+        return '<div style="width:14%;">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
       ' + d + '\
     </label>\
   </div>\
 ';
-    }).join('');
+    }).join('') + '</div>';
 
 var tabHolidayUI = '\
 <div class="content">\
