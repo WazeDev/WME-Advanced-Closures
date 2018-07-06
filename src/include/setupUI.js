@@ -313,24 +313,25 @@ var tabRepeatUI = '\
   </div>\
 ';
 
-var daysOfWeekUI = _(WMEAC.daysOfWeek).clone();
+var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
 daysOfWeekUI.push(daysOfWeekUI.shift());
-var tabEachUI = '<div class="checkbox">\
+var tabEachUI = '<div class="box" style="display:flex; flex-wrap:wrap;">\
+    <div style="width:100%;">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-dayall" type="checkbox" name="closure_each_dayall">\
       All\
     </label>\
   </div>\
-  ' + 
+    ' +
     daysOfWeekUI.map(function (d, i) {
-        return '<div class="checkbox">\
+        return '<div style="width:14%;">\
     <label class="control-label" style="font-weight: bold;">\
       <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
       ' + d + '\
     </label>\
   </div>\
 ';
-    }).join('');
+    }).join('') + '</div>';
 
 var tabHolidayUI = '\
 <div class="content">\
