@@ -9,10 +9,10 @@ WMEAC.initUI = function ()
     
     var section = WMEAC.createElement({type: 'p', id: 'wmeac-main-title'});
     section.style.paddingTop = "0px";
-    section.style.marginTop = "-15px";
+    section.style.marginTop = "0px";
     section.style.textIndent = "8px";
     
-    var title='<b><a target="_blank" href="https://greasyfork.org/scripts/20705-wme-advanced-closures"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=1316&t=193462">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=193465">En</a> </b> v' + WMEAC.ac_version;
+    var title='<b><a target="_blank" href="https://greasyfork.org/scripts/370072-wme-advanced-closures"><u>Advanced Closures</u></a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=1316&t=193462">Fr</a> <a target="_blank" href="https://www.waze.com/forum/viewtopic.php?f=819&t=261114">En</a> </b> v' + WMEAC.ac_version;
     section.innerHTML  = title;
     addon.appendChild(section);
     
