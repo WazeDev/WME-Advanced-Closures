@@ -151,7 +151,7 @@ WMEAC.showAddAdvancedClosure = function()
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
-        $(ACDiv).css({left: '80px', top: '10px'});
+        $(ACDiv).css({left: '80px', top: '20px'});
     }
     else
     {
