@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2018.07.06.01
+// @version     2018.07.09.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2018.07.06.01";
+WMEAC.ac_version="2018.07.09.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -2797,7 +2797,7 @@ WMEAC.csvCheckAllSegments = function (i)
         var roadTypes = (W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
         
         var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
-        var aseg = new WFVS.default;
+        var aseg = new WFVS;
         
         var req = new XMLHttpRequest();
         

@@ -332,7 +332,7 @@ WMEAC.csvCheckAllSegments = function (i)
         var roadTypes = (W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
         
         var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
-        var aseg = new WFVS.default;
+        var aseg = new WFVS;
         
         var req = new XMLHttpRequest();
         
