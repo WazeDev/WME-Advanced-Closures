@@ -157,7 +157,7 @@ WMEAC.refreshClosureList = function ()
                     (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
                 }));
             }, []);
-            var mte = W.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
+            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                     var overlap = existingClosures.filter(function (c) {

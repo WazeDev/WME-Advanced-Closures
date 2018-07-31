@@ -468,7 +468,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
-            var mte = W.model.majorTrafficEvents.get(mteId);
+            var mte = W.model.majorTrafficEvents.getObjectById(mteId);
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
@@ -551,7 +551,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             direction=(direction=="1"?WMEAC.sharedClosureDirection.A_TO_B:(direction=="2"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var mte = W.model.majorTrafficEvents.get($("#wmeac-advanced-closure-dialog-mteid").val());
+            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
