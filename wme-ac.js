@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2019.05.01.01
-
+// @version     2019.05.01.02
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -146,8 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2019.05.01.01
-";
+WMEAC.ac_version="2019.05.01.02";
 
 WMEAC.closureTabTimeout=null;
 
