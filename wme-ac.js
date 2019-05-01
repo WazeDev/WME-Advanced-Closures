@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2018.07.31.01
+// @version     2019.05.01.01
+
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +146,8 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2018.07.31.01";
+WMEAC.ac_version="2019.05.01.01
+";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1314,7 +1316,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 return;
             }
             if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    return e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES);
+                    return e.model.isAllowed(e.model.permissionFlags.EDIT_CLOSURES);
                 })==false)
             {
                 alert("You don't have permission to edit closures on all those segments.");
