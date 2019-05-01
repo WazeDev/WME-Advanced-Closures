@@ -537,7 +537,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 return;
             }
             if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    return e.model.isAllowed(e.model.PERMISSIONS.EDIT_CLOSURES);
+                    return e.model.isAllowed(e.model.permissionFlags.EDIT_CLOSURES);
                 })==false)
             {
                 alert("You don't have permission to edit closures on all those segments.");
