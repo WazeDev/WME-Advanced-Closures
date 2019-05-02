@@ -67,7 +67,7 @@ WMEAC.ClassClosure = function (options)
         WMEAC.log("Segs: ", segs);
 
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
         });
                 
         if (segs.length==0)
@@ -94,7 +94,7 @@ WMEAC.ClassClosure = function (options)
     {
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
         });
         
         var allClosuresToRemove=[];
