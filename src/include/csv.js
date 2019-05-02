@@ -352,7 +352,7 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
                             return (data.segments.objects.find(function (seg) {
-                                return (sid == seg.id && (seg.permissions)&aseg.PERMISSIONS.EDIT_CLOSURES);
+                                return (sid == seg.id && (seg.permissions)&aseg.permissionFlags.EDIT_CLOSURES);
                             })!=null);
                         });
                         // look for closures on existing segs and build overlap list
