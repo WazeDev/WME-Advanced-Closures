@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2019.05.01.02
+// @version     2019.05.02.01
+
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +146,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2019.05.01.02";
+WMEAC.ac_version="2019.05.02.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1782,7 +1783,7 @@ WMEAC.ClassClosure = function (options)
         WMEAC.log("Segs: ", segs);
 
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
         });
                 
         if (segs.length==0)
@@ -1809,7 +1810,7 @@ WMEAC.ClassClosure = function (options)
     {
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.PERMISSIONS.EDIT_CLOSURES);
+            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
         });
         
         var allClosuresToRemove=[];
@@ -2817,7 +2818,7 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
                             return (data.segments.objects.find(function (seg) {
-                                return (sid == seg.id && (seg.permissions)&aseg.PERMISSIONS.EDIT_CLOSURES);
+                                return (sid == seg.id && (seg.permissions)&aseg.permissionFlags.EDIT_CLOSURES);
                             })!=null);
                         });
                         // look for closures on existing segs and build overlap list
@@ -3011,6 +3012,7 @@ WMEAC.CSVCheckSegsChecked = function ()
         WMEAC.csvCheckAllSegments(-1);
     }
 };
+
 
 /***********************************************
 *** END OF INCLUDED FILE :                  ***
