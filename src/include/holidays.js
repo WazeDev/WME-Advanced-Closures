@@ -72,7 +72,7 @@ WMEAC.getHolidays = function (options)
                             for (var hd in nextHoliday.holidays) {
                                 if (!nextHoliday.holidays.hasOwnProperty(hd)) continue;
                                 if (nextHoliday.holidays[hd].length==0) continue;
-                                var name = _.pluck(nextHoliday.holidays[hd], 'name').join(' / ');
+                                var name = _.map(nextHoliday.holidays[hd], 'name').join(' / ');
                                 var h = nextHoliday.holidays[hd][0];
                                 var d = new Date(h.date);
                                 if (d>=rangeStart && d<rangeEnd)

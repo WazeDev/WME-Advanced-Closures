@@ -478,7 +478,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
@@ -561,7 +561,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
             W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
@@ -695,7 +695,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             WMEAC.getHolidays({
                 rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
                 rangeEnd: $('#wmeac-advanced-closure-dialog-rangeenddate').val(),
-                countries: _.pluck(WMEAC.getCountriesFromSegmentSet(_.pluck(W.selectionManager.getSelectedFeatures(), 'model')), 'abbr'),
+                countries: _.map(WMEAC.getCountriesFromSegmentSet(_.map(W.selectionManager.getSelectedFeatures(), 'model')), 'abbr'),
                 handlerFinished: function (holidays)
                 {
                     WMEAC.lastGeneratedHolidays = holidays;
