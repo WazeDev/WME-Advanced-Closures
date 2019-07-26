@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2019.05.02.01
-
+// @version     2019.07.26.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -146,7 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2019.05.02.01";
+WMEAC.ac_version="2019.07.26.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1256,7 +1255,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
@@ -1339,7 +1338,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
             W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
@@ -1473,7 +1472,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             WMEAC.getHolidays({
                 rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
                 rangeEnd: $('#wmeac-advanced-closure-dialog-rangeenddate').val(),
-                countries: _.pluck(WMEAC.getCountriesFromSegmentSet(_.pluck(W.selectionManager.getSelectedFeatures(), 'model')), 'abbr'),
+                countries: _.map(WMEAC.getCountriesFromSegmentSet(_.map(W.selectionManager.getSelectedFeatures(), 'model')), 'abbr'),
                 handlerFinished: function (holidays)
                 {
                     WMEAC.lastGeneratedHolidays = holidays;
@@ -2194,7 +2193,7 @@ WMEAC.getHolidays = function (options)
                             for (var hd in nextHoliday.holidays) {
                                 if (!nextHoliday.holidays.hasOwnProperty(hd)) continue;
                                 if (nextHoliday.holidays[hd].length==0) continue;
-                                var name = _.pluck(nextHoliday.holidays[hd], 'name').join(' / ');
+                                var name = _.map(nextHoliday.holidays[hd], 'name').join(' / ');
                                 var h = nextHoliday.holidays[hd][0];
                                 var d = new Date(h.date);
                                 if (d>=rangeStart && d<rangeEnd)
@@ -2331,7 +2330,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var segs = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+    var segs = _.map(W.selectionManager.getSelectedFeatures(), 'model');
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
@@ -2378,7 +2377,7 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var segs = _.pluck(W.selectionManager.getSelectedFeatures(), 'model');
+        var segs = _.map(W.selectionManager.getSelectedFeatures(), 'model');
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc(closureDetails);
