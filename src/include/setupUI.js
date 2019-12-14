@@ -144,7 +144,7 @@ WMEAC.showAddAdvancedClosure = function()
                                      id: 'wmeac-add-advanced-closure-dialog',
                                      className: 'wmeac-closuredialog'});
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
-        W.map.div.appendChild(ACDiv);
+        W.map.getOLMap().div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
         ACDiv.style.display="none";
         //W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
