@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2019.12.13.01
+// @version     2019.12.13.02
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2019.12.13.01";
+WMEAC.ac_version="2019.12.13.02";
 
 WMEAC.closureTabTimeout=null;
 
@@ -3255,7 +3255,23 @@ document.body.appendChild(WMEAPI.WMEHACK_Injected_script);
     
 }
 
-var WMEAC_Injected_script = document.createElement("script");
-WMEAC_Injected_script.textContent = '' + WMEAC_Injected.toString() + ' \n' + 'WMEAC_Injected();';
-WMEAC_Injected_script.setAttribute("type", "application/javascript");
-document.body.appendChild(WMEAC_Injected_script);
+function bootstrap(tries = 1) {
+        if (W &&
+            W.map &&
+            W.model &&
+            W.loginManager.user &&
+            $ &&
+            WazeWrap.Ready)
+            init();
+        else if (tries < 1000)
+            setTimeout(function () {bootstrap(tries++);}, 200);
+    }
+
+    bootstrap();
+
+function init(){
+	var WMEAC_Injected_script = document.createElement("script");
+	WMEAC_Injected_script.textContent = '' + WMEAC_Injected.toString() + ' \n' + 'WMEAC_Injected();';
+	WMEAC_Injected_script.setAttribute("type", "application/javascript");
+	document.body.appendChild(WMEAC_Injected_script);
+}

@@ -88,7 +88,23 @@ function WMEAC_Injected()
     
 }
 
-var WMEAC_Injected_script = document.createElement("script");
-WMEAC_Injected_script.textContent = '' + WMEAC_Injected.toString() + ' \n' + 'WMEAC_Injected();';
-WMEAC_Injected_script.setAttribute("type", "application/javascript");
-document.body.appendChild(WMEAC_Injected_script);
+function bootstrap(tries = 1) {
+        if (W &&
+            W.map &&
+            W.model &&
+            W.loginManager.user &&
+            $ &&
+            WazeWrap.Ready)
+            init();
+        else if (tries < 1000)
+            setTimeout(function () {bootstrap(tries++);}, 200);
+    }
+
+    bootstrap();
+
+function init(){
+	var WMEAC_Injected_script = document.createElement("script");
+	WMEAC_Injected_script.textContent = '' + WMEAC_Injected.toString() + ' \n' + 'WMEAC_Injected();';
+	WMEAC_Injected_script.setAttribute("type", "application/javascript");
+	document.body.appendChild(WMEAC_Injected_script);
+}
