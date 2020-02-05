@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2020.01.31
+// @version     2020.02.05.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -145,7 +145,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2020.01.31";
+WMEAC.ac_version="2020.02.05.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -603,6 +603,29 @@ WMEAC.sharedClosureDirection = {
     B_TO_A: 2,
     TWO_WAY: 3
 };
+
+WMEAC.zoomToRoadType = function(e) {
+    let allRoadTypes = [1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,22];
+    switch (e) {
+        case 0:
+        case 1:
+            return [];
+        case 2:
+            return [2, 3, 4, 6, 7, 14];
+        case 3:
+            return [2, 3, 4, 6, 7, 8, 9, 10, 14, 16,17, 18, 19, 20, 22];
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        default:
+            return allRoadTypes;
+    }
+}
+
 
 
 /***********************************************
@@ -2794,7 +2817,7 @@ WMEAC.csvCheckAllSegments = function (i)
         var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
         tileBounds=tileBounds.transform(W.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
         
-        var roadTypes = (W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
+        var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
         var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
         var aseg = new WFVS;
@@ -3260,8 +3283,7 @@ function bootstrap(tries = 1) {
             W.map &&
             W.model &&
             W.loginManager.user &&
-            $ &&
-            WazeWrap.Ready)
+            $)
             init();
         else if (tries < 1000)
             setTimeout(function () {bootstrap(tries++);}, 200);

@@ -423,3 +423,26 @@ WMEAC.sharedClosureDirection = {
     B_TO_A: 2,
     TWO_WAY: 3
 };
+
+WMEAC.zoomToRoadType = function(e) {
+    let allRoadTypes = [1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,22];
+    switch (e) {
+        case 0:
+        case 1:
+            return [];
+        case 2:
+            return [2, 3, 4, 6, 7, 14];
+        case 3:
+            return [2, 3, 4, 6, 7, 8, 9, 10, 14, 16,17, 18, 19, 20, 22];
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        default:
+            return allRoadTypes;
+    }
+}
+

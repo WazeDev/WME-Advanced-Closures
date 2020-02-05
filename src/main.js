@@ -93,8 +93,7 @@ function bootstrap(tries = 1) {
             W.map &&
             W.model &&
             W.loginManager.user &&
-            $ &&
-            WazeWrap.Ready)
+            $)
             init();
         else if (tries < 1000)
             setTimeout(function () {bootstrap(tries++);}, 200);

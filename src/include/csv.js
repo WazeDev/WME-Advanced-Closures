@@ -329,7 +329,7 @@ WMEAC.csvCheckAllSegments = function (i)
         var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
         tileBounds=tileBounds.transform(W.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
         
-        var roadTypes = (W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]==-1?_.range(1, 22):W.model.repos.segments.zoomToRoadType[currentClosure.closure.zoom]);
+        var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
         var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
         var aseg = new WFVS;
