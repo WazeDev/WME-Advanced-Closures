@@ -35,6 +35,12 @@
  * 
 ********/
 
+/* global $ */
+/* global W */
+/* global OpenLayers */
+/* global require */
+/* global _ */
+/* global I18n */
 /*jshint multistr: true */
 
 
