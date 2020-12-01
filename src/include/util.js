@@ -128,14 +128,14 @@ WMEAC.reloadRoadLayer = function ()
     var l=W.map.getLayersBy("uniqueName","roads")[0];
     l.redraw({force:!0});
     l.removeBackBuffer();
-    W.controller.reload();  
+    W.controller.reloadData();  
 };
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
     var l=W.map.getLayersBy("uniqueName","closures")[0];
     l.redraw({force:!0});
-    W.controller.reload();
+    W.controller.reloadData();
     if (endHandler)
     {
         var tmp = function reloaded() {
