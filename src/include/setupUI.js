@@ -314,8 +314,8 @@ var tabRepeatUI = '\
 ';
 
 if(!I18n.translations[I18n.locale].date.abbr_day_names){
-	I18n.translations[I18n.locale].date.abbr_day_names = {};
-	_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names[k.replace("abbr_day_names_", "")]= v}});
+	I18n.translations[I18n.locale].date.abbr_day_names = [];
+	_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names.push(v)}});
 }
 
 var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
