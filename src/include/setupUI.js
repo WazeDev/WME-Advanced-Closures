@@ -313,6 +313,11 @@ var tabRepeatUI = '\
   </div>\
 ';
 
+if(!I18n.translations[I18n.locale].date.abbr_day_names){
+	I18n.translations[I18n.locale].date.abbr_day_names = {};
+	_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names[k.replace("abbr_day_names_", "")]= v}});
+}
+
 var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
 daysOfWeekUI.push(daysOfWeekUI.shift());
 var tabEachUI = '<div class="box" style="display:flex; flex-wrap:wrap;">\

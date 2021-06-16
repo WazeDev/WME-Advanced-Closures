@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2020.12.01.01
+// @version     2021.06.16.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -151,7 +151,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2020.12.01.01";
+WMEAC.ac_version="2021.06.16.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1118,6 +1118,11 @@ var tabRepeatUI = '\
     </div>\
   </div>\
 ';
+
+if(!I18n.translations[I18n.locale].date.abbr_day_names){
+	I18n.translations[I18n.locale].date.abbr_day_names = {};
+	_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names[k.replace("abbr_day_names_", "")]= v}});
+}
 
 var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
 daysOfWeekUI.push(daysOfWeekUI.shift());
