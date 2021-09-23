@@ -54,10 +54,10 @@ WMEAC.ClassClosure = function (options)
         return;        
     }
     this.zoom = parseInt(this.zoom);
-    if (this.zoom<2||this.zoom>10)
+    if (this.zoom<12||this.zoom>22)
     {
         this.isValid=false;
-        this.errorMessage="Wrong zoom (2 to 10): " + this.zoom + "\n";
+        this.errorMessage="Wrong zoom (12 to 22): " + this.zoom + "\n";
         return; 
     }
     this.applyInWME = function(successHandler, failureHandler)
