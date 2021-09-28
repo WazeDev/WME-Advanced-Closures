@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2021.06.16.02
+// @version     2021.09.28.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -151,7 +151,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2021.06.16.02";
+WMEAC.ac_version="2021.09.28.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -311,7 +311,7 @@ WMEAC.segmentsIDsToSegments = function (ids)
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayersBy("uniqueName","roads")[0];
+    var l=W.map.getLayerByUniqueName("roads");
     l.redraw({force:!0});
     l.removeBackBuffer();
     W.controller.reloadData();  
@@ -319,7 +319,7 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayersBy("uniqueName","closures")[0];
+    var l=W.map.getLayerByUniqueName("closures");
     l.redraw({force:!0});
     W.controller.reloadData();
     if (endHandler)
@@ -343,8 +343,8 @@ WMEAC.reloadClosuresLayer = function (endHandler)
 
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayersBy("uniqueName", "closures");
-    if (l.length==1) l[0].setVisibility(show);
+    var l = W.map.getLayerByUniqueName("closures");
+    if (l) l.setVisibility(show);
 };
 
 WMEAC.setDraggable = function (element, options)
@@ -1803,10 +1803,10 @@ WMEAC.ClassClosure = function (options)
         return;        
     }
     this.zoom = parseInt(this.zoom);
-    if (this.zoom<2||this.zoom>10)
+    if (this.zoom<14||this.zoom>22)
     {
         this.isValid=false;
-        this.errorMessage="Wrong zoom (2 to 10): " + this.zoom + "\n";
+        this.errorMessage="Wrong zoom (14 to 22): " + this.zoom + "\n";
         return; 
     }
     this.applyInWME = function(successHandler, failureHandler)
@@ -2610,7 +2610,7 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st c
                                                                   /(Yes)|(No)/, // ignore trafic = permanent
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
-                                                                  /^\d$/, // zoom
+                                                                  /^\d+$/, // zoom
                                                                   /(^$)|(^-?\d+\.-?\d+\.-?\d+$)/ // MTE ID is empty or digits.digits.digits
                                                                   ]}));
                                                                   
@@ -3063,8 +3063,7 @@ WMEAC.refreshHighlight = function ()
 {
     try
     {
-        var l = W.map.getLayersBy("uniqueName", "closures");
-        if (l.length==1) l=l[0];
+        var l = W.map.getLayerByUniqueName("closures");
         for (var m in l.markers)
         {
             if (!l.markers.hasOwnProperty(m)) continue;
