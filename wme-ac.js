@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2021.09.28.01
+// @version     2021.09.28.02
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -151,7 +151,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2021.09.28.01";
+WMEAC.ac_version="2021.09.28.02";
 
 WMEAC.closureTabTimeout=null;
 
@@ -2506,10 +2506,18 @@ WMEAC.parseCSV = function (csvString)
         var isValid = WMEAC.csv[0].validate(csvArray);
         if (isValid.isValid)
         {
-            WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
                 return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i, eventId: e[9], comment: (e.length==11?e[10]:'')}), UI: null};
             });
+            closures.forEach(function (c) {
+                if (!c.closure.isValid) {
+                   isValid.isValid = false;
+                   isValid.feedBack += c.closure.errorMessage;
+                }
+            });
+        }
+        if (isValid.isValid) {
+            WMEAC.log("CSV is valid!");
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
             var listUI = WMEAC.getId('wmeac-csv-closures-list-elts');
