@@ -2,7 +2,7 @@ WMEAC.refreshHighlight = function ()
 {
     try
     {
-        var l = W.map.getLayerByUniqueName("closures");
+        var l = W.map.getLayerByName("closures");
         for (var m in l.markers)
         {
             if (!l.markers.hasOwnProperty(m)) continue;

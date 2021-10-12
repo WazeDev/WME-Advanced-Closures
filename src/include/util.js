@@ -125,7 +125,7 @@ WMEAC.segmentsIDsToSegments = function (ids)
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayerByUniqueName("roads");
+    var l=W.map.getLayerByName("roads");
     l.redraw({force:!0});
     l.removeBackBuffer();
     W.controller.reloadData();  
@@ -133,7 +133,7 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayerByUniqueName("closures");
+    var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
     W.controller.reloadData();
     if (endHandler)
@@ -157,7 +157,7 @@ WMEAC.reloadClosuresLayer = function (endHandler)
 
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayerByUniqueName("closures");
+    var l = W.map.getLayerByName("closures");
     if (l) l.setVisibility(show);
 };
 

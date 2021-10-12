@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2021.09.28.02
+// @version     2021.10.12.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -151,7 +151,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2021.09.28.02";
+WMEAC.ac_version="2021.10.12.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -311,7 +311,7 @@ WMEAC.segmentsIDsToSegments = function (ids)
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayerByUniqueName("roads");
+    var l=W.map.getLayerByName("roads");
     l.redraw({force:!0});
     l.removeBackBuffer();
     W.controller.reloadData();  
@@ -319,7 +319,7 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayerByUniqueName("closures");
+    var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
     W.controller.reloadData();
     if (endHandler)
@@ -343,7 +343,7 @@ WMEAC.reloadClosuresLayer = function (endHandler)
 
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayerByUniqueName("closures");
+    var l = W.map.getLayerByName("closures");
     if (l) l.setVisibility(show);
 };
 
@@ -3071,7 +3071,7 @@ WMEAC.refreshHighlight = function ()
 {
     try
     {
-        var l = W.map.getLayerByUniqueName("closures");
+        var l = W.map.getLayerByName("closures");
         for (var m in l.markers)
         {
             if (!l.markers.hasOwnProperty(m)) continue;
