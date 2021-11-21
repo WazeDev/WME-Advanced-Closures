@@ -1,10 +1,10 @@
 WMEAC.buildClosuresListFromRecurringUI = function ()
 {
     var list = [];
-    var rangeStartDate = new Date($('#wmeac-advanced-closure-dialog-rangestartdate').val());
+    var rangeStartDate = new JDate($('#wmeac-advanced-closure-dialog-rangestartdate').val());
     if (!WMEAC.isValidDate(rangeStartDate)) return {list: list, error: "Range start date is not valid"};
     
-    var rangeEndDate = new Date($('#wmeac-advanced-closure-dialog-rangeenddate').val());
+    var rangeEndDate = new JDate($('#wmeac-advanced-closure-dialog-rangeenddate').val());
     if (!WMEAC.isValidDate(rangeEndDate)) return {list: list, error: "Range end date is not valid"};
     
     if (rangeEndDate<rangeStartDate) return {list: list, error: "Range end date is before range start date"};
@@ -122,7 +122,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         WMEAC.lastGeneratedHolidays.forEach(function (e, i) {
             if (($('#wmeac-advanced-closure-dialog-holidays-' + i)).is(':checked'))
             {
-                var start = new Date(e.date).addMinutes(startTimeM);
+                var start = new JDate(e.date).addMinutes(startTimeM);
                 var end = start.clone();
                 end.addMinutes(dD * 1440 + dH * 60 + dM);
                 list.push({start: WMEAC.dateToClosureStr(start), end: WMEAC.dateToClosureStr(end)});
@@ -193,8 +193,8 @@ WMEAC.refreshClosureList = function ()
 WMEAC.refreshMTEList = function ()
 {
     var currentMTEid = $("#wmeac-advanced-closure-dialog-mteid").val();
-    var rangeStart = new Date($("#wmeac-advanced-closure-dialog-rangestartdate").val());
-    var rangeEnd = new Date($("#wmeac-advanced-closure-dialog-rangeenddate").val());
+    var rangeStart = new JDate($("#wmeac-advanced-closure-dialog-rangestartdate").val());
+    var rangeEnd = new JDate($("#wmeac-advanced-closure-dialog-rangeenddate").val());
     var options=[{name: 'none', value: ''}];
     $("#wmeac-advanced-closure-dialog-mteid").empty();
     if (WMEAC.isValidDate(rangeStart) && WMEAC.isValidDate(rangeEnd))
@@ -203,7 +203,7 @@ WMEAC.refreshMTEList = function ()
         // filter MTE loaded in WME:
         W.model.majorTrafficEvents.getObjectArray(function (mte) {
             // check if ranges overlap
-            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new Date(mte.attributes.startDate), endDate: new Date(mte.attributes.endDate)}));
+            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.attributes.startDate), endDate: new JDate(mte.attributes.endDate)}));
         }).forEach(function (mte) {
             options.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
         });

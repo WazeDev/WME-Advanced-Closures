@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2021.10.12.01
+// @version     2021.11.21.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -146,12 +146,22 @@ function WMEAC_Injected()
 *** include/globalDeclarations.js            ***
 ***********************************************/
 
+// create a custom date class with a few addl functions (originally in Datejs library).
+class JDate extends Date {
+	clone() { return new JDate(this); }
+	addMinutes(value) {
+		this.setMinutes(this.getMinutes() + value);
+	}
+	addDays(value) {
+		this.setDate(this.getDate() + value);
+	}
+}
 
 var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2021.10.12.01";
+WMEAC.ac_version="2021.11.21.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -612,25 +622,26 @@ WMEAC.sharedClosureDirection = {
 
 WMEAC.zoomToRoadType = function(e) {
     let allRoadTypes = [1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,22];
+    if (e < 14) {
+        return [];
+    }
     switch (e) {
-        case 0:
-        case 1:
-            return [];
-        case 2:
+        case 14:
             return [2, 3, 4, 6, 7, 14];
-        case 3:
+        case 15:
             return [2, 3, 4, 6, 7, 8, 9, 10, 14, 16,17, 18, 19, 20, 22];
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
         default:
             return allRoadTypes;
     }
 }
+
 
 
 
@@ -1890,10 +1901,10 @@ WMEAC.ClassClosure = function (options)
 WMEAC.buildClosuresListFromRecurringUI = function ()
 {
     var list = [];
-    var rangeStartDate = new Date($('#wmeac-advanced-closure-dialog-rangestartdate').val());
+    var rangeStartDate = new JDate($('#wmeac-advanced-closure-dialog-rangestartdate').val());
     if (!WMEAC.isValidDate(rangeStartDate)) return {list: list, error: "Range start date is not valid"};
     
-    var rangeEndDate = new Date($('#wmeac-advanced-closure-dialog-rangeenddate').val());
+    var rangeEndDate = new JDate($('#wmeac-advanced-closure-dialog-rangeenddate').val());
     if (!WMEAC.isValidDate(rangeEndDate)) return {list: list, error: "Range end date is not valid"};
     
     if (rangeEndDate<rangeStartDate) return {list: list, error: "Range end date is before range start date"};
@@ -2011,7 +2022,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
         WMEAC.lastGeneratedHolidays.forEach(function (e, i) {
             if (($('#wmeac-advanced-closure-dialog-holidays-' + i)).is(':checked'))
             {
-                var start = new Date(e.date).addMinutes(startTimeM);
+                var start = new JDate(e.date).addMinutes(startTimeM);
                 var end = start.clone();
                 end.addMinutes(dD * 1440 + dH * 60 + dM);
                 list.push({start: WMEAC.dateToClosureStr(start), end: WMEAC.dateToClosureStr(end)});
@@ -2082,8 +2093,8 @@ WMEAC.refreshClosureList = function ()
 WMEAC.refreshMTEList = function ()
 {
     var currentMTEid = $("#wmeac-advanced-closure-dialog-mteid").val();
-    var rangeStart = new Date($("#wmeac-advanced-closure-dialog-rangestartdate").val());
-    var rangeEnd = new Date($("#wmeac-advanced-closure-dialog-rangeenddate").val());
+    var rangeStart = new JDate($("#wmeac-advanced-closure-dialog-rangestartdate").val());
+    var rangeEnd = new JDate($("#wmeac-advanced-closure-dialog-rangeenddate").val());
     var options=[{name: 'none', value: ''}];
     $("#wmeac-advanced-closure-dialog-mteid").empty();
     if (WMEAC.isValidDate(rangeStart) && WMEAC.isValidDate(rangeEnd))
@@ -2092,7 +2103,7 @@ WMEAC.refreshMTEList = function ()
         // filter MTE loaded in WME:
         W.model.majorTrafficEvents.getObjectArray(function (mte) {
             // check if ranges overlap
-            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new Date(mte.attributes.startDate), endDate: new Date(mte.attributes.endDate)}));
+            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.attributes.startDate), endDate: new JDate(mte.attributes.endDate)}));
         }).forEach(function (mte) {
             options.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
         });
@@ -2186,8 +2197,8 @@ WMEAC.getHolidays = function (options)
 {
     var holidays = [];
     var currentCountryIndex = 0;
-    var rangeStart = new Date(options.rangeStart);
-    var rangeEnd = new Date(options.rangeEnd).addDays(1);
+    var rangeStart = new JDate(options.rangeStart);
+    var rangeEnd = new JDate(options.rangeEnd).addDays(1);
     var years = [];
     for (y=parseInt(options.rangeStart.substring(0,4)); y<=parseInt(options.rangeEnd.substring(0,4)); y++) years.push(y);
     var currentYearIndex = 0;

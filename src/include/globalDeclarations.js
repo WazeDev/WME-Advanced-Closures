@@ -1,3 +1,13 @@
+// create a custom date class with a few addl functions (originally in Datejs library).
+class JDate extends Date {
+	clone() { return new JDate(this); }
+	addMinutes(value) {
+		this.setMinutes(this.getMinutes() + value);
+	}
+	addDays(value) {
+		this.setDate(this.getDate() + value);
+	}
+}
 
 var WMEAC={};
 
