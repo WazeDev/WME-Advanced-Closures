@@ -125,7 +125,7 @@ WMEAC.segmentsIDsToSegments = function (ids)
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayersBy("uniqueName","roads")[0];
+    var l=W.map.getLayerByName("roads");
     l.redraw({force:!0});
     l.removeBackBuffer();
     W.controller.reloadData();  
@@ -133,7 +133,7 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayersBy("uniqueName","closures")[0];
+    var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
     W.controller.reloadData();
     if (endHandler)
@@ -157,8 +157,8 @@ WMEAC.reloadClosuresLayer = function (endHandler)
 
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayersBy("uniqueName", "closures");
-    if (l.length==1) l[0].setVisibility(show);
+    var l = W.map.getLayerByName("closures");
+    if (l) l.setVisibility(show);
 };
 
 WMEAC.setDraggable = function (element, options)
@@ -426,23 +426,24 @@ WMEAC.sharedClosureDirection = {
 
 WMEAC.zoomToRoadType = function(e) {
     let allRoadTypes = [1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,22];
+    if (e < 14) {
+        return [];
+    }
     switch (e) {
-        case 0:
-        case 1:
-            return [];
-        case 2:
+        case 14:
             return [2, 3, 4, 6, 7, 14];
-        case 3:
+        case 15:
             return [2, 3, 4, 6, 7, 8, 9, 10, 14, 16,17, 18, 19, 20, 22];
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
         default:
             return allRoadTypes;
     }
 }
+
 

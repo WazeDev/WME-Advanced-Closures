@@ -31,8 +31,8 @@ WMEAC.getHolidays = function (options)
 {
     var holidays = [];
     var currentCountryIndex = 0;
-    var rangeStart = new Date(options.rangeStart);
-    var rangeEnd = new Date(options.rangeEnd).addDays(1);
+    var rangeStart = new JDate(options.rangeStart);
+    var rangeEnd = new JDate(options.rangeEnd).addDays(1);
     var years = [];
     for (y=parseInt(options.rangeStart.substring(0,4)); y<=parseInt(options.rangeEnd.substring(0,4)); y++) years.push(y);
     var currentYearIndex = 0;

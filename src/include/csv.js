@@ -7,10 +7,18 @@ WMEAC.parseCSV = function (csvString)
         var isValid = WMEAC.csv[0].validate(csvArray);
         if (isValid.isValid)
         {
-            WMEAC.log("CSV is valid!");
             var closures = WMEAC.csv[0].filter(csvArray).map(function (e, i) {
                 return {action: e[0], closure: new WMEAC.ClassClosure({reason:e[1], startDate:e[2], endDate:e[3], direction:e[4], segIDs:e[6], lonlat:e[7], permanent:e[5], zoom: e[8], id: i, eventId: e[9], comment: (e.length==11?e[10]:'')}), UI: null};
             });
+            closures.forEach(function (c) {
+                if (!c.closure.isValid) {
+                   isValid.isValid = false;
+                   isValid.feedBack += c.closure.errorMessage;
+                }
+            });
+        }
+        if (isValid.isValid) {
+            WMEAC.log("CSV is valid!");
             WMEAC.log("Closure list:", closures);
             WMEAC.csvCurrentClosureList = closures;
             var listUI = WMEAC.getId('wmeac-csv-closures-list-elts');
@@ -111,7 +119,7 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st c
                                                                   /(Yes)|(No)/, // ignore trafic = permanent
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
-                                                                  /^\d$/, // zoom
+                                                                  /^\d+$/, // zoom
                                                                   /(^$)|(^-?\d+\.-?\d+\.-?\d+$)/ // MTE ID is empty or digits.digits.digits
                                                                   ]}));
                                                                   
