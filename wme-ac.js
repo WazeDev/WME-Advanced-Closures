@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2021.11.21.01
+// @version     2022.01.17.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -161,7 +161,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2021.11.21.01";
+WMEAC.ac_version="2022.01.17.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -746,7 +746,7 @@ WMEAC.waitForWaze = function(handler)
                      {o: "W.model"},
                      {o: "W.map"},
                      {o: "W.loginManager"},
-                     {o: "W.vent"},
+                     {o: "W.app.layout.model"},
                      {o: "W.Config"},
                      {o: "W.controller"}
                     ];
@@ -914,13 +914,13 @@ WMEAC.initUI = function ()
     WMEAC.installButtonInClosureTab();
     
     //W.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
-    W.vent.on("operationPending", function(e) {
+    W.app.layout.model.on("operationPending", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = true;
     });
 
-    W.vent.on("operationDone", function(e) {
+    W.app.layout.model.on("operationDone", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = false;
