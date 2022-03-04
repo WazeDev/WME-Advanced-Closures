@@ -97,13 +97,13 @@ WMEAC.initUI = function ()
     WMEAC.installButtonInClosureTab();
     
     //W.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
-    W.vent.on("operationPending", function(e) {
+    W.app.layout.model.on("operationPending", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = true;
     });
 
-    W.vent.on("operationDone", function(e) {
+    W.app.layout.model.on("operationDone", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
         WMEAC.pendingOps = false;

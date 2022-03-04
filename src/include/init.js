@@ -22,7 +22,7 @@ WMEAC.waitForWaze = function(handler)
                      {o: "W.model"},
                      {o: "W.map"},
                      {o: "W.loginManager"},
-                     {o: "W.vent"},
+                     {o: "W.app.layout.model"},
                      {o: "W.Config"},
                      {o: "W.controller"}
                     ];
