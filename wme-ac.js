@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2022.01.17.01
+// @version     2022.07.26.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -161,7 +161,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2022.01.17.01";
+WMEAC.ac_version="2022.07.26.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -666,7 +666,7 @@ css += ".wmeac-sidepanel button { border: none; border-bottom-left-radius: 5px; 
 css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
 css += ".wmeac-progressBarBG { margin-top: 2px; margin-bottom: 2px; margin-left: 2px; margin-right: 2px; padding-bottom: 0px; padding-top: 0px; padding-left: 0px; padding-right: 0px; width: 33%; background-color: #93c4d3; border: 3px rgb(147, 196, 211); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; height: 22px;}";
 css += ".wmeac-progressBarFG { float: left; position: relative; bottom: 22px; height: 0px; text-align: center; width: 100% }";
-css += ".wmeac-button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; display: inline-block; padding: 6px 12px; cursor: pointer; text-align: center; font-weight: bold; }";
+css += ".wmeac-csv-button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; display: inline-block; padding: 6px 12px; cursor: pointer; text-align: center; font-weight: bold; }";
 css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
 css += ".wmeac-closuredialog button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; margin: 3px; }";
 css += ".wmeac-closuredialog h1 { background-color: #F1DDDB; text-align: center; font-size: medium; margin-top: 0px; padding: 10px;}";
@@ -834,17 +834,16 @@ WMEAC.initUI = function ()
     addon.appendChild(section);
     
     var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
-    var addACBtn = WMEAC.createElement({type: 'div',
+    var addACBtn = WMEAC.createElement({type: 'wz-button',
         id: 'wmeac-add-advanced-closure-button',
         className: 'wmeac-button'});
-    addACBtn.style.width='100%';
     addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
     addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
     divAdvCl.appendChild(addACBtn);
     
     var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
-    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-button">Parse CSV</label>\
+    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-button">Parse CSV</label>\
     <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
     csvHTML += '\
     <div id="wmeac-csv-closures" style="display: none;">\
@@ -888,13 +887,11 @@ WMEAC.initUI = function ()
         mutations.forEach(function(mutation) {
             function rescurse(node)
             {
-                if (node.id=='segment-edit-closures')
-                    WMEAC.installButtonInClosureTab(node);
-                else if (node.className=='closures-list')
+                if (node.className=='closures-list')
                 {
-                    var target = WMEAC.getId('segment-edit-closures');
-                    if (target)
-                        WMEAC.installButtonInClosureTab(target);
+                    var target = WMEAC.getElementsByClassName('add-closure-button', node);
+                    if (target.length > 0)
+                        WMEAC.installButtonInClosureTab(node);
                 }
                 else
                 {
@@ -935,19 +932,22 @@ WMEAC.installButtonInClosureTab = function (node)
 {
     if (!node)
         node=WMEAC.getId('segment-edit-closures');
+    if (!node) {
+        var clist = WMEAC.getElementsByClassName('closures-list');
+        if (clist.lenght >0) node = clist[0];
+    }
     if (!node) return;
     // test if we already there
     if ($(node).find('#wmeac-closuretab-add-advanced-closure-button').length==0)
     {
-        var addACBtn = WMEAC.createElement({type: 'div',
+        var addCL = WMEAC.getElementsByClassName('add-closure-button', node);
+        var addACBtn = WMEAC.createElement({type: 'wz-button',
             id: 'wmeac-closuretab-add-advanced-closure-button',
             className: 'wmeac-button'});
-        addACBtn.style.width='100%';
-        addACBtn.style.marginBottom='10px';
         addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
         addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
-        $(node).find('.closures-list').prepend(addACBtn);
+        if (addCL.length > 0) addCL[0].after(addACBtn);
     }
 };
 
