@@ -117,7 +117,7 @@ WMEAC.installButtonInClosureTab = function (node)
         node=WMEAC.getId('segment-edit-closures');
     if (!node) {
         var clist = WMEAC.getElementsByClassName('closures-list');
-        if (clist.lenght >0) node = clist[0];
+        if (clist.length >0) node = clist[0];
     }
     if (!node) return;
     // test if we already there
