@@ -38,13 +38,14 @@ function insertMatches ($matches) {
 			global $version;
 			global $transVersion;
 			myecho_pushlevel();
+			$EOL = "\n";
 			
-			$js  = "/***********************************************" . PHP_EOL;
-			$js .= "*** IN INCLUDED FILE :                       ***" . PHP_EOL;
+			$js  = "/***********************************************" . $EOL;
+			$js .= "*** IN INCLUDED FILE :                       ***" . $EOL;
 			$tmp = "*** " . $matches[1];
-			$tmp .= str_repeat(" ", max(45-strlen($tmp), 0)) . "***" . PHP_EOL;
+			$tmp .= str_repeat(" ", max(45-strlen($tmp), 0)) . "***" . $EOL;
 			$js .= $tmp;
-			$js .= "***********************************************/" . PHP_EOL . PHP_EOL;
+			$js .= "***********************************************/" . $EOL . $EOL;
 			
 			$js .= strtr(file_get_contents($basePath . $matches[1]), $transVersion);
 			
@@ -54,11 +55,11 @@ function insertMatches ($matches) {
         $js
 			);
 			
-			$js .= "" . PHP_EOL . PHP_EOL;
-			$js .= "/***********************************************" . PHP_EOL;
-			$js .= "*** END OF INCLUDED FILE :                  ***" . PHP_EOL;
+			$js .= "" . $EOL . $EOL;
+			$js .= "/***********************************************" . $EOL;
+			$js .= "*** END OF INCLUDED FILE :                  ***" . $EOL;
 			$js .= $tmp;
-			$js .= "***********************************************/" . PHP_EOL . PHP_EOL;
+			$js .= "***********************************************/" . $EOL . $EOL;
 			
 			myecho ("info", 'Include ' . $matches[1] . "...");
 			myecho ("continuous", '	done' . PHP_EOL);
