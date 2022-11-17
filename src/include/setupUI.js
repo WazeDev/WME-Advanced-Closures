@@ -17,17 +17,16 @@ WMEAC.initUI = function ()
     addon.appendChild(section);
     
     var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
-    var addACBtn = WMEAC.createElement({type: 'div',
+    var addACBtn = WMEAC.createElement({type: 'wz-button',
         id: 'wmeac-add-advanced-closure-button',
         className: 'wmeac-button'});
-    addACBtn.style.width='100%';
     addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
     addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
     divAdvCl.appendChild(addACBtn);
     
     var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
-    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-button">Parse CSV</label>\
+    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-button">Parse CSV</label>\
     <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
     csvHTML += '\
     <div id="wmeac-csv-closures" style="display: none;">\
@@ -71,13 +70,11 @@ WMEAC.initUI = function ()
         mutations.forEach(function(mutation) {
             function rescurse(node)
             {
-                if (node.id=='segment-edit-closures')
-                    WMEAC.installButtonInClosureTab(node);
-                else if (node.className=='closures-list')
+                if (node.className=='closures-list')
                 {
-                    var target = WMEAC.getId('segment-edit-closures');
-                    if (target)
-                        WMEAC.installButtonInClosureTab(target);
+                    var target = WMEAC.getElementsByClassName('add-closure-button', node);
+                    if (target.length > 0)
+                        WMEAC.installButtonInClosureTab(node);
                 }
                 else
                 {
@@ -118,19 +115,22 @@ WMEAC.installButtonInClosureTab = function (node)
 {
     if (!node)
         node=WMEAC.getId('segment-edit-closures');
+    if (!node) {
+        var clist = WMEAC.getElementsByClassName('closures-list');
+        if (clist.length >0) node = clist[0];
+    }
     if (!node) return;
     // test if we already there
     if ($(node).find('#wmeac-closuretab-add-advanced-closure-button').length==0)
     {
-        var addACBtn = WMEAC.createElement({type: 'div',
+        var addCL = WMEAC.getElementsByClassName('add-closure-button', node);
+        var addACBtn = WMEAC.createElement({type: 'wz-button',
             id: 'wmeac-closuretab-add-advanced-closure-button',
             className: 'wmeac-button'});
-        addACBtn.style.width='100%';
-        addACBtn.style.marginBottom='10px';
         addACBtn.innerHTML='<i class="fa fa-clock-o"></i> Add advanced closure';
         
         addACBtn.addEventListener('click', WMEAC.showAddAdvancedClosure);
-        $(node).find('.closures-list').prepend(addACBtn);
+        if (addCL.length > 0) addCL[0].after(addACBtn);
     }
 };
 
@@ -694,8 +694,9 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      
      $('#wmeac-advanced-closure-dialog-holiday-refresh').on('click', function (e) {
          var hDiv = $('#wmeac-advanced-closure-dialog-holiday-list');
-        $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'block'});
+        // $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'block'});
         WMEAC.removeChildElements(hDiv[0]);
+		/*
         window.setTimeout(function () {
             WMEAC.getHolidays({
                 rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
@@ -725,6 +726,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 }
             });
         });
+		*/
      });
      
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){
