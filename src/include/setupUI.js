@@ -694,8 +694,9 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      
      $('#wmeac-advanced-closure-dialog-holiday-refresh').on('click', function (e) {
          var hDiv = $('#wmeac-advanced-closure-dialog-holiday-list');
-        $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'block'});
+        // $('#wmeac-advanced-closure-dialog-holiday-refresh-spinner').css({display: 'block'});
         WMEAC.removeChildElements(hDiv[0]);
+		/*
         window.setTimeout(function () {
             WMEAC.getHolidays({
                 rangeStart: $('#wmeac-advanced-closure-dialog-rangestartdate').val(),
@@ -725,6 +726,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 }
             });
         });
+		*/
      });
      
      $('#wmeac-add-advanced-closure-dialog').on('change', function(e){

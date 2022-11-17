@@ -259,4 +259,4 @@ WMEAC.refreshClosureListFromSelection = function ()
     }
 };
 
-INCLUDE_FILE('include/holidays.js');
+// SKIP_FILE('include/holidays.js');
