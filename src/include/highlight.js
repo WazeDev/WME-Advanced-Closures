@@ -7,7 +7,9 @@ WMEAC.refreshHighlight = function ()
         {
             if (!l.markers.hasOwnProperty(m)) continue;
             var marker = l.markers[m];
-            if (marker.model.reason &&
+            // 2023-07-15 closure marker doesnt have model anymore, use chaining to avoid error
+            // TODO - find way to get closure details from marker
+            if (marker.model?.reason &&
                 marker.model.reason.length>=1 && 
                 marker.model.reason.charCodeAt(marker.model.reason.length-1)==160)
                 marker.icon.$div.addClass('wmeac-hl');
