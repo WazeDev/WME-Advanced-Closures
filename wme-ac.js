@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2023.07.19.01
+// @version     2023.07.20.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2023.07.19.01";
+WMEAC.ac_version="2023.07.20.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1269,8 +1269,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    const segid = e.attributes.wazeFeature.id;
+            if (m.every(function (e) {
+                    const segid = e.attributes.id;
                     const seg = W.model.segments.objects[segid];
                     return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
                 })==false)
@@ -2047,7 +2047,7 @@ WMEAC.refreshClosureListFromSelection = function ()
         {
             var blackList=[];
             W.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==W.selectionManager.getSelectedFeatures()[0].attributes.wazeFeature.id;
+                return c.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {

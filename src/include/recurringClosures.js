@@ -232,7 +232,7 @@ WMEAC.refreshClosureListFromSelection = function ()
         {
             var blackList=[];
             W.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==W.selectionManager.getSelectedFeatures()[0].attributes.wazeFeature.id;
+                return c.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {

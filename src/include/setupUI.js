@@ -543,8 +543,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    const segid = e.attributes.wazeFeature.id;
+            if (m.every(function (e) {
+                    const segid = e.attributes.id;
                     const seg = W.model.segments.objects[segid];
                     return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
                 })==false)
