@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2022.11.16.01
+// @version     2023.07.20.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2022.11.16.01";
+WMEAC.ac_version="2023.07.20.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -1189,7 +1189,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().length==0 || W.selectionManager.getSelectedFeatures()[0].model.type!="segment")
+            const m = W.selectionManager.getSelectedDataModelObjects();
+            if (m.length==0 || m[0].type!="segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
@@ -1209,7 +1210,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = W.selectionManager.getSelectedDataModelObjects();
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
@@ -1262,13 +1263,16 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().length==0 || W.selectionManager.getSelectedFeatures()[0].model.type!="segment")
+            const m = W.selectionManager.getSelectedDataModelObjects();
+            if (m.length==0 || m[0].type != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    return e.model.isAllowed(e.model.permissionFlags.EDIT_CLOSURES);
+            if (m.every(function (e) {
+                    const segid = e.attributes.id;
+                    const seg = W.model.segments.objects[segid];
+                    return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
                 })==false)
             {
                 alert("You don't have permission to edit closures on all those segments.");
@@ -1292,7 +1296,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = W.selectionManager.getSelectedDataModelObjects();
             W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
@@ -1961,10 +1965,10 @@ WMEAC.refreshClosureList = function ()
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var existingClosures = W.selectionManager.getSelectedFeatures().reduce(function (p, c, i) {
                 var revSegs = W.selectionManager.getReversedSegments();
-                var isReversed = revSegs.hasOwnProperty(c.model.attributes.id) && revSegs[c.model.attributes.id];
+                var isReversed = revSegs.hasOwnProperty(c.data.wazeFeature.id) && revSegs[c.data.wazeFeature.id];
                 var realWay = isReversed?(direction==1?2:1):direction;
                 return p.concat(W.model.roadClosures.getObjectArray(function (e) {
-                    return (e.segID==c.model.attributes.id &&
+                    return (e.segID==c.data.wazeFeature.id &&
                     (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
                 }));
             }, []);
@@ -2043,7 +2047,7 @@ WMEAC.refreshClosureListFromSelection = function ()
         {
             var blackList=[];
             W.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==W.selectionManager.getSelectedFeatures()[0].model.attributes.id;
+                return c.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {
@@ -2169,7 +2173,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var segs = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+    var segs = W.selectionManager.getSelectedDataModelObjects();
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
@@ -2216,7 +2220,7 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var segs = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+        var segs = W.selectionManager.getSelectedDataModelObjects();
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
@@ -2881,7 +2885,9 @@ WMEAC.refreshHighlight = function ()
         {
             if (!l.markers.hasOwnProperty(m)) continue;
             var marker = l.markers[m];
-            if (marker.model.reason &&
+            // 2023-07-15 closure marker doesnt have model anymore, use chaining to avoid error
+            // TODO - find way to get closure details from marker
+            if (marker.model?.reason &&
                 marker.model.reason.length>=1 && 
                 marker.model.reason.charCodeAt(marker.model.reason.length-1)==160)
                 marker.icon.$div.addClass('wmeac-hl');

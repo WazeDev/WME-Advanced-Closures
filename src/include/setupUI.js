@@ -463,7 +463,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().length==0 || W.selectionManager.getSelectedFeatures()[0].model.type!="segment")
+            const m = W.selectionManager.getSelectedDataModelObjects();
+            if (m.length==0 || m[0].type!="segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
@@ -483,7 +484,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = W.selectionManager.getSelectedDataModelObjects();
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
@@ -536,13 +537,16 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().length==0 || W.selectionManager.getSelectedFeatures()[0].model.type!="segment")
+            const m = W.selectionManager.getSelectedDataModelObjects();
+            if (m.length==0 || m[0].type != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (W.selectionManager.getSelectedFeatures().every(function (e) {
-                    return e.model.isAllowed(e.model.permissionFlags.EDIT_CLOSURES);
+            if (m.every(function (e) {
+                    const segid = e.attributes.id;
+                    const seg = W.model.segments.objects[segid];
+                    return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
                 })==false)
             {
                 alert("You don't have permission to edit closures on all those segments.");
@@ -566,7 +570,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             });
             
             // save selection list
-            var selection = _.map(W.selectionManager.getSelectedFeatures(), 'model');
+            var selection = W.selectionManager.getSelectedDataModelObjects();
             W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
