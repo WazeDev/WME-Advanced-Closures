@@ -479,7 +479,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.id===undefined ? mte.attributes.id : mte.id;
                 return details;
             });
             
@@ -565,7 +565,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.id===undefined ? mte.attributes.id : mte.id;
                 return details;
             });
             
