@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2023.07.20.01
+// @version     2023.08.22.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2023.07.20.01";
+WMEAC.ac_version="2023.08.22.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -724,7 +724,7 @@ WMEAC.waitForWaze = function(handler)
 *** include/setupUI.js                       ***
 ***********************************************/
 
-WMEAC.initUI = function ()
+WMEAC.initUI = async function ()
 {
     var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
     
@@ -775,22 +775,13 @@ WMEAC.initUI = function ()
     addon.appendChild(WMEAC.createElement({type: 'hr'}));
     addon.appendChild(divCSV);
 
-    
-    var userTabs = WMEAC.getId('user-tabs');
-    var userInfo = WMEAC.getId('user-info');
-    var sidePanelPrefs = WMEAC.getId('sidepanel-prefs');
-    var navTabs = WMEAC.getElementsByClassName('nav-tabs', userTabs)[0];
-    var tabContent = sidePanelPrefs.parentNode;
-    
-    newtab = WMEAC.createElement({type: 'li'});
-    newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road slashed"></span></a>';
-    navTabs.appendChild(newtab);
+    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab('advancedclosure');
+    await W.userscripts.waitForElementConnected(tabPane);
+    $(tabLabel.parentElement).append(
+            $('<span>', { class:'fa fa-road slashed', title: 'Advanced Closures' })
+        );
 
-    
-    addon.id = "sidepanel-wmeac";
-    addon.className = "tab-pane";
-    addon.style.marginLeft = "-10px";
-    tabContent.appendChild(addon);
+    tabPane.appendChild(addon);
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -1205,7 +1196,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.attributes.id;
                 return details;
             });
             
@@ -1291,7 +1282,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.attributes.id;
                 return details;
             });
             
@@ -2905,204 +2896,12 @@ WMEAC.refreshHighlight = function ()
 
 
     
-    if (typeof window.require != 'undefined' && typeof window.define == 'undefined') // that's the require provided by waze devs
-    {
-        WMEAC.WMEAPI={require: window.require};
-        // start normally
-        WMEAC.bootstrapAC();
-    }
-    else
-    {
-        // use the patch.
-        // the patch will call bootstrapAC to start the script
-        /***********************************************
-*** IN INCLUDED FILE :                       ***
-*** include/requirePatch.js                  ***
-***********************************************/
+    //2023-08-20 remove obsolete require patch
 
-// setup one global var and put all in
-var WMEAPI = {};
+    WMEAC.WMEAPI={require: window.require};
+    // start normally
+    WMEAC.bootstrapAC();
 
-
-// detect URL of WME source code
-WMEAPI.scripts = document.getElementsByTagName('script');
-WMEAPI.url=null;
-for (i=0;i<WMEAPI.scripts.length;i++)
-{
-    if (WMEAPI.scripts[i].src.indexOf('/assets-editor/js/app')!=-1)
-    {
-        WMEAPI.url=WMEAPI.scripts[i].src;
-        break;
-    }
-}
-if (WMEAPI.url==null)
-{
-    throw new Error("WME require patch: can't detect WME main JS");
-}
-
-
-
-// setup a fake require and require.define
-WMEAPI.require=function (e) {
-    if (WMEAPI.require.define.modules.hasOwnProperty(e))
-        return WMEAPI.require.define.modules[e];
-    else
-        console.error('Require failed on ' + e, WMEAPI.require.define.modules);
-    return null;
-};
-
-WMEAPI.require.define=function (m) {
-    if (WMEAPI.require.define.hasOwnProperty('modules')==false)
-        WMEAPI.require.define.modules={};
-    for (var p in m)
-    {
-        WMEAPI.require.define.modules[p]=m[p];
-    }
-};
-
-// save the original webpackJsonp function
-WMEAPI.tmp = window.webpackJsonp;
-
-// taken from WME code: this function is a wrapper that setup the API and may call recursively other functions
-WMEAPI.t = function (n) {
-    if (WMEAPI.s[n]) return WMEAPI.s[n].exports;
-    var r = WMEAPI.s[n] = {
-        exports: {},
-        id: n,
-        loaded: !1
-    };
-    return WMEAPI.e[n].call(r.exports, r, r.exports, WMEAPI.t), r.loaded = !0, r.exports;
-};
-
-// e is a copy of all WME funcs because function t need to access to this list
-WMEAPI.e=[];
-
-// the patch
-window.webpackJsonp = function(a, i) {
-    // our API but we will use it only to build the require stuffs
-    var api={};
-    // taken from WME code. a is [1], so...
-    for (var o, d, u = 0, l = []; u < a.length; u++) d = a[u], WMEAPI.r[d] && l.push.apply(l, WMEAPI.r[d]), WMEAPI.r[d] = 0;
-    
-    var unknownCount=0;
-    var classname, funcStr;
-    
-    // copy i in e and keep a link from classname to index in e
-    for (o in i)
-    {
-        WMEAPI.e[o] = i[o];
-        funcStr = i[o].toString();
-        classname = funcStr.match(/CLASS_NAME:\"([^\"]*)\"/);
-        if (classname)
-        {
-            // keep the link.
-            api[classname[1].replace(/\./g,'/').replace(/^W\//, 'Waze/')]={index: o, func: WMEAPI.e[o]};
-        }
-        else
-        {
-            api['Waze/Unknown/' + unknownCount]={index: o, func: WMEAPI.e[o]};
-            unknownCount++;
-        }
-        
-    }
-    
-    // taken from WME code: it calls the original webpackJsonp and do something else, but I don't really know what.
-    // removed the call to the original webpackJsonp: still works...
-    //for (tmp && tmp(a, i); l.length;) l.shift().call(null, t);
-    for (; l.length;) l.shift().call(null, WMEAPI.t);
-    WMEAPI.s[0] = 0;
-    
-    // run the first func of WME. This first func will call recusrsively all funcs needed to setup the API.
-    // After this call, s will contain all instanciables classes.
-    //var ret = WMEAPI.t(0);
-    
-    // now, build the requires thanks to the link we've built in var api.
-    var module={};
-    var apiFuncName;
-    unknownCount=0;
-    
-    for (o in i)
-    {
-        funcStr = i[o].toString();
-        classname = funcStr.match(/CLASS_NAME:\"([^\"]*)\"/);
-        if (classname)
-        {
-            module={};
-            apiFuncName = classname[1].replace(/\./g,'/').replace(/^W\//, 'Waze/');
-            module[apiFuncName]=WMEAPI.t(api[apiFuncName].index);
-            WMEAPI.require.define(module);
-        }
-        else
-        {
-            var matches = funcStr.match(/SEGMENT:"segment",/);
-            if (matches)
-            {
-                module={};
-                apiFuncName='Waze/Model/ObjectType';
-                module[apiFuncName]=WMEAPI.t(api['Waze/Unknown/' + unknownCount].index);
-                WMEAPI.require.define(module);
-            }
-            else if (matches = funcStr.match(/TWO_WAY:/))
-            {
-                module={};
-                apiFuncName='Waze/Modules/Closures/Models/SharedClosure';
-                module[apiFuncName]=WMEAPI.t(api['Waze/Unknown/' + unknownCount].index);
-                WMEAPI.require.define(module);
-            }
-            else if (matches = funcStr.match(/nextClosureID:/))
-            {
-                module={};
-                apiFuncName='Waze/Modules/Closures/Models/ClosureActionBuilder';
-                module[apiFuncName]=WMEAPI.t(api['Waze/Unknown/' + unknownCount].index);
-                WMEAPI.require.define(module);
-            }
-
-            unknownCount++;
-        }
-    }
-     
-
-    // restore the original func
-    window.webpackJsonp=WMEAPI.tmp;
-
-    // set the require public if needed
-    // if so: others scripts must wait for the window.require to be available before using it.
-    // window.require=WMEAPI.require;
-    WMEAC.WMEAPI = WMEAPI;
-    // all available functions are in WMEAPI.require.define.modules
-    // console.debug this variable to read it:
-    // console.debug('Modules: ', WMEAPI.require.define.modules);
-    
-    // run your script here:
-    setTimeout(WMEAC.bootstrapAC);
-    
-    // again taken from WME code. Not sure about what it does.
-    //if (i[0]) return ret;
-};
-
-// some kind of global vars and init
-WMEAPI.s = {};
-WMEAPI.r = {
-    0: 0
-};
-
-// hacking finished
-
-// load again WME through our patched func
-WMEAPI.WMEHACK_Injected_script = document.createElement("script");
-WMEAPI.WMEHACK_Injected_script.setAttribute("type", "application/javascript");
-WMEAPI.WMEHACK_Injected_script.src = WMEAPI.url;
-document.body.appendChild(WMEAPI.WMEHACK_Injected_script);
-
-
-/***********************************************
-*** END OF INCLUDED FILE :                  ***
-*** include/requirePatch.js                  ***
-***********************************************/
-
-
-    }
-    
     WMEAC.log("Ready");
     
 }
