@@ -1,4 +1,4 @@
-WMEAC.initUI = function ()
+WMEAC.initUI = async function ()
 {
     var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
     
@@ -49,22 +49,13 @@ WMEAC.initUI = function ()
     addon.appendChild(WMEAC.createElement({type: 'hr'}));
     addon.appendChild(divCSV);
 
-    
-    var userTabs = WMEAC.getId('user-tabs');
-    var userInfo = WMEAC.getId('user-info');
-    var sidePanelPrefs = WMEAC.getId('sidepanel-prefs');
-    var navTabs = WMEAC.getElementsByClassName('nav-tabs', userTabs)[0];
-    var tabContent = sidePanelPrefs.parentNode;
-    
-    newtab = WMEAC.createElement({type: 'li'});
-    newtab.innerHTML = '<a title="Advanced closures" href="#sidepanel-wmeac" data-toggle="tab"><span class="fa fa-road slashed"></span></a>';
-    navTabs.appendChild(newtab);
+    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab('advancedclosure');
+    await W.userscripts.waitForElementConnected(tabPane);
+    $(tabLabel.parentElement).append(
+            $('<span>', { class:'fa fa-road slashed', title: 'Advanced Closures' })
+        );
 
-    
-    addon.id = "sidepanel-wmeac";
-    addon.className = "tab-pane";
-    addon.style.marginLeft = "-10px";
-    tabContent.appendChild(addon);
+    tabPane.appendChild(addon);
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -479,7 +470,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.attributes.id;
                 return details;
             });
             
@@ -565,7 +556,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
                 if (mte)
-                    details.eventId = mte.id;
+                    details.eventId = mte.attributes.id;
                 return details;
             });
             
