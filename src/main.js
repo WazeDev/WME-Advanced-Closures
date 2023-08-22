@@ -78,19 +78,12 @@ function WMEAC_Injected()
     
     INCLUDE_FILE('include/highlight.js');
     
-    if (typeof window.require != 'undefined' && typeof window.define == 'undefined') // that's the require provided by waze devs
-    {
-        WMEAC.WMEAPI={require: window.require};
-        // start normally
-        WMEAC.bootstrapAC();
-    }
-    else
-    {
-        // use the patch.
-        // the patch will call bootstrapAC to start the script
-        INCLUDE_FILE('include/requirePatch.js');
-    }
-    
+    //2023-08-20 remove obsolete require patch
+
+    WMEAC.WMEAPI={require: window.require};
+    // start normally
+    WMEAC.bootstrapAC();
+
     WMEAC.log("Ready");
     
 }
