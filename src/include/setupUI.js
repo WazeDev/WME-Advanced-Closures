@@ -547,7 +547,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
             //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
-            var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             direction=(direction=="1"?WMEAC.sharedClosureDirection.A_TO_B:(direction=="2"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');

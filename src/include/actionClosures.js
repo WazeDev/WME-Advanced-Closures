@@ -27,8 +27,8 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
             };
         };
     
-        var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-        var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+        var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+        var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
@@ -79,8 +79,8 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         };
     };
 
-    var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-    var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+    var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+    var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var segs = W.selectionManager.getSelectedDataModelObjects();
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
@@ -126,8 +126,8 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
             };
         };
     
-        var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-        var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+        var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+        var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
         var segs = W.selectionManager.getSelectedDataModelObjects();
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
@@ -159,8 +159,8 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
         };
     };
 
-    var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-    var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+    var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+    var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var c = new sc({closures: [].concat(closures)}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
     t.actions=[cab.delete(c)];
