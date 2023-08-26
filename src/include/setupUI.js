@@ -588,7 +588,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     if (typeof $.fn.datepicker !== 'undefined')
         $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
     else if (typeof $.fn.daterangepicker !== 'undefined') // WME beta
-        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0,
+        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0, autoApply: !0,
             locale: {
                 format: "YYYY-MM-DD"
         }});
