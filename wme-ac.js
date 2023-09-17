@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2023.08.22.01
+// @version     2023.09.17.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -47,7 +47,7 @@
 
 // SKIP_FILE('include/downloadHelper.js');
 
-function WMEAC_Injected()
+(function()
 {
     // WMEAC object and members:
     /***********************************************
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2023.08.22.01";
+WMEAC.ac_version="2023.09.17.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -633,81 +633,25 @@ document.body.appendChild(cssElt);
 
 WMEAC.bootstrapAC = function ()
 {
-    window.setTimeout(WMEAC.initialize, 500);
+    if (W?.userscripts?.state?.isReady) {
+        WMEAC.initialize();
+    } else {
+        document.addEventListener("wme-ready", WMEAC.initialize, {
+            once: true,
+        });
+    }
 };
 
 
 WMEAC.initialize = function ()
 {
     WMEAC.log ("init");
-    WMEAC.waitForWaze(function () {
-        WMEAC.load();
-        WMEAC.log("presets", WMEAC.presets);
-        WMEAC.initUI();
-    });
+    WMEAC.load();
+    WMEAC.log("presets", WMEAC.presets);
+    WMEAC.initUI();
     WMEAC.log ("init done");
 };
 
-
-WMEAC.waitForWaze = function(handler)
-{
-    var APIRequired=[{o: "W"},
-                     {o: "W.model"},
-                     {o: "W.map"},
-                     {o: "W.loginManager"},
-                     {o: "W.app.layout.model"},
-                     {o: "W.Config"},
-                     {o: "W.controller"}
-                    ];
-    for (var i=0; i<APIRequired.length; i++)
-    {
-        var path=APIRequired[i].o.split('.');
-        var object=window;
-        for (var j=0; j<path.length; j++)
-        {
-            object=object[path[j]];
-            if (typeof object == "undefined" || object == null)
-            {
-                window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-                return;
-            }
-        }
-    }
-    
-    
-    var userInfo = WMEAC.getId('user-info');
-    if (userInfo==null)
-    {
-        window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-        return;
-    }
-
-    var navTabs=userInfo.getElementsByTagName('ul');
-    if (navTabs.length==0)
-    {
-        window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-        return;
-    }
-    if (typeof(navTabs[0])=='undefined')
-    {
-        window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-        return;
-    }
-
-    var tabContents=userInfo.getElementsByTagName('div');
-    if (tabContents.length==0)
-    {
-        window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-        return;
-    }
-    if (typeof(tabContents[0])=='undefined')
-    {
-        window.setTimeout(function () { WMEAC.waitForWaze(handler); }, 500);
-        return;
-    }
-
-    handler();
-};
 
 
 
@@ -1273,7 +1217,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var reason = $('#wmeac-advanced-closure-dialog-reason').val();
             //var cllocation = $('#wmeac-advanced-closure-dialog-location').val();
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
-            var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             direction=(direction=="1"?WMEAC.sharedClosureDirection.A_TO_B:(direction=="2"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
@@ -1314,7 +1258,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     if (typeof $.fn.datepicker !== 'undefined')
         $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
     else if (typeof $.fn.daterangepicker !== 'undefined') // WME beta
-        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0,
+        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0, autoApply: !0,
             locale: {
                 format: "YYYY-MM-DD"
         }});
@@ -1750,7 +1694,7 @@ WMEAC.ClassClosure = function (options)
                 }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
             }).join(' ; ');
             
-            var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+            var sc = require("Waze/Modules/Closures/Models/SharedClosure");
             var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
             if (this.eventId!=null) closureDetails.eventId = this.eventId;
             WMEAC.addClosure(closureDetails, successHandler, failureHandler);
@@ -2109,8 +2053,8 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
             };
         };
     
-        var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-        var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+        var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+        var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
@@ -2161,8 +2105,8 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         };
     };
 
-    var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-    var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+    var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+    var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var segs = W.selectionManager.getSelectedDataModelObjects();
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
@@ -2208,8 +2152,8 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
             };
         };
     
-        var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-        var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+        var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+        var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
         var segs = W.selectionManager.getSelectedDataModelObjects();
         var closureDetails = {reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
@@ -2241,8 +2185,8 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
         };
     };
 
-    var cab = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/ClosureActionBuilder");
-    var sc = WMEAC.WMEAPI.require("Waze/Modules/Closures/Models/SharedClosure");
+    var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
+    var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     var c = new sc({closures: [].concat(closures)}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
     t.actions=[cab.delete(c)];
@@ -2274,9 +2218,11 @@ WMEAC.load = function ()
 {
     try
     {
-        var saved = JSON.parse(localStorage.WMEAC);
-        WMEAC.presets = saved.presets;
-        WMEAC.log("presets", WMEAC.presets);
+        if (localStorage.WMEAC!==undefined && localStorage.WMEAC.length > 0) {
+            var saved = JSON.parse(localStorage.WMEAC);
+            WMEAC.presets = saved.presets;
+            WMEAC.log("presets", WMEAC.presets);
+        }
     }
     catch (err) 
     {
@@ -2638,7 +2584,7 @@ WMEAC.csvCheckAllSegments = function (i)
         
         var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
-        var WFVS = WMEAC.WMEAPI.require("Waze/Feature/Vector/Segment");
+        var WFVS = require("Waze/Feature/Vector/Segment");
         var aseg = new WFVS;
         
         var req = new XMLHttpRequest();
@@ -2900,31 +2846,7 @@ WMEAC.refreshHighlight = function ()
 
     WMEAC.WMEAPI={require: window.require};
     // start normally
+    WMEAC.log("starting");
     WMEAC.bootstrapAC();
 
-    WMEAC.log("Ready");
-    
-}
-
-function bootstrap(tries = 1) {
-        if (W &&
-            W.map &&
-            W.model &&
-            W.loginManager.user &&
-            $)
-            init();
-        else if (tries < 1000)
-            setTimeout(function () {bootstrap(tries++);}, 200);
-    }
-
-    bootstrap();
-
-function init(){
-    let WMEAC_Injected_script = GM_addElement('script', {
-      textContent: "" + WMEAC_Injected.toString() + " \n" + "WMEAC_Injected();"
-    });
-	//var WMEAC_Injected_script = document.createElement("script");
-	//WMEAC_Injected_script.textContent = '' + WMEAC_Injected.toString() + ' \n' + 'WMEAC_Injected();';
-	//WMEAC_Injected_script.setAttribute("type", "application/javascript");
-	//document.body.appendChild(WMEAC_Injected_script);
-}
+})();
