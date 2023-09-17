@@ -8,9 +8,11 @@ WMEAC.load = function ()
 {
     try
     {
-        var saved = JSON.parse(localStorage.WMEAC);
-        WMEAC.presets = saved.presets;
-        WMEAC.log("presets", WMEAC.presets);
+        if (localStorage.WMEAC!==undefined && localStorage.WMEAC.length > 0) {
+            var saved = JSON.parse(localStorage.WMEAC);
+            WMEAC.presets = saved.presets;
+            WMEAC.log("presets", WMEAC.presets);
+        }
     }
     catch (err) 
     {
