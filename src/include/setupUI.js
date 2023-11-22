@@ -1,5 +1,9 @@
+WMEAC.HTMLTemplates={};
+
 WMEAC.initUI = async function ()
 {
+    WMEAC.initUIElements();
+
     var addon = WMEAC.createElement({type: 'section', id: 'wmeac-addon'});
     
     WMEAC.pb = new WMEAC.ProgressBar('wmeac-progressBarInfo');
@@ -156,289 +160,286 @@ WMEAC.showAddAdvancedClosure = function()
     WMEAC.showClosuresLayer(true);
 };
 
-WMEAC.HTMLTemplates={};
+WMEAC.initUIElements = function()
+{
+	var rangeStartEndUI ='\
+	  <div class="form-group">\
+		<label class="control-label" for="closure_rangestartDate">Range start (included)</label>\
+		<div class="controls">\
+		  <div  style="width: 58%" class="date date-input-group input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-rangestartdate" class="form-control start-date" type="text" name="closure_rangestartDate">\
+			<span class="input-group-addon">\
+			  <i class="fa fa-calendar"></i>\
+			</span>\
+		  </div>\
+		</div>\
+	  </div>\
+	  <div class="form-group">\
+		<label class="control-label" for="closure_rangeendDate">Range end (included)</label>\
+		<div class="controls">\
+		  <div style="width: 58%" class="date date-input-group input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-rangeenddate" class="form-control end-date" type="text" name="closure_rangeendDate">\
+			<span class="input-group-addon">\
+			  <i class="fa fa-calendar"></i>\
+			</span>\
+		  </div>\
+		</div>\
+	  </div>';
 
-var rangeStartEndUI ='\
-  <div class="form-group">\
-    <label class="control-label" for="closure_rangestartDate">Range start (included)</label>\
-    <div class="controls">\
-      <div  style="width: 58%" class="date date-input-group input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-rangestartdate" class="form-control start-date" type="text" name="closure_rangestartDate">\
-        <span class="input-group-addon">\
-          <i class="fa fa-calendar"></i>\
-        </span>\
-      </div>\
-    </div>\
-  </div>\
-  <div class="form-group">\
-    <label class="control-label" for="closure_rangeendDate">Range end (included)</label>\
-    <div class="controls">\
-      <div style="width: 58%" class="date date-input-group input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-rangeenddate" class="form-control end-date" type="text" name="closure_rangeendDate">\
-        <span class="input-group-addon">\
-          <i class="fa fa-calendar"></i>\
-        </span>\
-      </div>\
-    </div>\
-  </div>';
+	var startTimeAndDurationUI = '\
+	  <div class="wmeac-closuredialog-fromgroup">\
+		<label class="control-label" for="closure_startTime">Start</label>\
+		<div class="controls">\
+		  <div style="width: 58%;" class="bootstrap-timepicker input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-starttime" class="form-control start-time" type="text" name="closure_startTime">\
+			<span class="input-group-addon">\
+			  <i class="fa fa-clock-o"></i>\
+			</span>\
+		  </div>\
+		</div>\
+	  </div>\
+	  <div class="wmeac-closuredialog-fromgroup">\
+		<label class="control-label">Duration</label>\
+		<div style="width: 58%;" class="bootstrap-timepicker input-group">\
+		  <div class="controls" style="display: flex;">\
+			<span class="input-group-addon pull-left">\
+			  <i class="fa fa-step-forward"></i>\
+			</span>\
+			<span class="form-control" style="padding: 1px; display: flex">\
+			  <input id="wmeac-advanced-closure-dialog-duration-day" name="value" value=0 size=3/>\
+			  <span style="padding: 5px;">D</span>\
+			</span>\
+		  </div>\
+		  <div class="bootstrap-timepicker input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-durationtime" class="form-control start-time" type="text" name="closure_durationTime">\
+			<span class="input-group-addon">\
+			  <i class="fa fa-clock-o"></i>\
+			</span>\
+		  </div>\
+		</div>\
+	  </div>\
+	';
 
-var startTimeAndDurationUI = '\
-  <div class="wmeac-closuredialog-fromgroup">\
-    <label class="control-label" for="closure_startTime">Start</label>\
-    <div class="controls">\
-      <div style="width: 58%;" class="bootstrap-timepicker input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-starttime" class="form-control start-time" type="text" name="closure_startTime">\
-        <span class="input-group-addon">\
-          <i class="fa fa-clock-o"></i>\
-        </span>\
-      </div>\
-    </div>\
-  </div>\
-  <div class="wmeac-closuredialog-fromgroup">\
-    <label class="control-label">Duration</label>\
-    <div style="width: 58%;" class="bootstrap-timepicker input-group">\
-      <div class="controls" style="display: flex;">\
-        <span class="input-group-addon pull-left">\
-          <i class="fa fa-step-forward"></i>\
-        </span>\
-        <span class="form-control" style="padding: 1px; display: flex">\
-          <input id="wmeac-advanced-closure-dialog-duration-day" name="value" value=0 size=3/>\
-          <span style="padding: 5px;">D</span>\
-        </span>\
-      </div>\
-      <div class="bootstrap-timepicker input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-durationtime" class="form-control start-time" type="text" name="closure_durationTime">\
-        <span class="input-group-addon">\
-          <i class="fa fa-clock-o"></i>\
-        </span>\
-      </div>\
-    </div>\
-  </div>\
-';
-  
-var descriptionUI = '\
-  <div class="form-group">\
-      <label class="control-label" for="closure_reason">Description</label>\
-      <div class="controls">\
-        <input id="wmeac-advanced-closure-dialog-reason" class="form-control" type="text" name="closure_reason">\
-      </div>\
-    </div>\
-';
+	var descriptionUI = '\
+	  <div class="form-group">\
+		  <label class="control-label" for="closure_reason">Description</label>\
+		  <div class="controls">\
+			<input id="wmeac-advanced-closure-dialog-reason" class="form-control" type="text" name="closure_reason">\
+		  </div>\
+		</div>\
+	';
 
-var locationUI = '\
-  <div class="form-group">\
-    <label class="control-label" for="closure_location">Location</label>\
-    <div class="controls">\
-      <input id="wmeac-advanced-closure-dialog-location" class="form-control" type="text" name="closure_location">\
-    </div>\
-  </div>\
-';
+	var locationUI = '\
+	  <div class="form-group">\
+		<label class="control-label" for="closure_location">Location</label>\
+		<div class="controls">\
+		  <input id="wmeac-advanced-closure-dialog-location" class="form-control" type="text" name="closure_location">\
+		</div>\
+	  </div>\
+	';
 
-var directionUI = '\
-  <div class="form-group">\
-    <label class="control-label" for="closure_direction">Direction</label>\
-    <div class="controls">\
-      <select id="wmeac-advanced-closure-dialog-direction" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
-        <option value="3">Two way (&#xf0ec;)</option><option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option>\
-      </select>\
-    </div>\
-  </div>\
-';
+	var directionUI = '\
+	  <div class="form-group">\
+		<label class="control-label" for="closure_direction">Direction</label>\
+		<div class="controls">\
+		  <select id="wmeac-advanced-closure-dialog-direction" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_direction">\
+			<option value="3">Two way (&#xf0ec;)</option><option value="1">One way (A &#8594; B)</option><option value="2">One way (B &#8594; A)</option>\
+		  </select>\
+		</div>\
+	  </div>\
+	';
 
-var ignoreTrafficUI = '\
-  <div class="checkbox">\
-    <label class="control-label" style="font-weight: bold;">\
-      <input id="wmeac-advanced-closure-dialog-ignoretraffic" type="checkbox" name="closure_permanent">\
-      Ignore Traffic\
-    </label>\
-  </div>\
-';
+	var ignoreTrafficUI = '\
+	  <div class="checkbox">\
+		<label class="control-label" style="font-weight: bold;">\
+		  <input id="wmeac-advanced-closure-dialog-ignoretraffic" type="checkbox" name="closure_permanent">\
+		  Ignore Traffic\
+		</label>\
+	  </div>\
+	';
 
-var MTEUI = '\
-  <div class="form-group">\
-    <label class="control-label control-label-inline" for="closure_MTE">Link to MTE</label>\
-    <div class="controls">\
-      <select id="wmeac-advanced-closure-dialog-mteid" class="form-control" name="closure_MTE" disabled><option value="">None</option></select>\
-    </div>\
-  </div>\
-';
+	var MTEUI = '\
+	  <div class="form-group">\
+		<label class="control-label control-label-inline" for="closure_MTE">Link to MTE</label>\
+		<div class="controls">\
+		  <select id="wmeac-advanced-closure-dialog-mteid" class="form-control" name="closure_MTE" disabled><option value="">None</option></select>\
+		</div>\
+	  </div>\
+	';
 
+	var overlapModeUI = '\
+	  <div class="form-group">\
+		<label class="control-label" for="closure_overlap">Overlap action</label>\
+		<div class="controls">\
+		  <select id="wmeac-advanced-closure-dialog-overlap" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_overlap">\
+			<option value="0">Keep existing</option><option value="1">Delete existing</option><option value="2">Fill with new</option><option value="3">Force new</option>\
+		  </select>\
+		</div>\
+	  </div>\
+	';
 
-var overlapModeUI = '\
-  <div class="form-group">\
-    <label class="control-label" for="closure_overlap">Overlap action</label>\
-    <div class="controls">\
-      <select id="wmeac-advanced-closure-dialog-overlap" style="font-family:\'FontAwesome\', Arial;" class="form-control" name="closure_overlap">\
-        <option value="0">Keep existing</option><option value="1">Delete existing</option><option value="2">Fill with new</option><option value="3">Force new</option>\
-      </select>\
-    </div>\
-  </div>\
-';
+	var tabRepeatUI = '\
+	  <div style="width: 150px;" class="input-group">\
+		<div class="controls">\
+		  <div class="input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-repeat-ntimes" class="form-control" type="text" name="closure_repeat_ntimes">\
+			<span class="input-group-addon" for="closure_repeat_ntimes">times</span>\
+		  </div>\
+		</div>\
+	  </div>\
+	  <div style="width: 150px;" class="input-group">\
+		<div class="controls">\
+		  <div style="width: 150px;" class="bootstrap-timepicker input-group">\
+			<span class="input-group-addon">\
+			  every\
+			</span>\
+			<span class="form-control" style="padding: 1px; display: flex">\
+			  <input id="wmeac-advanced-closure-dialog-repeat-every-day" name="value" value=0 size=3/>\
+			  <span style="padding: 5px;">D</span>\
+			  <input id="wmeac-advanced-closure-dialog-repeat-every-hour" name="value" value=0 size=3/>\
+			  <span style="padding: 5px;">H</span>\
+			  <input id="wmeac-advanced-closure-dialog-repeat-every-minute" name="value" value=0  size=2/>\
+			  <span style="padding: 5px;">M</span>\
+			</span>\
+		  </div>\
+		</div>\
+	  </div>\
+	';
 
+	if(!I18n.translations[I18n.locale].date.abbr_day_names){
+		I18n.translations[I18n.locale].date.abbr_day_names = [];
+		_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names.push(v)}});
+	}
 
-var tabRepeatUI = '\
-  <div style="width: 150px;" class="input-group">\
-    <div class="controls">\
-      <div class="input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-repeat-ntimes" class="form-control" type="text" name="closure_repeat_ntimes">\
-        <span class="input-group-addon" for="closure_repeat_ntimes">times</span>\
-      </div>\
-    </div>\
-  </div>\
-  <div style="width: 150px;" class="input-group">\
-    <div class="controls">\
-      <div style="width: 150px;" class="bootstrap-timepicker input-group">\
-        <span class="input-group-addon">\
-          every\
-        </span>\
-        <span class="form-control" style="padding: 1px; display: flex">\
-          <input id="wmeac-advanced-closure-dialog-repeat-every-day" name="value" value=0 size=3/>\
-          <span style="padding: 5px;">D</span>\
-          <input id="wmeac-advanced-closure-dialog-repeat-every-hour" name="value" value=0 size=3/>\
-          <span style="padding: 5px;">H</span>\
-          <input id="wmeac-advanced-closure-dialog-repeat-every-minute" name="value" value=0  size=2/>\
-          <span style="padding: 5px;">M</span>\
-        </span>\
-      </div>\
-    </div>\
-  </div>\
-';
+	var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
+	daysOfWeekUI.push(daysOfWeekUI.shift());
+	var tabEachUI = '<div class="box" style="display:flex; flex-wrap:wrap;">\
+		<div style="width:100%;">\
+		<label class="control-label" style="font-weight: bold;">\
+		  <input id="wmeac-advanced-closure-dialog-each-dayall" type="checkbox" name="closure_each_dayall">\
+		  All\
+		</label>\
+	  </div>\
+		' +
+		daysOfWeekUI.map(function (d, i) {
+			return '<div style="width:14%;">\
+		<label class="control-label" style="font-weight: bold;">\
+		  <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
+		  ' + d + '\
+		</label>\
+	  </div>\
+	';
+		}).join('') + '</div>';
 
-if(!I18n.translations[I18n.locale].date.abbr_day_names){
-	I18n.translations[I18n.locale].date.abbr_day_names = [];
-	_.forOwn(I18n.translations[I18n.locale].date, (v,k) => { if(k.indexOf("abbr_day_names_") > -1) { I18n.translations[I18n.locale].date.abbr_day_names.push(v)}});
+	var tabHolidayUI = '\
+	<div class="content">\
+	  <a id="wmeac-advanced-closure-dialog-holiday-refresh" href="#">Refresh holidays</a><br>\
+	  <i id="wmeac-advanced-closure-dialog-holiday-refresh-spinner" class="fa fa-spinner fa-pulse fa-3x fa-fw" style="display: none;"></i>\
+	  <div id="wmeac-advanced-closure-dialog-holiday-list" class="form-group" style="overflow-y: scroll; max-height: 200px;">\
+	  </div>\
+	</div>\
+	';
+
+	var tabPresetsUI = '\
+	<div class="content">\
+	  <table><tr><td style="width: 50%; border-right: 1px solid #F6C3BE; padding-right: 5px;">\
+		<div class="form-group">\
+		  <label class="control-label" for="presets_load">Load preset</label>\
+		  <div class="controls">\
+			<div class="input-group">\
+			  <select style="width: 100%;" id="wmeac-advanced-closure-dialog-presets-list" name="presets_load">\
+			  </select>\
+			  <span id="wmeac-advanced-closure-dialog-presets-load" class="input-group-addon">\
+				<i class="fa fa-folder-open-o"></i>\
+			  </span>\
+			  <span id="wmeac-advanced-closure-dialog-presets-delete" class="input-group-addon">\
+				<i class="fa fa-trash"></i>\
+			  </span>\
+			</div>\
+		  </div>\
+		  <label class="control-label" for="seg_load">Load from segment</label>\
+		  <div class="controls">\
+			<div class="input-group">\
+			  <select style="width: 100%;" id="wmeac-advanced-closure-dialog-segclosure-list" name="presets_load">\
+			  </select>\
+			  <span id="wmeac-advanced-closure-dialog-presets-load-fromseg" class="input-group-addon">\
+				<i class="fa fa-share"></i>\
+			  </span>\
+			</div>\
+		  </div>\
+		</div>\
+		</td><td style="padding-left: 5px;">\
+		<div class="form-group">\
+		  <label class="control-label" for="presets_save">Save preset</label>\
+		  <div class="controls">\
+			<div class="input-group pull-left">\
+			<input id="wmeac-advanced-closure-dialog-presets-name" class="form-control" type="text" name="presets_save">\
+			<span id="wmeac-advanced-closure-dialog-presets-save" class="input-group-addon">\
+			  <i class="fa fa-floppy-o"></i>\
+			</span>\
+			</div>\
+		  </div>\
+		</div>\
+		</td></tr></table>\
+	</div>\
+	';
+
+	var tabsUI ='\
+	  <ul class="nav wmeac-nav-tabs">\
+		<li class="active">\
+		  <a id="wmeac-advanced-closure-dialog-repeat" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
+		</li>\
+		<li>\
+		  <a id="wmeac-advanced-closure-dialog-each" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
+		</li>\
+		<li>\
+		  <a id="wmeac-advanced-closure-dialog-holiday" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabholiday">Holidays</a>\
+		</li>\
+		<li style="float: right;">\
+		  <a id="wmeac-advanced-closure-dialog-presets" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabpresets"><i class="fa fa-floppy-o"></i></a>\
+		</li>\
+	  </ul>\
+	  <div class="tab-content">\
+		<div class="tab-pane active wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabrepeat">\
+		' + tabRepeatUI + '\
+		</div>\
+		<div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
+		' + tabEachUI + '\
+		</div>\
+		<div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabholiday">\
+		' + tabHolidayUI + '\
+		</div>\
+		<div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabpresets">\
+		' + tabPresetsUI + '\
+		</div>\
+	  </div>';
+
+	var footerUI = '\
+	<div class="footer">\
+		<div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow: scroll; max-height: 100px;"></div></div>\
+		<button style="float: left;" id="wmeac-advanced-closure-dialog-exportCSV-button">Export CSV</button>\
+		<button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
+		<button style="float: right;" id="wmeac-advanced-closure-dialog-apply-button">Apply</button>\
+	</div>';
+
+	WMEAC.HTMLTemplates.advancedClosureDialog='\
+	<h1>Advanced closures</h1>\
+	<div class="content">\
+	  <table>\
+	  <tr>\
+		<td  style="width: 50%;">' +
+		  rangeStartEndUI + startTimeAndDurationUI +
+		'\
+		</td>\
+		<td>' +
+		  descriptionUI + directionUI + ignoreTrafficUI + MTEUI +// overlapModeUI +
+		'\
+		</td>\
+	  </tr>\
+	  </table>' +
+	  tabsUI +
+	'</div>' + footerUI;
 }
-
-var daysOfWeekUI = _(I18n.translations[I18n.locale].date.abbr_day_names).clone();
-daysOfWeekUI.push(daysOfWeekUI.shift());
-var tabEachUI = '<div class="box" style="display:flex; flex-wrap:wrap;">\
-    <div style="width:100%;">\
-    <label class="control-label" style="font-weight: bold;">\
-      <input id="wmeac-advanced-closure-dialog-each-dayall" type="checkbox" name="closure_each_dayall">\
-      All\
-    </label>\
-  </div>\
-    ' +
-    daysOfWeekUI.map(function (d, i) {
-        return '<div style="width:14%;">\
-    <label class="control-label" style="font-weight: bold;">\
-      <input id="wmeac-advanced-closure-dialog-each-' + ((i+1)%7) + '" type="checkbox" name="closure_each_' + d + '">\
-      ' + d + '\
-    </label>\
-  </div>\
-';
-    }).join('') + '</div>';
-
-var tabHolidayUI = '\
-<div class="content">\
-  <a id="wmeac-advanced-closure-dialog-holiday-refresh" href="#">Refresh holidays</a><br>\
-  <i id="wmeac-advanced-closure-dialog-holiday-refresh-spinner" class="fa fa-spinner fa-pulse fa-3x fa-fw" style="display: none;"></i>\
-  <div id="wmeac-advanced-closure-dialog-holiday-list" class="form-group" style="overflow-y: scroll; max-height: 200px;">\
-  </div>\
-</div>\
-';
-
-var tabPresetsUI = '\
-<div class="content">\
-  <table><tr><td style="width: 50%; border-right: 1px solid #F6C3BE; padding-right: 5px;">\
-    <div class="form-group">\
-      <label class="control-label" for="presets_load">Load preset</label>\
-      <div class="controls">\
-        <div class="input-group">\
-          <select style="width: 100%;" id="wmeac-advanced-closure-dialog-presets-list" name="presets_load">\
-          </select>\
-          <span id="wmeac-advanced-closure-dialog-presets-load" class="input-group-addon">\
-            <i class="fa fa-folder-open-o"></i>\
-          </span>\
-          <span id="wmeac-advanced-closure-dialog-presets-delete" class="input-group-addon">\
-            <i class="fa fa-trash"></i>\
-          </span>\
-        </div>\
-      </div>\
-      <label class="control-label" for="seg_load">Load from segment</label>\
-      <div class="controls">\
-        <div class="input-group">\
-          <select style="width: 100%;" id="wmeac-advanced-closure-dialog-segclosure-list" name="presets_load">\
-          </select>\
-          <span id="wmeac-advanced-closure-dialog-presets-load-fromseg" class="input-group-addon">\
-            <i class="fa fa-share"></i>\
-          </span>\
-        </div>\
-      </div>\
-    </div>\
-    </td><td style="padding-left: 5px;">\
-    <div class="form-group">\
-      <label class="control-label" for="presets_save">Save preset</label>\
-      <div class="controls">\
-        <div class="input-group pull-left">\
-        <input id="wmeac-advanced-closure-dialog-presets-name" class="form-control" type="text" name="presets_save">\
-        <span id="wmeac-advanced-closure-dialog-presets-save" class="input-group-addon">\
-          <i class="fa fa-floppy-o"></i>\
-        </span>\
-        </div>\
-      </div>\
-    </div>\
-    </td></tr></table>\
-</div>\
-';
-
-var tabsUI ='\
-  <ul class="nav wmeac-nav-tabs">\
-    <li class="active">\
-      <a id="wmeac-advanced-closure-dialog-repeat" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabrepeat">Repeat</a>\
-    </li>\
-    <li>\
-      <a id="wmeac-advanced-closure-dialog-each" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabeach">Each</a>\
-    </li>\
-    <li>\
-      <a id="wmeac-advanced-closure-dialog-holiday" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabholiday">Holidays</a>\
-    </li>\
-    <li style="float: right;">\
-      <a id="wmeac-advanced-closure-dialog-presets" data-toggle="tab" href="#wmeac-advanced-closure-dialog-tabpresets"><i class="fa fa-floppy-o"></i></a>\
-    </li>\
-  </ul>\
-  <div class="tab-content">\
-    <div class="tab-pane active wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabrepeat">\
-    ' + tabRepeatUI + '\
-    </div>\
-    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabeach">\
-    ' + tabEachUI + '\
-    </div>\
-    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabholiday">\
-    ' + tabHolidayUI + '\
-    </div>\
-    <div class="tab-pane wmeac-tab-pane" id="wmeac-advanced-closure-dialog-tabpresets">\
-    ' + tabPresetsUI + '\
-    </div>\
-  </div>';
-  
-var footerUI = '\
-<div class="footer">\
-    <div id="wmeac-csv-closures-preview"><div id="wmeac-csv-closures-preview-content" style="overflow: scroll; max-height: 100px;"></div></div>\
-    <button style="float: left;" id="wmeac-advanced-closure-dialog-exportCSV-button">Export CSV</button>\
-    <button style="float: right;" id="wmeac-advanced-closure-dialog-close-button">Close</button>\
-    <button style="float: right;" id="wmeac-advanced-closure-dialog-apply-button">Apply</button>\
-</div>';
-
-WMEAC.HTMLTemplates.advancedClosureDialog='\
-<h1>Advanced closures</h1>\
-<div class="content">\
-  <table>\
-  <tr>\
-    <td  style="width: 50%;">' +
-      rangeStartEndUI + startTimeAndDurationUI +
-    '\
-    </td>\
-    <td>' + 
-      descriptionUI + directionUI + ignoreTrafficUI + MTEUI +// overlapModeUI +
-    '\
-    </td>\
-  </tr>\
-  </table>' + 
-  tabsUI + 
-'</div>' + footerUI;
-
-
 
 WMEAC.connectAdvancedClosureDialogHandlers = function ()
 {
