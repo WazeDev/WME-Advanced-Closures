@@ -330,19 +330,22 @@ WMEAC.csvCheckAllSegments = function (i)
         // catch window tile
         var c = OpenLayers.Layer.SphericalMercator.forwardMercator(currentClosure.closure.lonlat.lon, currentClosure.closure.lonlat.lat);
         var b = W.map.calculateBounds();
+        var b1 = new OpenLayers.Bounds(b[0],b[1],b[2],b[3]);
+        b1 = b1.transform(new OpenLayers.Projection("EPSG:4326"), W.map.getProjectionObject());
         var zoomRatio = Math.pow(2, W.map.zoom - currentClosure.closure.zoom);
-        var w = b.getWidth()*1.7*zoomRatio;
-        var h = b.getHeight()*1.7*zoomRatio;
+        var w = b1.getWidth()*1.7*zoomRatio;
+        var h = b1.getHeight()*1.7*zoomRatio;
 
         var tileBounds = new OpenLayers.Bounds(c.lon - w / 2, c.lat - h / 2, c.lon + w / 2, c.lat + h / 2);
         tileBounds=tileBounds.transform(W.map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326")).toBBOX();
         
         var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
-        var WFVS = require("Waze/Feature/Vector/Segment");
-        var aseg = new WFVS;
+        // var WFVS = require("Waze/Feature/Vector/Segment");
+        // var aseg = new WFVS;
         
         var req = new XMLHttpRequest();
+        const EDIT_CLOSURES = 1024;
         
         req.open('GET', document.location.protocol + '//' + document.location.host + W.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
@@ -360,7 +363,7 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
                             return (data.segments.objects.find(function (seg) {
-                                return (sid == seg.id && (seg.permissions)&aseg.permissionFlags.EDIT_CLOSURES);
+                                return (sid == seg.id && (seg.permissions & /*aseg.permissionFlags.*/ EDIT_CLOSURES));
                             })!=null);
                         });
                         // look for closures on existing segs and build overlap list
