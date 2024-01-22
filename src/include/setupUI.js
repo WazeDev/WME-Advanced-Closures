@@ -88,7 +88,7 @@ WMEAC.initUI = async function ()
     // test now if closure tab exists. It happens if WME is opened with a segment id in the url:
     WMEAC.installButtonInClosureTab();
     
-    //W.selectionManager.events.register("selectionchanged", null, WMEAC.selectionChanged);
+    //W.selectionManager.addEventListener("selectionchanged", WMEAC.selectionChanged);
     W.app.layout.model.on("operationPending", function(e) {
         if (e.operation.id!="pending.road_data")
             return;
@@ -142,7 +142,7 @@ WMEAC.showAddAdvancedClosure = function()
         W.map.getOLMap().div.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
         ACDiv.style.display="none";
-        //W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+        //W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
@@ -151,8 +151,8 @@ WMEAC.showAddAdvancedClosure = function()
     else
     {
         ACDiv.style.display="block";
-        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
-        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
+        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
+        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
         WMEAC.refreshClosureListFromSelection();
     }
     //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
@@ -512,8 +512,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
             if (d) 
             {
-                W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
-                W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureListFromSelection);
+                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
+                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
                 d.style.display='none';
             }
         });
@@ -563,7 +563,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             
             // save selection list
             var selection = W.selectionManager.getSelectedDataModelObjects();
-            W.selectionManager.events.unregister("selectionchanged", null, WMEAC.refreshClosureList);
+            W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
                 $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"});
             }, function (i, e) {
@@ -577,7 +577,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        W.selectionManager.events.register("selectionchanged", null, WMEAC.refreshClosureList);
+                        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
                         $('a[href="#segment-edit-closures"]').click();
                     }
                 };
