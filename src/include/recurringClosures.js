@@ -150,10 +150,10 @@ WMEAC.refreshClosureList = function ()
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var existingClosures = W.selectionManager.getSelectedFeatures().reduce(function (p, c, i) {
                 var revSegs = W.selectionManager.getReversedSegments();
-                var isReversed = revSegs.hasOwnProperty(c.data.wazeFeature.id) && revSegs[c.data.wazeFeature.id];
+                var isReversed = revSegs.hasOwnProperty(c.id) && revSegs[c.id];
                 var realWay = isReversed?(direction==1?2:1):direction;
                 return p.concat(W.model.roadClosures.getObjectArray(function (e) {
-                    return (e.segID==c.data.wazeFeature.id &&
+                    return (e.segID==c.id &&
                     (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
                 }));
             }, []);
