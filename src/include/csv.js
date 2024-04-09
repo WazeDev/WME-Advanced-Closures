@@ -186,7 +186,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp2 = function readyToSelect() {
             WMEAC.log("Test if ready to select...");
-            if (WMEAC.pendingOps==true)
+            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(readyToSelect, 500);
@@ -198,7 +198,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp1 = function mapMovedEnd() {
             WMEAC.log("Test if roads are reloaded...");
-            if (WMEAC.pendingOps==true)
+            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(mapMovedEnd, 500);

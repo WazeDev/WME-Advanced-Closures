@@ -126,16 +126,17 @@ WMEAC.segmentsIDsToSegments = function (ids)
 WMEAC.reloadRoadLayer = function ()
 {
     var l=W.map.getLayerByName("roads");
-    l.redraw({force:!0});
-    l.removeBackBuffer();
-    W.controller.reloadData();  
+    // 2024-04-09 these seem to be unneeded and causes flashing and delays
+    // l.redraw({force:!0});
+    // l.removeBackBuffer();
+    // W.controller.reloadData();
 };
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
     var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
-    W.controller.reloadData();
+    // W.controller.reloadData();
     if (endHandler)
     {
         var tmp = function reloaded() {
