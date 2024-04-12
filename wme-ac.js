@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2024.04.09.01
+// @version     2024.04.11.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2024.04.09.01";
+WMEAC.ac_version="2024.04.11.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -2509,7 +2509,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     
     var tmp2 = function readyToApply() {
         WMEAC.log("Test if ready to apply...");
-        if (WMEAC.pendingOps==true)
+        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(readyToApply, 500);
@@ -2521,7 +2521,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     var tmp1 = function mapMovedEnd() {
         WMEAC.log("Test if roads are reloaded...");
-        if (WMEAC.pendingOps==true)
+        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(mapMovedEnd, 500);

@@ -262,7 +262,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     
     var tmp2 = function readyToApply() {
         WMEAC.log("Test if ready to apply...");
-        if (WMEAC.pendingOps==true)
+        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(readyToApply, 500);
@@ -274,7 +274,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     var tmp1 = function mapMovedEnd() {
         WMEAC.log("Test if roads are reloaded...");
-        if (WMEAC.pendingOps==true)
+        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(mapMovedEnd, 500);
