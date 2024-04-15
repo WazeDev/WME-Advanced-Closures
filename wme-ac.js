@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2024.04.11.01
+// @version     2024.04.15.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2024.04.11.01";
+WMEAC.ac_version="2024.04.15.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -828,6 +828,7 @@ WMEAC.showAddAdvancedClosure = function()
     }
     //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
     $(ACDiv).find('.input-group-addon').css({display:"table-cell"});
+    WMEAC.refreshMTEList();
     WMEAC.showClosuresLayer(true);
 };
 
@@ -1502,7 +1503,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
      
      WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'),  container: [$('#OpenLayers_Map_200_OpenLayers_ViewPort'), $('#WazeMap')]  });
-     
+     WMEAC.refreshMTEList();
 };
 
 
@@ -1947,7 +1948,7 @@ WMEAC.refreshMTEList = function ()
     var currentMTEid = $("#wmeac-advanced-closure-dialog-mteid").val();
     var rangeStart = new JDate($("#wmeac-advanced-closure-dialog-rangestartdate").val());
     var rangeEnd = new JDate($("#wmeac-advanced-closure-dialog-rangeenddate").val());
-    var options=[{name: 'none', value: ''}];
+    var mtelist = [];
     $("#wmeac-advanced-closure-dialog-mteid").empty();
     if (WMEAC.isValidDate(rangeStart) && WMEAC.isValidDate(rangeEnd))
     {
@@ -1957,21 +1958,30 @@ WMEAC.refreshMTEList = function ()
             // check if ranges overlap
             return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.attributes.startDate), endDate: new JDate(mte.attributes.endDate)}));
         }).forEach(function (mte) {
-            options.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
+            mtelist.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
         });
     }
-    options.forEach(function (o) {
-        var el = WMEAC.createElement({type: 'option'});
-        el.setAttribute('value', o.value);
-        if (currentMTEid==o.value)
-            el.setAttribute('selected', '');
-        el.innerHTML = o.name;
-        $("#wmeac-advanced-closure-dialog-mteid").append(el);
+    mtelist.sort(function(a,b) {
+        return a.name.localeCompare(b.name);
     });
-    if (options.length>1)
+    WMEAC.addMTEitem('None', '', currentMTEid);
+    mtelist.forEach(function (o) {
+        WMEAC.addMTEitem(o.name, o.value, currentMTEid);
+    });
+    if (mtelist.length>0)
         $("#wmeac-advanced-closure-dialog-mteid").removeAttr('disabled');
     else
         $("#wmeac-advanced-closure-dialog-mteid").attr('disabled', '');
+};
+
+WMEAC.addMTEitem = function (n, v, curId)
+{
+    var el = WMEAC.createElement({type: 'option'});
+    el.setAttribute('value', v);
+    if (curId==v)
+        el.setAttribute('selected', '');
+    el.innerHTML = n;
+    $("#wmeac-advanced-closure-dialog-mteid").append(el);
 };
 
 WMEAC.refreshClosureListFromSelection = function ()

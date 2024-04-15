@@ -157,6 +157,7 @@ WMEAC.showAddAdvancedClosure = function()
     }
     //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
     $(ACDiv).find('.input-group-addon').css({display:"table-cell"});
+    WMEAC.refreshMTEList();
     WMEAC.showClosuresLayer(true);
 };
 
@@ -831,7 +832,7 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
      
      WMEAC.setDraggable($('#wmeac-add-advanced-closure-dialog'), { controller: $('#wmeac-add-advanced-closure-dialog h1:first-child'),  container: [$('#OpenLayers_Map_200_OpenLayers_ViewPort'), $('#WazeMap')]  });
-     
+     WMEAC.refreshMTEList();
 };
 
 
