@@ -241,12 +241,12 @@ WMEAC.refreshClosureListFromSelection = function ()
         {
             var blackList=[];
             W.model.roadClosures.getObjectArray(function (c) {
-                return c.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
+                return c.attributes.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
             }).sort(function (a,b) {
-                return (new Date(a.startDate)-new Date(b.startDate));
+                return (new Date(a.attributes.startDate)-new Date(b.attributes.startDate));
             }).forEach(function (c) {
-                if (blackList.indexOf(c.id)!=-1) return;
-                var direction = c.forward?"A to B":"B to A";
+                if (blackList.indexOf(c.attributes.id)!=-1) return;
+                var direction = c.attributes.forward?"A to B":"B to A";
                 var oppositeClosure = WMEAC.getOppositeClosure(c);
                 if (!oppositeClosure.length==0)
                 {
@@ -254,10 +254,10 @@ WMEAC.refreshClosureListFromSelection = function ()
                     blackList.push(oppositeClosure[0].id);
                 }
                 var el = WMEAC.createElement({type: 'option'});
-                el.setAttribute('value', c.id);
-                if (currentSegClosure==c.id)
+                el.setAttribute('value', c.attributes.id);
+                if (currentSegClosure==c.attributes.id)
                     el.setAttribute('selected', '');
-                el.innerHTML = c.reason.trim() + ' ' + direction + ' ' + c.startDate + '&#8594;' + c.endDate;
+                el.innerHTML = c.attributes.reason.trim() + ' ' + direction + ' ' + c.attributes.startDate + '&#8594;' + c.attributes.endDate;
                 $("#wmeac-advanced-closure-dialog-segclosure-list").append(el);
             });
         }

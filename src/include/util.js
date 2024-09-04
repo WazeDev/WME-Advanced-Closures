@@ -350,11 +350,11 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
 WMEAC.getOppositeClosure = function (closure)
 {
     return W.model.roadClosures.getObjectArray(function (c) {
-        return (closure.reason == c.reason &&
-                closure.startDate == c.startDate &&
-                closure.endDate == c.endDate &&
-                closure.segID == c.segID && 
-                closure.forward != c.forward);
+        return (closure.attributes.reason == c.attributes.reason &&
+                closure.attributes.startDate == c.attributes.startDate &&
+                closure.attributes.endDate == c.attributes.endDate &&
+                closure.attributes.segID == c.attributes.segID && 
+                closure.attributes.forward != c.attributes.forward);
     });
 };
 

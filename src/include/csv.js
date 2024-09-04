@@ -526,10 +526,10 @@ WMEAC.CSVBatchApply = function(i)
         else
         {
             WMEAC.csvApplyClosure(WMEAC.csvCurrentBatchClosureList[i], function (success) {
-                if (success)
-                    WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
-                else
-                    WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+                //if (success)
+                //    WMEAC.csvAddLog("Closure OK: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
+                //else
+                //    WMEAC.csvAddLog("Closure KO: " + WMEAC.csvCurrentBatchClosureList[i].closure.comment + " (" + WMEAC.csvCurrentBatchClosureList[i].closure.reason + ")\n");
                 WMEAC.CSVBatchApply(i+1);
             });
         }
