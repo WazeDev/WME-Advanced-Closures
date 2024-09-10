@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2024.09.04.01
+// @version     2024.09.09.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @include     https://www.waze.com/editor*
@@ -70,7 +70,7 @@ var WMEAC={};
 
 WMEAC.isDebug=false;
 
-WMEAC.ac_version="2024.09.04.01";
+WMEAC.ac_version="2024.09.09.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -2378,7 +2378,7 @@ WMEAC.csv.push(new WMEAC.ClassCSV({version: 1, regexpValidation: [/.*/, // 1st c
                                                                   /^(\d+(;|$))+/, // seg ID list
                                                                   /(lon=(-?\d+\.?\d*)&lat=(-?\d+\.?\d*))|(lat=(-?\d+\.?\d*)&lon=(-?\d+\.?\d*))/, // lonlat
                                                                   /^\d+$/, // zoom
-                                                                  /(^$)|(^-?\d+\.-?\d+\.-?\d+$)/ // MTE ID is empty or digits.digits.digits
+                                                                  /(^$)|(^-?\d+\.-?\d+\.-?[0-9a-fA-F\-]{4,36}$)/ // MTE ID is empty or digits.digits.[digits-or-guid]
                                                                   ]}));
                                                                   
 WMEAC.buildInlineClosureUI = function (closure, action)
