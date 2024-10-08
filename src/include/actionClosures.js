@@ -162,8 +162,11 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var c = new sc({closures: [].concat(closures)}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
-    t.actions=[cab.delete(c)];
+    let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID));
+    segs = segs.filter(function (seg) {
+        return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
+    });
+    t.actions=[cab.delete(W.model, new sc({segments: segs, closures: closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true}))];
     W.controller.save(t).then(done()).catch(fail());
     return true;
 };

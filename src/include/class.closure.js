@@ -103,11 +103,11 @@ WMEAC.ClassClosure = function (options)
             // look for closure(s)
             var that = this;
             var closures = W.model.roadClosures.getObjectArray(function (c) {
-                return (c.startDate==that.startDate &&
-                        c.endDate==that.endDate &&
-                        c.reason.trim()==that.reason &&
-                        c.segID==s.attributes.id &&
-                        c.permanent == (that.permanent=='Yes'));
+                return (c.attributes.startDate==that.startDate &&
+                        c.attributes.endDate==that.endDate &&
+                        c.attributes.reason.trim()==that.reason &&
+                        c.attributes.segID==s.attributes.id &&
+                        c.attributes.permanent == (that.permanent=='Yes'));
             });
             if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
                 (this.direction=="A to B" && closures.length==1 && closures[0].forward==true) ||
