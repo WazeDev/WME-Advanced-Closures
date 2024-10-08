@@ -50,9 +50,8 @@ WMEAC.parseCSV = function (csvString)
     return false;
 };
 
-WMEAC.CSVFileChanged = function (evt)
+WMEAC.ReadFiles = function (files)
 {
-    var files = evt.target.files; // FileList object
     for (var i = 0, f; f = files[i]; i++)
     {
         var reader = new FileReader();

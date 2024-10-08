@@ -30,8 +30,7 @@ WMEAC.initUI = async function ()
     divAdvCl.appendChild(addACBtn);
     
     var divCSV = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-csv'});
-    var csvHTML = '<label for="wmeac-csv-file" class="wmeac-csv-button">Parse CSV</label>\
-    <input id="wmeac-csv-file" type="file" name="files[]" style="display: none;" />';
+    var csvHTML = '<wz-file-input upload-button-label="Parse CSV" id="wmeac-file-input" enable-drag-and-drop="1" max-files-batch-size=10 ></wz-file-input>';
     csvHTML += '\
     <div id="wmeac-csv-closures" style="display: none;">\
         <div id="wmeac-csv-closures-controls">\
@@ -839,11 +838,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
 
 WMEAC.connectAdvancedClosureTabHandlers = function ()
 {
+    $('#wmeac-file-input')[0].addEventListener('filesSelected', (e) => WMEAC.ReadFiles(e.detail) );
     var e = null;
-
-    e=WMEAC.getId('wmeac-csv-file');
-    if (e)
-        e.addEventListener('change', WMEAC.CSVFileChanged);
 
     e=WMEAC.getId('wmeac-csv-closures-controls-check');
     if (e)
