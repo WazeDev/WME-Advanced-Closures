@@ -72,7 +72,7 @@ WMEAC.ClassClosure = function (options)
                 
         if (segs.length==0)
         {
-            failureHandler([{attributes: {details: "No segment. Check permissions or existence."}}]);
+            failureHandler( {errors: [{attributes: {details: "No segment. Check permissions or existence."}}]} );
         }
         else
         {
@@ -110,15 +110,15 @@ WMEAC.ClassClosure = function (options)
                         c.attributes.permanent == (that.permanent=='Yes'));
             });
             if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
-                (this.direction=="A to B" && closures.length==1 && closures[0].forward==true) ||
-                (this.direction=="B to A" && closures.length==1 && closures[0].forward==false))
+                (this.direction=="A to B" && closures.length==1 && closures[0].attributes.forward==true) ||
+                (this.direction=="B to A" && closures.length==1 && closures[0].attributes.forward==false))
             {
                 allClosuresToRemove=allClosuresToRemove.concat(closures);
             }
         }, this);
         if (allClosuresToRemove.length==0)
         {
-            failureHandler([{attributes: {details: "No segment. Check permissions or existence."}}]);
+            failureHandler( {errors: [{attributes: {details: "No segment. Check permissions or existence."}}]} );
         }
         else
             WMEAC.removeClosure(allClosuresToRemove, successHandler, failureHandler);

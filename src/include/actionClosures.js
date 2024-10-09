@@ -9,7 +9,7 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         options.hasOwnProperty('location') &&
         options.hasOwnProperty('permanent'))
     {
-        WMEAC.log("Addinf closure: ", options);
+        WMEAC.log("Adding closure: ", options);
         var fail = function (e) {
             return function (f) {
                 if (failureHandler)
@@ -108,7 +108,7 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         options.hasOwnProperty('location') &&
         options.hasOwnProperty('permanent'))
     {
-        WMEAC.log("Addinf closure: ", options);
+        WMEAC.log("Adding closure: ", options);
         var fail = function (e) {
             return function (f) {
                 if (failureHandler)
@@ -163,9 +163,6 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID));
-    segs = segs.filter(function (seg) {
-        return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
-    });
     t.actions=[cab.delete(W.model, new sc({segments: segs, closures: closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true}))];
     W.controller.save(t).then(done()).catch(fail());
     return true;
