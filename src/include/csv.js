@@ -367,43 +367,55 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         // look for closures on existing segs and build overlap list
                         var overlaps=[];
+                        var removeMatches = 0;
                         var existingClosures = existingSegs.forEach(function (sid) {
                             var cl = data.roadClosures.objects.filter(function (c) {
                                 return (c.segID==sid);
                             });
                             console.log('cl', cl);
                             cl.forEach(function (c) {
-                                var forwardMustBe = currentClosure.closure.direction=="A to B"?true:(currentClosure.closure.direction=="B to A"?false:null);
-                                console.log('forwardMustBe', forwardMustBe);
-                                console.log('dateTimeOverlaps', currentClosure.closure);
-                                console.log('dateTimeOverlaps', c);
-                                if (WMEAC.dateTimeOverlaps(currentClosure.closure, c))
-                                {
-                                    if (forwardMustBe==null || forwardMustBe==c.forward)
-                                    {
-                                        var segment = data.segments.objects.find(function (seg) {
-                                            return seg.id==sid;
-                                        });
-                                        var streetName=null;
-                                        if (segment && segment.primaryStreetID!=null)
-                                        {
-                                            var street = data.streets.objects.find(function (st) {
-                                                return st.id==segment.primaryStreetID;
-                                            });
-                                            if (street && street.name!=null)
-                                                streetName=street.name;
-                                        }
-                                        overlaps.push('Overlap with ' + c.reason + (streetName!=null?' :'+streetName:'') + ' (' + sid + ')');
+                                if (currentClosure.action == 'remove') {
+                                    if (currentClosure.closure.startDate == c.startDate && currentClosure.closure.endDate == c.endDate) {
+                                        removeMatches++;
                                     }
                                 }
-                            });
+                                else {
+                                    var forwardMustBe = currentClosure.closure.direction=="A to B"?true:(currentClosure.closure.direction=="B to A"?false:null);
+                                    console.log('forwardMustBe', forwardMustBe);
+                                    console.log('dateTimeOverlaps', currentClosure.closure);
+                                    console.log('dateTimeOverlaps', c);
+                                    if (WMEAC.dateTimeOverlaps(currentClosure.closure, c))
+                                    {
+                                        if (forwardMustBe==null || forwardMustBe==c.forward)
+                                        {
+                                            var segment = data.segments.objects.find(function (seg) {
+                                                return seg.id==sid;
+                                            });
+                                            var streetName=null;
+                                            if (segment && segment.primaryStreetID!=null)
+                                            {
+                                                var street = data.streets.objects.find(function (st) {
+                                                    return st.id==segment.primaryStreetID;
+                                                });
+                                                if (street && street.name!=null)
+                                                    streetName=street.name;
+                                            }
+                                            overlaps.push('Overlap with ' + c.reason + (streetName!=null?' :'+streetName:'') + ' (' + sid + ')');
+                                        }
+                                    }
+                                }
+                                });
                         });
                         if (existingSegs.length == currentClosure.closure.segIDs.length &&
                             editableClosuresSegs.length == currentClosure.closure.segIDs.length &&
-                            overlaps.length==0)
+                            overlaps.length==0 && (currentClosure.action == 'add' || removeMatches >= existingSegs.length) )
                         {
                             WMEAC.csvAddLog("Seg check OK: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + "):\n" + existingSegs.length + " editable seg(s) found\n");
                             WMEAC.setCSVMiniLog(currentClosure, "segs OK: " + existingSegs.length + " editable seg(s) found", 1);
+                        }
+                        else if (currentClosure.action == 'remove') {
+                            WMEAC.csvAddLog("Seg check KO: " + currentClosure.closure.comment + " (" + currentClosure.closure.reason + ") No matching closures\n");
+                            WMEAC.setCSVMiniLog(currentClosure, "segs KO: no matches", 2);
                         }
                         else if (existingSegs.length == currentClosure.closure.segIDs.length &&
                             editableClosuresSegs.length == currentClosure.closure.segIDs.length &&
