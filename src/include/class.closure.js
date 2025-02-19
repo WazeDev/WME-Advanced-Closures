@@ -85,7 +85,7 @@ WMEAC.ClassClosure = function (options)
             }).join(' ; ');
             
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
+            var closureDetails = {closures: [], attributions: [], reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
             if (this.eventId!=null) closureDetails.eventId = this.eventId;
             WMEAC.addClosure(closureDetails, successHandler, failureHandler);
         }
