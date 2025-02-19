@@ -100,9 +100,36 @@ WMEAC.initUI = async function ()
         WMEAC.pendingOps = false;
     });
 
-    W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
-    WMEAC.refreshHighlight();
+    // refreshHighlight is not working, so commenting out these two lines
+    // W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
+    // WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
+    window.setTimeout(WMEAC.setupMTEobserver, 3000);
+};
+
+WMEAC.setupMTEobserver = function()
+{
+    var mteObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            for (var i = 0; i < mutation.addedNodes.length; i++) {
+                var addedNode = mutation.addedNodes[i];
+
+                if (addedNode.nodeType === Node.TEXT_NODE && addedNode['s-nr'] ) {
+                    var x = $('.mte-edit-view > wz-section-header');
+                    if (x.length > 0) {
+                        const mtev = x[0].shadowRoot.querySelector('.subtitle');
+                        if (mtev) {
+                            mtev.style.overflow = 'visible';
+                            mtev.style.fontSize = '10px';
+                            //console.log('found edit view');
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    });
+    mteObserver.observe(WMEAC.getId('sidepanel-mtes'), {childList: true, subtree: true});
 };
 
 WMEAC.installButtonInClosureTab = function (node)
