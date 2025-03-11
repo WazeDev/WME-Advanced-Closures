@@ -56,6 +56,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
             if (failureHandler)
             {
                 var details = [];
+                if (f.message) { console.error('AC: ' + f.message + ' - ' + f.stack); }
                 f.errors.forEach(function (err) {
                     if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
                         details.push(err.attributes.details);
@@ -82,7 +83,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var segs = W.selectionManager.getSelectedDataModelObjects();
+    var segIDs = WMEAC.wmeSDK.Editing.getSelection();
+    var segs = WMEAC.segmentsIDsToSegments(segIDs);
+    // SDK - need old style segment objects for now since closure code called getID() on these objects
+    var oldsegs = segs.map (function (e) {
+        return (W.model.segments.getObjectById(e.id));
+    });
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
@@ -91,9 +97,10 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
         
-    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
+    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
-    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
+    const ssel = W.selectionManager.getSegmentSelection();
+    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true });
     t.actions=[cab.add(c)];
     W.controller.save(t).then(done()).catch(fail());
 };
@@ -129,8 +136,13 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var segs = W.selectionManager.getSelectedDataModelObjects();
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
+        var segIDs = WMEAC.wmeSDK.Editing.getSelection();
+        var segs = WMEAC.segmentsIDsToSegments(segIDs);
+        // SDK - need old style segment objects for now since closure code called getID() on these objects
+        var oldsegs = segs.map (function (e) {
+            return (W.model.segments.getObjectById(e.id));
+        });
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
         t.actions=[cab.add(c)];
@@ -162,8 +174,13 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID));
-    t.actions=[cab.delete(W.model, new sc({segments: segs, closures: closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true}))];
+    let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID)); // SDK - closures is internal objects for now
+    // SDK - need old style segment objects for now since closure code called getID() on these objects
+    var oldsegs = segs.map (function (e) {
+        return (W.model.segments.getObjectById(e.id));
+    });
+    var sclo = new sc({segments: oldsegs, closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
+    t.actions=[cab.delete(W.model,sclo)];
     W.controller.save(t).then(done()).catch(fail());
     return true;
 };

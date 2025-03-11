@@ -10,7 +10,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     if (rangeEndDate<rangeStartDate) return {list: list, error: "Range end date is before range start date"};
     
     var dD = parseInt($('#wmeac-advanced-closure-dialog-duration-day').val());
-    if (isNaN(dD) || dH<0) return {list: list, error: "Duration days is invalid"};
+    if (isNaN(dD) || dD<0) return {list: list, error: "Duration days is invalid"};
     
     // var dM = parseInt($('#wmeac-advanced-closure-dialog-duration-minute').val());
     // if (isNaN(dM) || dM<0 || dM>=60) return {list: list, error: "Duration minute is invalid"};
@@ -148,30 +148,34 @@ WMEAC.refreshClosureList = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var existingClosures = W.selectionManager.getSelectedFeatures().reduce(function (p, c, i) {
-                var revSegs = W.selectionManager.getReversedSegments();
-                var isReversed = revSegs.hasOwnProperty(c.id) && revSegs[c.id];
-                var realWay = isReversed?(direction==1?2:1):direction;
-                return p.concat(W.model.roadClosures.getObjectArray(function (e) {
-                    return (e.segID==c.id &&
-                    (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
-                }));
-            }, []);
-            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
+            const selection = WMEAC.wmeSDK.Editing.getSelection();
+            var existingClosures = [];
+            if (selection.ids.length > 0 && selection.objectType == "segment") {
+                //existingClosures = W.selectionManager.getSelectedWMEFeatures().reduce(function (p, c, i) {
+                existingClosures = selection.ids.reduce(function (p, c, i) {
+                    var revSegs = W.selectionManager.getReversedSegments();
+                    var isReversed = revSegs.hasOwnProperty(c) && revSegs[c];
+                    var realWay = isReversed?(direction==1?2:1):direction;
+                    //return p.concat(W.model.roadClosures.getObjectArray(function (e) {
+                    return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
+                        return (e.segmentId==c &&
+                                (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
+                    }));
+                }, []);
+            }
+            const mte = WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getById( { majorTrafficEventId: $("#wmeac-advanced-closure-dialog-mteid").val() } );
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                     var overlap = existingClosures.filter(function (c) {
                         return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
                     }).map(function (c) {
-                        var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
-                        if (W.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
-                        if (W.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
-                        if (W.model.streets.objects.hasOwnProperty(W.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
-                        var street = W.model.streets.objects[W.model.segments.objects[c.segID].attributes.primaryStreetID];
-                        if (!street.isEmpty) msg = street.name + ': ' + msg;
+                        var msg = (c.reason?c.reason + ' ':'') + '(' + c.segmentId + ')';
+                        const segAddr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: c.segmentId } );
+                        var street = segAddr.street.name;
+                        if (!segAddr.isEmpty) msg = street + ': ' + msg;
                         return msg;
                     });
-                    var mteOK=!(mte && (new Date(e.start) < new Date(mte.attributes.startDate) || new Date(e.end) > new Date(mte.attributes.endDate)));
+                    var mteOK=!(mte && (new Date(e.start) < new Date(mte.startDate) || new Date(e.end) > new Date(mte.endDate)));
                     return (reason +
                     //' (' + cllocation + '): ' + 
                     ': ' +
@@ -201,12 +205,10 @@ WMEAC.refreshMTEList = function ()
     {
         rangeEnd.addDays(1);
         // filter MTE loaded in WME:
-        W.model.majorTrafficEvents.getObjectArray(function (mte) {
-            // check if ranges overlap
-            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.attributes.startDate), endDate: new JDate(mte.attributes.endDate)}));
-        }).forEach(function (mte) {
-            mtelist.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
-        });
+        WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getAll().filter((mte) => (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.startDate), endDate: new JDate(mte.endDate)}))
+        ).forEach(function (mte) {
+            mtelist.push({name: mte.names[0].value, value: mte.id});
+       });
     }
     mtelist.sort(function(a,b) {
         return a.name.localeCompare(b.name);
@@ -237,16 +239,16 @@ WMEAC.refreshClosureListFromSelection = function ()
     {
         var currentSegClosure = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         $("#wmeac-advanced-closure-dialog-segclosure-list").empty();
-        if (W.selectionManager.getSelectedFeatures().length!=0)
-        {
+        const sel = WMEAC.wmeSDK.Editing.getSelection();
+        if (sel && sel.ids.length!=0 && sel.objectType == "segment") {
             var blackList=[];
-            W.model.roadClosures.getObjectArray(function (c) {
-                return c.attributes.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
+            WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+                return c.segmentId==sel.ids[0];
             }).sort(function (a,b) {
-                return (new Date(a.attributes.startDate)-new Date(b.attributes.startDate));
+                return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {
-                if (blackList.indexOf(c.attributes.id)!=-1) return;
-                var direction = c.attributes.forward?"A to B":"B to A";
+                if (blackList.indexOf(c.id)!=-1) return;
+                var direction = c.isForward?"A to B":"B to A";
                 var oppositeClosure = WMEAC.getOppositeClosure(c);
                 if (!oppositeClosure.length==0)
                 {
@@ -254,10 +256,10 @@ WMEAC.refreshClosureListFromSelection = function ()
                     blackList.push(oppositeClosure[0].id);
                 }
                 var el = WMEAC.createElement({type: 'option'});
-                el.setAttribute('value', c.attributes.id);
-                if (currentSegClosure==c.attributes.id)
+                el.setAttribute('value', c.id);
+                if (currentSegClosure==c.id)
                     el.setAttribute('selected', '');
-                el.innerHTML = c.attributes.reason.trim() + ' ' + direction + ' ' + c.attributes.startDate + '&#8594;' + c.attributes.endDate;
+                el.innerHTML = c.description.trim() + ' ' + direction + ' ' + c.startDate + '&#8594;' + c.endDate;
                 $("#wmeac-advanced-closure-dialog-segclosure-list").append(el);
             });
         }

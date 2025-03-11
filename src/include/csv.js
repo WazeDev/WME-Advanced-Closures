@@ -135,7 +135,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>\
                     <div class="wmeac-csv-closures-minilog" style="display: block;">' + (action=='add'?'Ready to apply':(action=='remove'?'Ready to remove':'')) + '</div>';
     // attach handlers
-    liElt.children[5].children[0].addEventListener('click', function (e) {
+    liElt.children[5].children[0].addEventListener('click', function (e) { // select the segs on this line of the CSV
         WMEAC.csvClearLog();
         // get closure id:
         var cid = parseInt(e.target.parentNode.parentNode.parentNode.getAttribute('closureID'));
@@ -143,8 +143,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             return (c.closure.id==cid);
         });
         WMEAC.log('Closure to target:', closure);
-        var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        W.map.setCenter(xy, closure.closure.zoom);
+        WMEAC.wmeSDK.Map.setMapCenter( { lonLat: closure.closure.lonlat, zoomLevel: closure.closure.zoom } );
         var tmp3 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
@@ -170,14 +169,20 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             }
             if (segs.length!=0)
             {
-                W.selectionManager.setSelectedModels(segs);
+                const selection = { ids: closure.closure.segIDs, objectType: 'segment' };
+                WMEAC.wmeSDK.Editing.setSelection( { selection } );
                 var tmp = function selectionReady()
                 {
                     if (W.selectionManager.getSelectedFeatures().length==0)
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        $('a[href="#segment-edit-closures"]').click();
+                        const ed = document.getElementsByClassName('segment-feature-editor');
+                        const tabs = ed[0].querySelector('wz-tabs');
+                        const tl = tabs.shadowRoot.querySelectorAll('.wz-tab-label');
+                        if ( tl && tl.length > 0) {
+                            tl[1].click();  // do we want to select the closures tab ?
+                        }
                     }
                 };
                 window.setTimeout(tmp, 500);
@@ -185,7 +190,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp2 = function readyToSelect() {
             WMEAC.log("Test if ready to select...");
-            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+            if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(readyToSelect, 500);
@@ -197,7 +202,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp1 = function mapMovedEnd() {
             WMEAC.log("Test if roads are reloaded...");
-            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+            if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(mapMovedEnd, 500);
@@ -211,7 +216,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         window.setTimeout(tmp1, 500);
         e.preventDefault();
     });
-    liElt.children[6].children[0].addEventListener('click', function (e) {
+    liElt.children[6].children[0].addEventListener('click', function (e) { // apply closure on the segs on this line of the CSV
         // get closure id:
         WMEAC.csvClearLog();
         var liElt = e.target.parentNode.parentNode.parentNode;
@@ -228,8 +233,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
 
 WMEAC.csvApplyClosure = function(closure, handler)
 {
-    var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-    W.map.setCenter(xy, closure.closure.zoom);
+    WMEAC.wmeSDK.Map.setMapCenter( { lonLat: closure.closure.lonlat, zoomLevel: closure.closure.zoom } );
     function applySuccess(evt)
     {
         WMEAC.csvAddLog("Closure OK: " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
@@ -239,7 +243,6 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     function applyFailure(evt)
     {
-        //WMEAC.log('evt', evt);
         var details="";
         evt.errors.forEach(function (err) {
             if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
@@ -261,7 +264,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     
     var tmp2 = function readyToApply() {
         WMEAC.log("Test if ready to apply...");
-        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+        if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(readyToApply, 500);
@@ -273,7 +276,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     var tmp1 = function mapMovedEnd() {
         WMEAC.log("Test if roads are reloaded...");
-        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+        if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(mapMovedEnd, 500);
@@ -340,11 +343,7 @@ WMEAC.csvCheckAllSegments = function (i)
         
         var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
-        // var WFVS = require("Waze/Feature/Vector/Segment");
-        // var aseg = new WFVS;
-        
         var req = new XMLHttpRequest();
-        const EDIT_CLOSURES = 1024;
         
         req.open('GET', document.location.protocol + '//' + document.location.host + W.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
@@ -362,7 +361,16 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
                             return (data.segments.objects.find(function (seg) {
-                                return (sid == seg.id && (seg.permissions & /*aseg.permissionFlags.*/ EDIT_CLOSURES));
+                                let editable = false;
+                                if (sid == seg.id) {
+                                    try {
+                                        editable = WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
+                                    } catch(e) {
+                                        // console.debug('AC: err checking perm: ',e);
+                                        editable = true; // not in current data model, assume editable
+                                    }
+                                }
+                                return editable;
                             })!=null);
                         });
                         // look for closures on existing segs and build overlap list
@@ -372,7 +380,7 @@ WMEAC.csvCheckAllSegments = function (i)
                             var cl = data.roadClosures.objects.filter(function (c) {
                                 return (c.segID==sid);
                             });
-                            console.log('cl', cl);
+                            // console.log('cl', cl);
                             cl.forEach(function (c) {
                                 if (currentClosure.action == 'remove') {
                                     if (currentClosure.closure.startDate == c.startDate && currentClosure.closure.endDate == c.endDate) {
@@ -484,7 +492,7 @@ WMEAC.setCSVMiniLog = function(closure, text, level) // level=0: black 1: green,
     if (c!=null)
     {
         c.UI.children[7].innerHTML=text;
-        var colors = ["#000000", "#54C600", "#FFA000", "#FF0000"];
+        var colors = ["var(--content_p1)", "var(--safe)", "var(--cautious)", "var(--alarming)"];
         if (arguments.length==3)
             c.UI.children[7].style.color=colors[level];
         else

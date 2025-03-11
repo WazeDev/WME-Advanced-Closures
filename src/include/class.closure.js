@@ -66,10 +66,16 @@ WMEAC.ClassClosure = function (options)
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         WMEAC.log("Segs: ", segs);
 
+        //  check perms
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
+            return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
         });
-                
+
+        // SDK - need old style segment objects for now since closure code called getID() on these objects
+        var oldsegs = segs.map (function (e) {
+            return (W.model.segments.getObjectById(e.id));
+        });
+               
         if (segs.length==0)
         {
             failureHandler( {errors: [{attributes: {details: "No segment. Check permissions or existence."}}]} );
@@ -85,7 +91,7 @@ WMEAC.ClassClosure = function (options)
             }).join(' ; ');
             
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            var closureDetails = {closures: [], attributions: [], reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
+            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: oldsegs};
             if (this.eventId!=null) closureDetails.eventId = this.eventId;
             WMEAC.addClosure(closureDetails, successHandler, failureHandler);
         }
@@ -93,8 +99,9 @@ WMEAC.ClassClosure = function (options)
     this.removeInWME = function(successHandler, failureHandler)
     {
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
+        // check perms
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
+            return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
         });
         
         var allClosuresToRemove=[];
@@ -102,11 +109,19 @@ WMEAC.ClassClosure = function (options)
         segs.forEach(function (s) {
             // look for closure(s)
             var that = this;
+            // SDK - closures array needs to be internal objects, not new SDK closure object
+            /*var closures = WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+                return (c.startDate==that.startDate &&
+                        c.endDate==that.endDate &&
+                        c.description.trim()==that.reason &&
+                        c.segmentId==s.id &&
+                        c.isPermanent == (that.permanent=='Yes'));
+            });*/
             var closures = W.model.roadClosures.getObjectArray(function (c) {
                 return (c.attributes.startDate==that.startDate &&
                         c.attributes.endDate==that.endDate &&
                         c.attributes.reason.trim()==that.reason &&
-                        c.attributes.segID==s.attributes.id &&
+                        c.attributes.segID==s.id &&
                         c.attributes.permanent == (that.permanent=='Yes'));
             });
             if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
