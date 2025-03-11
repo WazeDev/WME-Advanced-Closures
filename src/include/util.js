@@ -50,16 +50,16 @@ WMEAC.logDebug = function (msg, obj)
 
 WMEAC.logError = function (msg, obj)
 {
-    console.error("Advanced closures v" + WMEAC.ac_version + " - " + msg, obj);
+    console.error("Advanced closures: " + msg, obj);
 };
 
 
 WMEAC.log = function (msg, obj)
 {
     if (obj==null)
-        console.log("Advanced closures v" + WMEAC.ac_version + " - " + msg);
+        console.log("Advanced closures: " + msg);
     else
-        console.debug("Advanced closures v" + WMEAC.ac_version + " - " + msg + " " ,obj);
+        console.debug("Advanced closures: " + msg + " " ,obj);
 };
 
 WMEAC.isValidDate = function(d) // http://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
@@ -114,18 +114,22 @@ WMEAC.CSVtoArray = function (text) {
     return b;
 };
 
-WMEAC.segmentsIDsToSegments = function (ids)
+WMEAC.segmentsIDsToSegments = function (idlist)
 {
-    return ids.filter(function (e) {
-        return (W.model.segments.objects.hasOwnProperty(e));
+    if (idlist.objectType !== undefined && idlist.objectType != 'segment') {
+        return [];
+    }
+    const arr = (idlist.ids == undefined) ? idlist : idlist.ids;
+    return arr.filter(function (e) {
+        return (WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: Number(e) } ) != null);
     }).map (function (e) {
-        return (W.model.segments.objects[e]);
+        return (WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: Number(e) } ));
     });
 };
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayerByName("roads");
+    // SDK - IS THIS NEEDED - var l=W.map.getLayerByName("roads");
     // 2024-04-09 these seem to be unneeded and causes flashing and delays
     // l.redraw({force:!0});
     // l.removeBackBuffer();
@@ -134,32 +138,20 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayerByName("closures");
+    // SDK - NEEDED ??
+  /*  var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
     // W.controller.reloadData();
-    if (endHandler)
-    {
-        var tmp = function reloaded() {
-            WMEAC.log("Test if reloaded...");
-            if (WMEAC.pendingOps==true)
-            {
-                WMEAC.log("Not yet. Waiting for WME...");
-                window.setTimeout(reloaded, 500);
-            }
-            else
-            {
-                endHandler();
-            }
-        };
-        window.setTimeout(tmp, 500);
+    */
+    if (endHandler) {
+        WMEAC.waitMapLoaded();
+        endHandler();
     }
 };
 
-
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayerByName("closures");
-    if (l) l.setVisibility(show);
+    WMEAC.wmeSDK.Map.setLayerVisibility( { layerName: "closures", visibility: show });
 };
 
 WMEAC.setDraggable = function (element, options)
@@ -320,41 +312,30 @@ WMEAC.solveOverlaps = function (closureToAdd, existingClosureList, mode)
     // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-15 00:00', reason: 'bla bla'},
       // {startDate: '2016-01-16 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
 
-
+// this is only used in disabled holidays code, commenting out
+/*
 WMEAC.getCountriesFromSegmentSet = function (segs)
 {
     var cids = segs.map(function (s) {
-        if (s.attributes.hasOwnProperty('primaryStreetID') && s.attributes.primaryStreetID!=null)
-        {
-            var stid = s.attributes.primaryStreetID;
-            if (W.model.streets.objects.hasOwnProperty(stid))
-            {
-                var st = W.model.streets.objects[stid];
-                if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
-                {
-                    var ctid = st.cityID;
-                    if (W.model.cities.objects.hasOwnProperty(ctid))
-                        return W.model.cities.objects[ctid].countryID;
-                }
-            }
+		const addr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: Number(s) } );
+        if (addr.country ) {
+            return addr.country.id;
         }
         return null;
     }).filter(function (cid) {
         return (cid!=null);
     });
-    return (W.model.countries.getObjectArray(function (c) {
-        return cids.indexOf(c.id)!=-1;
-    }));
-};
+	return cids; // SDK - does this work
+}; */
 
 WMEAC.getOppositeClosure = function (closure)
 {
-    return W.model.roadClosures.getObjectArray(function (c) {
-        return (closure.attributes.reason == c.attributes.reason &&
-                closure.attributes.startDate == c.attributes.startDate &&
-                closure.attributes.endDate == c.attributes.endDate &&
-                closure.attributes.segID == c.attributes.segID && 
-                closure.attributes.forward != c.attributes.forward);
+    return WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+        return (closure.description == c.description &&
+                closure.startDate == c.startDate &&
+                closure.endDate == c.endDate &&
+                closure.segmentId == c.segmentId &&
+                closure.isForward != c.isForward);
     });
 };
 
@@ -372,25 +353,15 @@ WMEAC.getCityStreetsFromSegmentSet = function (segs)
     
     segs.forEach(function (s) {
         var city='noCity';
-        if (s.attributes.primaryStreetID!=null &&
-            W.model.streets.objects.hasOwnProperty(s.attributes.primaryStreetID))
-        {
-            var st = W.model.streets.objects[s.attributes.primaryStreetID];
-            if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
-            {
-                var ctid = st.cityID;
-                if (W.model.cities.objects.hasOwnProperty(ctid))
-                {
-                    if (!W.model.cities.objects[ctid].isEmpty)
-                        city=W.model.cities.objects[ctid].name;
-                }
-            }
-            if (W.model.streets.objects[s.attributes.primaryStreetID].isEmpty)
+        const addr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: Number(s.id) } );
+        if (addr.street!=null) {
+            city = addr.city.name;
+            if (addr.street.isEmpty)
                 add(city, 'noStreet');
             else
-                add(city, W.model.streets.objects[s.attributes.primaryStreetID].name);
+                add(city, addr.street.name);
         }
-            
+
     });
     return r;
 };

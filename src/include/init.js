@@ -1,18 +1,17 @@
 WMEAC.bootstrapAC = function ()
 {
-    if (W?.userscripts?.state?.isReady) {
-        WMEAC.initialize();
-    } else {
-        document.addEventListener("wme-ready", WMEAC.initialize, {
-            once: true,
-        });
-    }
+    document.addEventListener("wme-ready", WMEAC.initialize, {
+        once: true,
+    });
 };
 
 
 WMEAC.initialize = function ()
 {
-    WMEAC.log ("init");
+    // initialize the sdk with your script id and script name
+    WMEAC.wmeSDK = getWmeSdk({scriptId, scriptName});
+
+    WMEAC.log ("init v" + WMEAC.ac_version);
     WMEAC.load();
     WMEAC.log("presets", WMEAC.presets);
     WMEAC.initUI();

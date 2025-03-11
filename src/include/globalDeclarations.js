@@ -9,9 +9,13 @@ class JDate extends Date {
 	}
 }
 
+const scriptName = 'Advanced Closures';
+const scriptId = 'advclosures';
+
 var WMEAC={};
 
 WMEAC.isDebug=false;
+WMEAC.wmeSDK = null;
 
 WMEAC.ac_version="<WMEACVERSION>";
 

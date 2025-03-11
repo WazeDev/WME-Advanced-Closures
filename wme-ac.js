@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2025.02.18.01
+// @version     2025.03.10.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @match       https://www.waze.com/*editor*
@@ -65,11 +65,15 @@ class JDate extends Date {
 	}
 }
 
+const scriptName = 'Advanced Closures';
+const scriptId = 'advclosures';
+
 var WMEAC={};
 
 WMEAC.isDebug=false;
+WMEAC.wmeSDK = null;
 
-WMEAC.ac_version="2025.02.18.01";
+WMEAC.ac_version="2025.03.10.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -154,16 +158,16 @@ WMEAC.logDebug = function (msg, obj)
 
 WMEAC.logError = function (msg, obj)
 {
-    console.error("Advanced closures v" + WMEAC.ac_version + " - " + msg, obj);
+    console.error("Advanced closures: " + msg, obj);
 };
 
 
 WMEAC.log = function (msg, obj)
 {
     if (obj==null)
-        console.log("Advanced closures v" + WMEAC.ac_version + " - " + msg);
+        console.log("Advanced closures: " + msg);
     else
-        console.debug("Advanced closures v" + WMEAC.ac_version + " - " + msg + " " ,obj);
+        console.debug("Advanced closures: " + msg + " " ,obj);
 };
 
 WMEAC.isValidDate = function(d) // http://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
@@ -218,18 +222,22 @@ WMEAC.CSVtoArray = function (text) {
     return b;
 };
 
-WMEAC.segmentsIDsToSegments = function (ids)
+WMEAC.segmentsIDsToSegments = function (idlist)
 {
-    return ids.filter(function (e) {
-        return (W.model.segments.objects.hasOwnProperty(e));
+    if (idlist.objectType !== undefined && idlist.objectType != 'segment') {
+        return [];
+    }
+    const arr = (idlist.ids == undefined) ? idlist : idlist.ids;
+    return arr.filter(function (e) {
+        return (WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: Number(e) } ) != null);
     }).map (function (e) {
-        return (W.model.segments.objects[e]);
+        return (WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: Number(e) } ));
     });
 };
 
 WMEAC.reloadRoadLayer = function ()
 {
-    var l=W.map.getLayerByName("roads");
+    // SDK - IS THIS NEEDED - var l=W.map.getLayerByName("roads");
     // 2024-04-09 these seem to be unneeded and causes flashing and delays
     // l.redraw({force:!0});
     // l.removeBackBuffer();
@@ -238,32 +246,20 @@ WMEAC.reloadRoadLayer = function ()
 
 WMEAC.reloadClosuresLayer = function (endHandler)
 {
-    var l=W.map.getLayerByName("closures");
+    // SDK - NEEDED ??
+  /*  var l=W.map.getLayerByName("closures");
     l.redraw({force:!0});
     // W.controller.reloadData();
-    if (endHandler)
-    {
-        var tmp = function reloaded() {
-            WMEAC.log("Test if reloaded...");
-            if (WMEAC.pendingOps==true)
-            {
-                WMEAC.log("Not yet. Waiting for WME...");
-                window.setTimeout(reloaded, 500);
-            }
-            else
-            {
-                endHandler();
-            }
-        };
-        window.setTimeout(tmp, 500);
+    */
+    if (endHandler) {
+        WMEAC.waitMapLoaded();
+        endHandler();
     }
 };
 
-
 WMEAC.showClosuresLayer = function(show)
 {
-    var l = W.map.getLayerByName("closures");
-    if (l) l.setVisibility(show);
+    WMEAC.wmeSDK.Map.setLayerVisibility( { layerName: "closures", visibility: show });
 };
 
 WMEAC.setDraggable = function (element, options)
@@ -424,41 +420,30 @@ WMEAC.solveOverlaps = function (closureToAdd, existingClosureList, mode)
     // [ {startDate: '2016-01-05 00:00', endDate: '2016-01-15 00:00', reason: 'bla bla'},
       // {startDate: '2016-01-16 00:00', endDate: '2016-01-25 00:00', reason: 'bla bla'}], 0);
 
-
+// this is only used in disabled holidays code, commenting out
+/*
 WMEAC.getCountriesFromSegmentSet = function (segs)
 {
     var cids = segs.map(function (s) {
-        if (s.attributes.hasOwnProperty('primaryStreetID') && s.attributes.primaryStreetID!=null)
-        {
-            var stid = s.attributes.primaryStreetID;
-            if (W.model.streets.objects.hasOwnProperty(stid))
-            {
-                var st = W.model.streets.objects[stid];
-                if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
-                {
-                    var ctid = st.cityID;
-                    if (W.model.cities.objects.hasOwnProperty(ctid))
-                        return W.model.cities.objects[ctid].countryID;
-                }
-            }
+		const addr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: Number(s) } );
+        if (addr.country ) {
+            return addr.country.id;
         }
         return null;
     }).filter(function (cid) {
         return (cid!=null);
     });
-    return (W.model.countries.getObjectArray(function (c) {
-        return cids.indexOf(c.id)!=-1;
-    }));
-};
+	return cids; // SDK - does this work
+}; */
 
 WMEAC.getOppositeClosure = function (closure)
 {
-    return W.model.roadClosures.getObjectArray(function (c) {
-        return (closure.attributes.reason == c.attributes.reason &&
-                closure.attributes.startDate == c.attributes.startDate &&
-                closure.attributes.endDate == c.attributes.endDate &&
-                closure.attributes.segID == c.attributes.segID && 
-                closure.attributes.forward != c.attributes.forward);
+    return WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+        return (closure.description == c.description &&
+                closure.startDate == c.startDate &&
+                closure.endDate == c.endDate &&
+                closure.segmentId == c.segmentId &&
+                closure.isForward != c.isForward);
     });
 };
 
@@ -476,25 +461,15 @@ WMEAC.getCityStreetsFromSegmentSet = function (segs)
     
     segs.forEach(function (s) {
         var city='noCity';
-        if (s.attributes.primaryStreetID!=null &&
-            W.model.streets.objects.hasOwnProperty(s.attributes.primaryStreetID))
-        {
-            var st = W.model.streets.objects[s.attributes.primaryStreetID];
-            if (st.hasOwnProperty('cityID') && st.cityID!=null && typeof st.cityID != 'undefined')
-            {
-                var ctid = st.cityID;
-                if (W.model.cities.objects.hasOwnProperty(ctid))
-                {
-                    if (!W.model.cities.objects[ctid].isEmpty)
-                        city=W.model.cities.objects[ctid].name;
-                }
-            }
-            if (W.model.streets.objects[s.attributes.primaryStreetID].isEmpty)
+        const addr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: Number(s.id) } );
+        if (addr.street!=null) {
+            city = addr.city.name;
+            if (addr.street.isEmpty)
                 add(city, 'noStreet');
             else
-                add(city, W.model.streets.objects[s.attributes.primaryStreetID].name);
+                add(city, addr.street.name);
         }
-            
+
     });
     return r;
 };
@@ -570,27 +545,26 @@ var cssElt = WMEAC.createElement({type: "style"});
 cssElt.type = "text/css";
 var css="";
 css += ".slashed:after { content: ''; position: relative; width: 140%; height: 1px; display: block; background: red; transform: rotate(-30deg); margin-top: -50%; margin-left: -20%; }";
-css += ".wmeac-sidepanel button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB }";
 
 css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
 css += ".wmeac-progressBarBG { margin-top: 2px; margin-bottom: 2px; margin-left: 2px; margin-right: 2px; padding-bottom: 0px; padding-top: 0px; padding-left: 0px; padding-right: 0px; width: 33%; background-color: #93c4d3; border: 3px rgb(147, 196, 211); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; height: 22px;}";
 css += ".wmeac-progressBarFG { float: left; position: relative; bottom: 22px; height: 0px; text-align: center; width: 100% }";
-css += ".wmeac-csv-button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; display: inline-block; padding: 6px 12px; cursor: pointer; text-align: center; font-weight: bold; }";
-css += ".wmeac-closuredialog { border: 2px solid #F1DDDB; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #FDEDEB; width: 500px; z-index: 9999; left: 80px; top: 10px;}";
-css += ".wmeac-closuredialog button { border: none; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; background-color: #F1DDDB; margin: 3px; }";
-css += ".wmeac-closuredialog h1 { background-color: #F1DDDB; text-align: center; font-size: medium; margin-top: 0px; padding: 10px;}";
-css += ".wmeac-closuredialog .content { padding: 10px;}";
-css += ".wmeac-closuredialog .content table { witdh: 100%; border: none; font-size: 10px; text-transform: uppercase;}";
+css += ".wmeac-closuredialog { border: 2px solid #0099ff; background-color: #ffffff; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
+css += ".wmeac-closuredialog { border: 2px solid var(--primary); background-color: var(--background_default); width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
+css += ".wmeac-closuredialog button { border: none; border-radius: 50px; color: var(--on_primary); background-color: var(--primary); margin: 3px; }";
+css += ".wmeac-closuredialog h1 { text-align: center; background-color: var(--brand_waze); font-size: medium; margin-top: 0px; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 1px;}";
+css += ".wmeac-closuredialog .content { padding: 10px; background-color: var(--background_default); }";
+css += ".wmeac-closuredialog .content table { width: 100%; border: none; font-size: 10px; text-transform: uppercase;}";
 css += ".wmeac-closuredialog .content table tbody tr { vertical-align: top;}";
 css += ".wmeac-closuredialog .content table tbody tr td { padding-right: 2px; padding-left: 2px;}";
 css += ".wmeac-closuredialog-fromgroup { display: inline-block; }";
-css += ".wmeac-nav-tabs>ul { border-bottom: 1px solid #F6C3BE }";
+css += ".wmeac-nav-tabs>ul { border-bottom: 1px solid var(--primary) }";
 css += ".wmeac-nav-tabs>li { float: left; margin-bottom: -1px; }";
-css += ".wmeac-nav-tabs>li>a { border: 1px solid #F6C3BE; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 2px;}";
+css += ".wmeac-nav-tabs>li>a { border: 1px solid var(--primary); border-top-left-radius: 5px; border-top-right-radius: 5px; margin-right: 2px;}";
 css += ".wmeac-nav-tabs>li.active>a { background-color: rgba(0, 0, 0, 0); border-bottom: 1px solid #FDEDEB}";
 css += ".wmeac-nav-tabs>li:not(.active)>a { background-color: #DADBDC}";
 //css += ".wmeac-nav-tabs>li:not(.active)>a:hover { background-color: #DADBDC}";
-css += ".wmeac-tab-pane {border: 1px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 0px; border-top-right-radius: 0px; padding: 5px;}";
+css += ".wmeac-tab-pane {border: 1px solid var(--primary); border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 0px; border-top-right-radius: 0px; padding: 5px;}";
 css += ".wmeac-closuredialog .footer { height: 40px; padding: 0 10px;}";
 css += "#wmeac-csv-closures-list ul { list-style-type: none; padding: 0px;}";
 css += "#wmeac-csv-closures-list ul li { width: 100%; height: 42px; border-radius: 4px; margin-top: 1px; }";
@@ -608,12 +582,12 @@ css += ".wmeac-csv-closures-list-col-dir { width: 35px; min-width: 35px; text-al
 css += ".wmeac-csv-closures-list-col-it { width: 15px; min-width: 15px; }";
 css += ".wmeac-csv-closures-list-col-target { width: 15px; min-width: 15px; }";
 css += ".wmeac-csv-closures-list-col-apply { width: 15px; min-width: 15px; }";
-css += ".wmeac-csv-closures-minilog { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-top: none; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; background-color: #FFFFFF; }";
-css += "#wmeac-csv-closures-log { font-size: xx-small; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
-css += "#wmeac-csv-closures-log:before { content: \"Logs\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 2px; }";
-css += "#wmeac-csv-closures-preview { font-size: small; white-space: nowrap; font-family: monospace; border: 2px solid #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding-top: 8px; position: relative; min-height: 20px; }";
-css += "#wmeac-csv-closures-preview:before { content: \"Preview\"; position: absolute; top: -8px; left: 5px; float: left; background: #F6C3BE; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 2px; }";
-css += ".wmeac-hl:after { content: \"\\f018\"; position: relative; display: block; margin-top: -100%; margin-left: 50%; font-family: FontAwesome; }";
+css += ".wmeac-csv-closures-minilog { font-size: xx-small; font-family: monospace; background-color: var(--background_default); }";
+css += "#wmeac-csv-closures-log { font-size: xx-small; color: var(--content_p1); font-family: monospace; border: 2px solid var(--primary); border-radius: 5px; padding-top: 8px; position: relative;  margin-top: 10px; }";
+css += "#wmeac-csv-closures-log:before { content: \"Logs\"; position: absolute; top: -8px; left: 5px; float: left; color: var(--on_primary); background-color: var(--primary); border-radius: 5px; padding: 2px; }";
+css += "#wmeac-csv-closures-preview { font-size: small; white-space: nowrap; font-family: monospace; border: 2px solid var(--primary); border-radius: 5px; padding-top: 8px; position: relative; min-height: 20px; }";
+css += "#wmeac-csv-closures-preview:before { content: \"Preview\"; position: absolute; top: -8px; left: 5px; float: left; background: #81c9ef; border-radius: 5px; padding: 2px; }";
+// old-highlight -- css += ".wmeac-hl:after { content: \"\\f018\"; position: relative; display: block; margin-top: -100%; margin-left: 50%; font-family: FontAwesome; }";
 cssElt.innerHTML = css;
 document.body.appendChild(cssElt);
 
@@ -633,19 +607,18 @@ document.body.appendChild(cssElt);
 
 WMEAC.bootstrapAC = function ()
 {
-    if (W?.userscripts?.state?.isReady) {
-        WMEAC.initialize();
-    } else {
-        document.addEventListener("wme-ready", WMEAC.initialize, {
-            once: true,
-        });
-    }
+    document.addEventListener("wme-ready", WMEAC.initialize, {
+        once: true,
+    });
 };
 
 
 WMEAC.initialize = function ()
 {
-    WMEAC.log ("init");
+    // initialize the sdk with your script id and script name
+    WMEAC.wmeSDK = getWmeSdk({scriptId, scriptName});
+
+    WMEAC.log ("init v" + WMEAC.ac_version);
     WMEAC.load();
     WMEAC.log("presets", WMEAC.presets);
     WMEAC.initUI();
@@ -722,13 +695,12 @@ WMEAC.initUI = async function ()
     addon.appendChild(WMEAC.createElement({type: 'hr'}));
     addon.appendChild(divCSV);
 
-    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab('advancedclosure');
-    await W.userscripts.waitForElementConnected(tabPane);
-    $(tabLabel.parentElement).append(
+    var res = await WMEAC.wmeSDK.Sidebar.registerScriptTab();
+    $(res.tabLabel.parentElement).append(
             $('<span>', { class:'fa fa-road slashed', title: 'Advanced Closures' })
         );
 
-    tabPane.appendChild(addon);
+    res.tabPane.appendChild(addon);
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -758,23 +730,12 @@ WMEAC.initUI = async function ()
     WMEAC.installButtonInClosureTab();
     
     //W.selectionManager.addEventListener("selectionchanged", WMEAC.selectionChanged);
-    W.app.layout.model.on("operationPending", function(e) {
-        if (e.operation.id!="pending.road_data")
-            return;
-        WMEAC.pendingOps = true;
-    });
-
-    W.app.layout.model.on("operationDone", function(e) {
-        if (e.operation.id!="pending.road_data")
-            return;
-        WMEAC.pendingOps = false;
-    });
 
     // refreshHighlight is not working, so commenting out these two lines
     // W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
     // WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
-    window.setTimeout(WMEAC.setupMTEobserver, 3000);
+    window.setTimeout(WMEAC.setupMTEobserver, 2000);
 };
 
 WMEAC.setupMTEobserver = function()
@@ -785,13 +746,12 @@ WMEAC.setupMTEobserver = function()
                 var addedNode = mutation.addedNodes[i];
 
                 if (addedNode.nodeType === Node.TEXT_NODE && addedNode['s-nr'] ) {
-                    var x = $('.mte-edit-view > wz-section-header');
+                    const x = $('.mte-edit-view > wz-section-header');
                     if (x.length > 0) {
                         const mtev = x[0].shadowRoot.querySelector('.subtitle');
                         if (mtev) {
                             mtev.style.overflow = 'visible';
                             mtev.style.fontSize = '10px';
-                            //console.log('found edit view');
                             break;
                         }
                     }
@@ -801,6 +761,32 @@ WMEAC.setupMTEobserver = function()
     });
     mteObserver.observe(WMEAC.getId('sidepanel-mtes'), {childList: true, subtree: true});
 };
+
+WMEAC.waitMapLoaded = async function()
+{
+    for (let j=0; j<100; j++) {
+        await new Promise(r => setTimeout(r,300));
+        const ldf = W.app.layout.model.attributes.loadingFeatures; // SDK - need access to this status
+        const pend = W.app.layout.model.attributes.pendingOperations.length;
+        console.debug('AC - pendingOps: ' + pend + ' ldf: ' + ldf);
+        if (pend > 0) {
+            console.debug('AC - pendingOps: ' + pend);
+            console.debug('AC - pending: ' + W.app.layout.model.attributes.pendingOperations[0]);
+        }
+        if (!ldf && pend==0) {
+            await new Promise(r => setTimeout(r,50));
+            break;
+        }
+    }
+}
+WMEAC.waitSelectionReady = async function()
+{
+    for (let j=0; j<100; j++) {
+        let selection = WMEAC.wmeSDK.Editing.getSelection();
+        if (selection.ids.length > 0) break;
+        await new Promise(r => setTimeout(r,300));
+    }
+}
 
 WMEAC.installButtonInClosureTab = function (node)
 {
@@ -829,26 +815,41 @@ WMEAC.showAddAdvancedClosure = function()
 {
     // init if needed and show modal dialog
     var ACDiv = WMEAC.getId('wmeac-add-advanced-closure-dialog');
+    let left = 80;
+    let top = 20;
+    const $dc = $('#WazeMap'); // $('#dialog-container');
+    if ($dc.length > 0) {
+        //left += $('#drawer')[0].clientWidth;
+        //left += $('#sidebar')[0].clientWidth;
+    }
+    const $head = $('#app-head');
+    if ($head.length > 0) {
+        top += $head[0].offsetTop + $head[0].offsetHeight;
+    }
     if (ACDiv==null)
     {
         ACDiv = WMEAC.createElement({type: 'div',
                                      id: 'wmeac-add-advanced-closure-dialog',
                                      className: 'wmeac-closuredialog'});
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
-        W.map.getOLMap().div.appendChild(ACDiv);
+        let dlogs = WMEAC.wmeSDK.Map.getMapViewportElement();
+        if ($dc.length > 0) {
+            dlogs = $dc[0];
+        }
+        dlogs.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
         ACDiv.style.display="none";
         //W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
-        $(ACDiv).css({left: '80px', top: '20px'});
+        $(ACDiv).css({left: (left+'px'), top: (top+'px') });
     }
     else
     {
         ACDiv.style.display="block";
-        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
-        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
+        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler:WMEAC.refreshClosureListFromSelection });
         WMEAC.refreshClosureListFromSelection();
     }
     //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
@@ -1152,8 +1153,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            const m = W.selectionManager.getSelectedDataModelObjects();
-            if (m.length==0 || m[0].type!="segment")
+            let selection = WMEAC.wmeSDK.Editing.getSelection();
+            if (selection.ids.length==0 || selection.objectType != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
@@ -1163,40 +1164,38 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
-            var mte = W.model.majorTrafficEvents.getObjectById(mteId);
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
-                if (mte)
-                    details.eventId = mte.attributes.id;
+                if (mteId)
+                    details.eventId = mteId;
                 return details;
             });
             
-            // save selection list
-            var selection = W.selectionManager.getSelectedDataModelObjects();
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
                 var rev = W.selectionManager.getReversedSegments();
-                selection=selection.filter(function (e) {
-                    if (rev[e.attributes.id])
+                let ids = selection.ids.filter(function (e) {
+                    if (rev[e])
                     {
                         selectionReversed.push(e);
                         return false;
                     }
                     return true;
                 });
+                selection.ids = ids;
             }
-            const ll = W.map.getCenter();
-            const lonlat =  new OpenLayers.Geometry.Point(ll.lon, ll.lat).transform(W.map.getProjectionObject(), "EPSG:4326");
+
+            var lonlat = WMEAC.wmeSDK.Map.getMapCenter();
             var csv = 'header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (14 to 22),MTE id (empty cell if not),comment (optional)\n';
             closureList.forEach(function (e) {
-                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.x + '&lat=' + lonlat.y + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.ids.map(function (s) { return s;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + WMEAC.wmeSDK.Map.getZoomLevel() + ',' + mteId + ',"Generated by WMEAC"\n';
             });
             if (!selectionReversed.length==0)
             {
                 closureList.forEach(function (e) {
-                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + WMEAC.wmeSDK.Map.getZoomLevel() + ',' + mteId + ',"Generated by WMEAC"\n';
                 });
             }
             WMEAC.download(csv, 'closures.csv');
@@ -1208,10 +1207,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     {
         e.addEventListener('click', function() {
             var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
-            if (d) 
-            {
-                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
-                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
+            if (d) {
+                try {
+                    WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+                    WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureListFromSelection });
+                }
+                catch (e) {
+                    console.warn("AC: Error in events.off: ", e);
+                }
                 d.style.display='none';
             }
         });
@@ -1227,18 +1230,16 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            const m = W.selectionManager.getSelectedDataModelObjects();
-            if (m.length==0 || m[0].type != "segment")
+            const m = WMEAC.wmeSDK.Editing.getSelection();
+            if (m.ids.length==0 || m.objectType != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (m.every(function (e) {
-                    const segid = e.attributes.id;
-                    const seg = W.model.segments.objects[segid];
-                    return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
-                })==false)
-            {
+            var segs = WMEAC.segmentsIDsToSegments(m);
+            if (segs.every(function (e) {
+                    return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: e.id });
+                })==false) {
                 alert("You don't have permission to edit closures on all those segments.");
                 return;
             }
@@ -1250,32 +1251,38 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             direction=(direction=="1"?WMEAC.sharedClosureDirection.A_TO_B:(direction=="2"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
+            const mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
-                if (mte)
-                    details.eventId = mte.attributes.id;
+                if (mteId)
+                    details.eventId = mteId;
                 return details;
             });
             
             // save selection list
-            var selection = W.selectionManager.getSelectedDataModelObjects();
-            W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
+            var selection = WMEAC.wmeSDK.Editing.getSelection();
+            try {
+                WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+            }
+            catch (e) {
+                console.warn("AC: Error in events.off: ", e);
+            }
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
-                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"}); // green
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "var(--safe)"}); // green
             }, function (i, e) {
-                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"}); // red
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "var(--alarming)"}); // red
             }, function () {
-                W.selectionManager.setSelectedModels(selection);
+                WMEAC.wmeSDK.Editing.setSelection( { selection } );
                 //alert ('done');
                 var tmp = function selectionReady()
                 {
-                    if (W.selectionManager.getSelectedFeatures().length==0)
+                    let sel = WMEAC.wmeSDK.Editing.getSelection();
+                    if (sel.ids.length==0)
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
+                        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
                         $('a[href="#segment-edit-closures"]').click();
                     }
                 };
@@ -1284,13 +1291,17 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         });
     }
     
-    if (typeof $.fn.datepicker !== 'undefined')
-        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
-    else if (typeof $.fn.daterangepicker !== 'undefined') // WME beta
+    // if (typeof $.fn.datepicker !== 'undefined')
+    //     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
+    // else 
+	if (typeof $.fn.daterangepicker !== 'undefined')
         $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0, autoApply: !0,
             locale: {
                 format: "YYYY-MM-DD"
         }});
+    else {
+        WMEAC.logError("daterangepicker not defined");
+    }
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").on("change", function () { WMEAC.refreshMTEList(); });
     $("#wmeac-advanced-closure-dialog-starttime,#wmeac-advanced-closure-dialog-durationtime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
@@ -1456,14 +1467,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
 
      $('#wmeac-advanced-closure-dialog-presets-load-fromseg').on('click', function () {
-        closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
+        const closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         if (closureId)
         {
-            var c = W.model.roadClosures.objects[closureId];
+            var c = WMEAC.wmeSDK.DataModel.RoadClosures.getById( { roadClosureId: closureId });
             if (c)
             {
-                $("#wmeac-advanced-closure-dialog-starttime").val(c.attributes.startDate.split(' ')[1]);
-                var duration=new Date(c.attributes.endDate) - new Date(c.attributes.startDate);
+                $("#wmeac-advanced-closure-dialog-starttime").val(c.startDate.split(' ')[1]);
+                var duration=new Date(c.endDate) - new Date(c.startDate);
                  // $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
                  // $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
                  var days = Math.floor(duration/86400000);
@@ -1471,19 +1482,19 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                  var hours = Math.floor((duration - days * 86400000)/3600000);
                  var minutes = Math.floor((duration - days * 86400000 - hours * 3600000)/60000);
                  $("#wmeac-advanced-closure-dialog-durationtime").val('' + hours + ':' + minutes);
-                 $("#wmeac-advanced-closure-dialog-reason").val(c.attributes.reason.trim());
+                 $("#wmeac-advanced-closure-dialog-reason").val(c.description.trim());
                  if (WMEAC.getOppositeClosure(c).length==0) // oneway
-                    $("#wmeac-advanced-closure-dialog-direction").val(c.attributes.forward?1:2);
+                    $("#wmeac-advanced-closure-dialog-direction").val(c.isForward?1:2);
                 else
                     $("#wmeac-advanced-closure-dialog-direction").val(3);
-                $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.attributes.permanent);
+                $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.isPermanent);
                 // MTE
-                if (c.attributes.eventId!=null)
+                if (c.trafficEventId!=null)
                 {
                     var options = [];
                     $("#wmeac-advanced-closure-dialog-mteid option").each(function () { options.push($(this).val()); });
-                    if (options.indexOf(c.attributes.eventId)!=-1)
-                        $("#wmeac-advanced-closure-dialog-mteid").val(c.attributes.eventId);
+                    if (options.indexOf(c.trafficEventId)!=-1)
+                        $("#wmeac-advanced-closure-dialog-mteid").val(c.trafficEventId);
                     else
                         $("#wmeac-advanced-closure-dialog-mteid").val('');
                 }
@@ -1702,10 +1713,16 @@ WMEAC.ClassClosure = function (options)
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
         WMEAC.log("Segs: ", segs);
 
+        //  check perms
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
+            return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
         });
-                
+
+        // SDK - need old style segment objects for now since closure code called getID() on these objects
+        var oldsegs = segs.map (function (e) {
+            return (W.model.segments.getObjectById(e.id));
+        });
+               
         if (segs.length==0)
         {
             failureHandler( {errors: [{attributes: {details: "No segment. Check permissions or existence."}}]} );
@@ -1721,7 +1738,7 @@ WMEAC.ClassClosure = function (options)
             }).join(' ; ');
             
             var sc = require("Waze/Modules/Closures/Models/SharedClosure");
-            var closureDetails = {closures: [], attributions: [], reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: segs};
+            var closureDetails = {reason: this.reason, direction: (this.direction=="A to B"?WMEAC.sharedClosureDirection.A_TO_B:(this.direction=="B to A"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY)), startDate: this.startDate, endDate: this.endDate, location: closureLocation, permanent: this.permanent=='Yes', segments: oldsegs};
             if (this.eventId!=null) closureDetails.eventId = this.eventId;
             WMEAC.addClosure(closureDetails, successHandler, failureHandler);
         }
@@ -1729,8 +1746,9 @@ WMEAC.ClassClosure = function (options)
     this.removeInWME = function(successHandler, failureHandler)
     {
         var segs = WMEAC.segmentsIDsToSegments(this.segIDs);
+        // check perms
         segs = segs.filter(function (seg) {
-            return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
+            return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
         });
         
         var allClosuresToRemove=[];
@@ -1738,11 +1756,19 @@ WMEAC.ClassClosure = function (options)
         segs.forEach(function (s) {
             // look for closure(s)
             var that = this;
+            // SDK - closures array needs to be internal objects, not new SDK closure object
+            /*var closures = WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+                return (c.startDate==that.startDate &&
+                        c.endDate==that.endDate &&
+                        c.description.trim()==that.reason &&
+                        c.segmentId==s.id &&
+                        c.isPermanent == (that.permanent=='Yes'));
+            });*/
             var closures = W.model.roadClosures.getObjectArray(function (c) {
                 return (c.attributes.startDate==that.startDate &&
                         c.attributes.endDate==that.endDate &&
                         c.attributes.reason.trim()==that.reason &&
-                        c.attributes.segID==s.attributes.id &&
+                        c.attributes.segID==s.id &&
                         c.attributes.permanent == (that.permanent=='Yes'));
             });
             if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
@@ -1786,7 +1812,7 @@ WMEAC.buildClosuresListFromRecurringUI = function ()
     if (rangeEndDate<rangeStartDate) return {list: list, error: "Range end date is before range start date"};
     
     var dD = parseInt($('#wmeac-advanced-closure-dialog-duration-day').val());
-    if (isNaN(dD) || dH<0) return {list: list, error: "Duration days is invalid"};
+    if (isNaN(dD) || dD<0) return {list: list, error: "Duration days is invalid"};
     
     // var dM = parseInt($('#wmeac-advanced-closure-dialog-duration-minute').val());
     // if (isNaN(dM) || dM<0 || dM>=60) return {list: list, error: "Duration minute is invalid"};
@@ -1924,30 +1950,34 @@ WMEAC.refreshClosureList = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var existingClosures = W.selectionManager.getSelectedFeatures().reduce(function (p, c, i) {
-                var revSegs = W.selectionManager.getReversedSegments();
-                var isReversed = revSegs.hasOwnProperty(c.id) && revSegs[c.id];
-                var realWay = isReversed?(direction==1?2:1):direction;
-                return p.concat(W.model.roadClosures.getObjectArray(function (e) {
-                    return (e.segID==c.id &&
-                    (direction==3 || (e.forward && realWay==1) || (!e.forward && realWay==2)));
-                }));
-            }, []);
-            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
+            const selection = WMEAC.wmeSDK.Editing.getSelection();
+            var existingClosures = [];
+            if (selection.ids.length > 0 && selection.objectType == "segment") {
+                //existingClosures = W.selectionManager.getSelectedWMEFeatures().reduce(function (p, c, i) {
+                existingClosures = selection.ids.reduce(function (p, c, i) {
+                    var revSegs = W.selectionManager.getReversedSegments();
+                    var isReversed = revSegs.hasOwnProperty(c) && revSegs[c];
+                    var realWay = isReversed?(direction==1?2:1):direction;
+                    //return p.concat(W.model.roadClosures.getObjectArray(function (e) {
+                    return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
+                        return (e.segmentId==c &&
+                                (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
+                    }));
+                }, []);
+            }
+            const mte = WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getById( { majorTrafficEventId: $("#wmeac-advanced-closure-dialog-mteid").val() } );
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
                 rc.list.map(function (e, i) {
                     var overlap = existingClosures.filter(function (c) {
                         return WMEAC.dateTimeOverlaps({startDate: e.start, endDate: e.end}, c);
                     }).map(function (c) {
-                        var msg = (c.reason?c.reason + ' ':'') + '(' + c.segID + ')';
-                        if (W.model.segments.objects.hasOwnProperty(c.segID)==false) return msg;
-                        if (W.model.segments.objects[c.segID].attributes.primaryStreetID==null) return msg;
-                        if (W.model.streets.objects.hasOwnProperty(W.model.segments.objects[c.segID].attributes.primaryStreetID)==false) return msg;
-                        var street = W.model.streets.objects[W.model.segments.objects[c.segID].attributes.primaryStreetID];
-                        if (!street.isEmpty) msg = street.name + ': ' + msg;
+                        var msg = (c.reason?c.reason + ' ':'') + '(' + c.segmentId + ')';
+                        const segAddr = WMEAC.wmeSDK.DataModel.Segments.getAddress( { segmentId: c.segmentId } );
+                        var street = segAddr.street.name;
+                        if (!segAddr.isEmpty) msg = street + ': ' + msg;
                         return msg;
                     });
-                    var mteOK=!(mte && (new Date(e.start) < new Date(mte.attributes.startDate) || new Date(e.end) > new Date(mte.attributes.endDate)));
+                    var mteOK=!(mte && (new Date(e.start) < new Date(mte.startDate) || new Date(e.end) > new Date(mte.endDate)));
                     return (reason +
                     //' (' + cllocation + '): ' + 
                     ': ' +
@@ -1977,12 +2007,10 @@ WMEAC.refreshMTEList = function ()
     {
         rangeEnd.addDays(1);
         // filter MTE loaded in WME:
-        W.model.majorTrafficEvents.getObjectArray(function (mte) {
-            // check if ranges overlap
-            return (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.attributes.startDate), endDate: new JDate(mte.attributes.endDate)}));
-        }).forEach(function (mte) {
-            mtelist.push({name: mte.attributes.names[0].value, value: mte.attributes.id});
-        });
+        WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getAll().filter((mte) => (WMEAC.dateTimeOverlaps({startDate: rangeStart, endDate: rangeEnd}, {startDate: new JDate(mte.startDate), endDate: new JDate(mte.endDate)}))
+        ).forEach(function (mte) {
+            mtelist.push({name: mte.names[0].value, value: mte.id});
+       });
     }
     mtelist.sort(function(a,b) {
         return a.name.localeCompare(b.name);
@@ -2013,16 +2041,16 @@ WMEAC.refreshClosureListFromSelection = function ()
     {
         var currentSegClosure = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         $("#wmeac-advanced-closure-dialog-segclosure-list").empty();
-        if (W.selectionManager.getSelectedFeatures().length!=0)
-        {
+        const sel = WMEAC.wmeSDK.Editing.getSelection();
+        if (sel && sel.ids.length!=0 && sel.objectType == "segment") {
             var blackList=[];
-            W.model.roadClosures.getObjectArray(function (c) {
-                return c.attributes.segID==W.selectionManager.getSelectedDataModelObjects()[0].attributes.id;
+            WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+                return c.segmentId==sel.ids[0];
             }).sort(function (a,b) {
-                return (new Date(a.attributes.startDate)-new Date(b.attributes.startDate));
+                return (new Date(a.startDate)-new Date(b.startDate));
             }).forEach(function (c) {
-                if (blackList.indexOf(c.attributes.id)!=-1) return;
-                var direction = c.attributes.forward?"A to B":"B to A";
+                if (blackList.indexOf(c.id)!=-1) return;
+                var direction = c.isForward?"A to B":"B to A";
                 var oppositeClosure = WMEAC.getOppositeClosure(c);
                 if (!oppositeClosure.length==0)
                 {
@@ -2030,10 +2058,10 @@ WMEAC.refreshClosureListFromSelection = function ()
                     blackList.push(oppositeClosure[0].id);
                 }
                 var el = WMEAC.createElement({type: 'option'});
-                el.setAttribute('value', c.attributes.id);
-                if (currentSegClosure==c.attributes.id)
+                el.setAttribute('value', c.id);
+                if (currentSegClosure==c.id)
                     el.setAttribute('selected', '');
-                el.innerHTML = c.attributes.reason.trim() + ' ' + direction + ' ' + c.attributes.startDate + '&#8594;' + c.attributes.endDate;
+                el.innerHTML = c.description.trim() + ' ' + direction + ' ' + c.startDate + '&#8594;' + c.endDate;
                 $("#wmeac-advanced-closure-dialog-segclosure-list").append(el);
             });
         }
@@ -2117,6 +2145,7 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
             if (failureHandler)
             {
                 var details = [];
+                if (f.message) { console.error('AC: ' + f.message + ' - ' + f.stack); }
                 f.errors.forEach(function (err) {
                     if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
                         details.push(err.attributes.details);
@@ -2143,7 +2172,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    var segs = W.selectionManager.getSelectedDataModelObjects();
+    var segIDs = WMEAC.wmeSDK.Editing.getSelection();
+    var segs = WMEAC.segmentsIDsToSegments(segIDs);
+    // SDK - need old style segment objects for now since closure code called getID() on these objects
+    var oldsegs = segs.map (function (e) {
+        return (W.model.segments.getObjectById(e.id));
+    });
     var cityStreets = WMEAC.getCityStreetsFromSegmentSet(segs);
     var closureLocation = Object.keys(cityStreets).map(function (c) {
         return (Object.keys(cityStreets[c]).map(function (s) {
@@ -2152,9 +2186,10 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
         
-    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
+    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
-    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
+    const ssel = W.selectionManager.getSegmentSelection();
+    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true });
     t.actions=[cab.add(c)];
     W.controller.save(t).then(done()).catch(fail());
 };
@@ -2190,8 +2225,13 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var segs = W.selectionManager.getSelectedDataModelObjects();
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: segs, reverseSegments: W.selectionManager.getReversedSegments()};
+        var segIDs = WMEAC.wmeSDK.Editing.getSelection();
+        var segs = WMEAC.segmentsIDsToSegments(segIDs);
+        // SDK - need old style segment objects for now since closure code called getID() on these objects
+        var oldsegs = segs.map (function (e) {
+            return (W.model.segments.getObjectById(e.id));
+        });
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
         t.actions=[cab.add(c)];
@@ -2223,8 +2263,13 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
-    let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID));
-    t.actions=[cab.delete(W.model, new sc({segments: segs, closures: closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true}))];
+    let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID)); // SDK - closures is internal objects for now
+    // SDK - need old style segment objects for now since closure code called getID() on these objects
+    var oldsegs = segs.map (function (e) {
+        return (W.model.segments.getObjectById(e.id));
+    });
+    var sclo = new sc({segments: oldsegs, closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
+    t.actions=[cab.delete(W.model,sclo)];
     W.controller.save(t).then(done()).catch(fail());
     return true;
 };
@@ -2415,7 +2460,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>\
                     <div class="wmeac-csv-closures-minilog" style="display: block;">' + (action=='add'?'Ready to apply':(action=='remove'?'Ready to remove':'')) + '</div>';
     // attach handlers
-    liElt.children[5].children[0].addEventListener('click', function (e) {
+    liElt.children[5].children[0].addEventListener('click', function (e) { // select the segs on this line of the CSV
         WMEAC.csvClearLog();
         // get closure id:
         var cid = parseInt(e.target.parentNode.parentNode.parentNode.getAttribute('closureID'));
@@ -2423,8 +2468,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             return (c.closure.id==cid);
         });
         WMEAC.log('Closure to target:', closure);
-        var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-        W.map.setCenter(xy, closure.closure.zoom);
+        WMEAC.wmeSDK.Map.setMapCenter( { lonLat: closure.closure.lonlat, zoomLevel: closure.closure.zoom } );
         var tmp3 = function selectSegments()
         {
             WMEAC.log("Now select segments...");
@@ -2450,14 +2494,20 @@ WMEAC.buildInlineClosureUI = function (closure, action)
             }
             if (segs.length!=0)
             {
-                W.selectionManager.setSelectedModels(segs);
+                const selection = { ids: closure.closure.segIDs, objectType: 'segment' };
+                WMEAC.wmeSDK.Editing.setSelection( { selection } );
                 var tmp = function selectionReady()
                 {
                     if (W.selectionManager.getSelectedFeatures().length==0)
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        $('a[href="#segment-edit-closures"]').click();
+                        const ed = document.getElementsByClassName('segment-feature-editor');
+                        const tabs = ed[0].querySelector('wz-tabs');
+                        const tl = tabs.shadowRoot.querySelectorAll('.wz-tab-label');
+                        if ( tl && tl.length > 0) {
+                            tl[1].click();  // do we want to select the closures tab ?
+                        }
                     }
                 };
                 window.setTimeout(tmp, 500);
@@ -2465,7 +2515,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp2 = function readyToSelect() {
             WMEAC.log("Test if ready to select...");
-            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+            if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(readyToSelect, 500);
@@ -2477,7 +2527,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         };
         var tmp1 = function mapMovedEnd() {
             WMEAC.log("Test if roads are reloaded...");
-            if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+            if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
             {
                 WMEAC.log("Not yet. Waiting for WME...");
                 window.setTimeout(mapMovedEnd, 500);
@@ -2491,7 +2541,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
         window.setTimeout(tmp1, 500);
         e.preventDefault();
     });
-    liElt.children[6].children[0].addEventListener('click', function (e) {
+    liElt.children[6].children[0].addEventListener('click', function (e) { // apply closure on the segs on this line of the CSV
         // get closure id:
         WMEAC.csvClearLog();
         var liElt = e.target.parentNode.parentNode.parentNode;
@@ -2508,8 +2558,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
 
 WMEAC.csvApplyClosure = function(closure, handler)
 {
-    var xy = OpenLayers.Layer.SphericalMercator.forwardMercator(closure.closure.lonlat.lon, closure.closure.lonlat.lat);
-    W.map.setCenter(xy, closure.closure.zoom);
+    WMEAC.wmeSDK.Map.setMapCenter( { lonLat: closure.closure.lonlat, zoomLevel: closure.closure.zoom } );
     function applySuccess(evt)
     {
         WMEAC.csvAddLog("Closure OK: " + closure.closure.comment + "(" + closure.closure.reason + ")\n");
@@ -2519,7 +2568,6 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     function applyFailure(evt)
     {
-        //WMEAC.log('evt', evt);
         var details="";
         evt.errors.forEach(function (err) {
             if (err.hasOwnProperty('attributes') && err.attributes.hasOwnProperty('details'))
@@ -2541,7 +2589,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     
     var tmp2 = function readyToApply() {
         WMEAC.log("Test if ready to apply...");
-        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+        if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(readyToApply, 500);
@@ -2553,7 +2601,7 @@ WMEAC.csvApplyClosure = function(closure, handler)
     };
     var tmp1 = function mapMovedEnd() {
         WMEAC.log("Test if roads are reloaded...");
-        if (WMEAC.pendingOps==true || W.app.layout.model.attributes.loadingFeatures==true)
+        if (W.app.layout.model.attributes.pendingOperations.length > 0 || W.app.layout.model.attributes.loadingFeatures==true)
         {
             WMEAC.log("Not yet. Waiting for WME...");
             window.setTimeout(mapMovedEnd, 500);
@@ -2620,11 +2668,7 @@ WMEAC.csvCheckAllSegments = function (i)
         
         var roadTypes = (WMEAC.zoomToRoadType(currentClosure.closure.zoom)==-1?_.range(1, 22):WMEAC.zoomToRoadType(currentClosure.closure.zoom));
         
-        // var WFVS = require("Waze/Feature/Vector/Segment");
-        // var aseg = new WFVS;
-        
         var req = new XMLHttpRequest();
-        const EDIT_CLOSURES = 1024;
         
         req.open('GET', document.location.protocol + '//' + document.location.host + W.Config.api_base + '/Features?roadTypes=' + roadTypes.join('%2C') + '&problemFilter=0&mapUpdateRequestFilter=0&roadClosures=true&userAreas=false&managedAreas=false&majorTrafficEvents=false&bbox=' + encodeURIComponent(tileBounds) + '&language=en', true);
         req.onreadystatechange = function (e) {
@@ -2642,7 +2686,16 @@ WMEAC.csvCheckAllSegments = function (i)
                         });
                         var editableClosuresSegs = currentClosure.closure.segIDs.filter(function (sid) {
                             return (data.segments.objects.find(function (seg) {
-                                return (sid == seg.id && (seg.permissions & /*aseg.permissionFlags.*/ EDIT_CLOSURES));
+                                let editable = false;
+                                if (sid == seg.id) {
+                                    try {
+                                        editable = WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: seg.id });
+                                    } catch(e) {
+                                        // console.debug('AC: err checking perm: ',e);
+                                        editable = true; // not in current data model, assume editable
+                                    }
+                                }
+                                return editable;
                             })!=null);
                         });
                         // look for closures on existing segs and build overlap list
@@ -2652,7 +2705,7 @@ WMEAC.csvCheckAllSegments = function (i)
                             var cl = data.roadClosures.objects.filter(function (c) {
                                 return (c.segID==sid);
                             });
-                            console.log('cl', cl);
+                            // console.log('cl', cl);
                             cl.forEach(function (c) {
                                 if (currentClosure.action == 'remove') {
                                     if (currentClosure.closure.startDate == c.startDate && currentClosure.closure.endDate == c.endDate) {
@@ -2764,7 +2817,7 @@ WMEAC.setCSVMiniLog = function(closure, text, level) // level=0: black 1: green,
     if (c!=null)
     {
         c.UI.children[7].innerHTML=text;
-        var colors = ["#000000", "#54C600", "#FFA000", "#FF0000"];
+        var colors = ["var(--content_p1)", "var(--safe)", "var(--cautious)", "var(--alarming)"];
         if (arguments.length==3)
             c.UI.children[7].style.color=colors[level];
         else

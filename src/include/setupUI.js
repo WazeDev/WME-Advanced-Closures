@@ -52,13 +52,12 @@ WMEAC.initUI = async function ()
     addon.appendChild(WMEAC.createElement({type: 'hr'}));
     addon.appendChild(divCSV);
 
-    const { tabLabel, tabPane } = W.userscripts.registerSidebarTab('advancedclosure');
-    await W.userscripts.waitForElementConnected(tabPane);
-    $(tabLabel.parentElement).append(
+    var res = await WMEAC.wmeSDK.Sidebar.registerScriptTab();
+    $(res.tabLabel.parentElement).append(
             $('<span>', { class:'fa fa-road slashed', title: 'Advanced Closures' })
         );
 
-    tabPane.appendChild(addon);
+    res.tabPane.appendChild(addon);
 
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -88,23 +87,12 @@ WMEAC.initUI = async function ()
     WMEAC.installButtonInClosureTab();
     
     //W.selectionManager.addEventListener("selectionchanged", WMEAC.selectionChanged);
-    W.app.layout.model.on("operationPending", function(e) {
-        if (e.operation.id!="pending.road_data")
-            return;
-        WMEAC.pendingOps = true;
-    });
-
-    W.app.layout.model.on("operationDone", function(e) {
-        if (e.operation.id!="pending.road_data")
-            return;
-        WMEAC.pendingOps = false;
-    });
 
     // refreshHighlight is not working, so commenting out these two lines
     // W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
     // WMEAC.refreshHighlight();
     window.setTimeout(WMEAC.connectAdvancedClosureTabHandlers);
-    window.setTimeout(WMEAC.setupMTEobserver, 3000);
+    window.setTimeout(WMEAC.setupMTEobserver, 2000);
 };
 
 WMEAC.setupMTEobserver = function()
@@ -115,13 +103,12 @@ WMEAC.setupMTEobserver = function()
                 var addedNode = mutation.addedNodes[i];
 
                 if (addedNode.nodeType === Node.TEXT_NODE && addedNode['s-nr'] ) {
-                    var x = $('.mte-edit-view > wz-section-header');
+                    const x = $('.mte-edit-view > wz-section-header');
                     if (x.length > 0) {
                         const mtev = x[0].shadowRoot.querySelector('.subtitle');
                         if (mtev) {
                             mtev.style.overflow = 'visible';
                             mtev.style.fontSize = '10px';
-                            //console.log('found edit view');
                             break;
                         }
                     }
@@ -131,6 +118,32 @@ WMEAC.setupMTEobserver = function()
     });
     mteObserver.observe(WMEAC.getId('sidepanel-mtes'), {childList: true, subtree: true});
 };
+
+WMEAC.waitMapLoaded = async function()
+{
+    for (let j=0; j<100; j++) {
+        await new Promise(r => setTimeout(r,300));
+        const ldf = W.app.layout.model.attributes.loadingFeatures; // SDK - need access to this status
+        const pend = W.app.layout.model.attributes.pendingOperations.length;
+        console.debug('AC - pendingOps: ' + pend + ' ldf: ' + ldf);
+        if (pend > 0) {
+            console.debug('AC - pendingOps: ' + pend);
+            console.debug('AC - pending: ' + W.app.layout.model.attributes.pendingOperations[0]);
+        }
+        if (!ldf && pend==0) {
+            await new Promise(r => setTimeout(r,50));
+            break;
+        }
+    }
+}
+WMEAC.waitSelectionReady = async function()
+{
+    for (let j=0; j<100; j++) {
+        let selection = WMEAC.wmeSDK.Editing.getSelection();
+        if (selection.ids.length > 0) break;
+        await new Promise(r => setTimeout(r,300));
+    }
+}
 
 WMEAC.installButtonInClosureTab = function (node)
 {
@@ -159,26 +172,41 @@ WMEAC.showAddAdvancedClosure = function()
 {
     // init if needed and show modal dialog
     var ACDiv = WMEAC.getId('wmeac-add-advanced-closure-dialog');
+    let left = 80;
+    let top = 20;
+    const $dc = $('#WazeMap'); // $('#dialog-container');
+    if ($dc.length > 0) {
+        //left += $('#drawer')[0].clientWidth;
+        //left += $('#sidebar')[0].clientWidth;
+    }
+    const $head = $('#app-head');
+    if ($head.length > 0) {
+        top += $head[0].offsetTop + $head[0].offsetHeight;
+    }
     if (ACDiv==null)
     {
         ACDiv = WMEAC.createElement({type: 'div',
                                      id: 'wmeac-add-advanced-closure-dialog',
                                      className: 'wmeac-closuredialog'});
         ACDiv.innerHTML=WMEAC.HTMLTemplates.advancedClosureDialog;
-        W.map.getOLMap().div.appendChild(ACDiv);
+        let dlogs = WMEAC.wmeSDK.Map.getMapViewportElement();
+        if ($dc.length > 0) {
+            dlogs = $dc[0];
+        }
+        dlogs.appendChild(ACDiv);
         window.setTimeout(WMEAC.connectAdvancedClosureDialogHandlers);
         ACDiv.style.display="none";
         //W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
     }
     if (ACDiv.style.display=="block") // already shown => reset position
     {
-        $(ACDiv).css({left: '80px', top: '20px'});
+        $(ACDiv).css({left: (left+'px'), top: (top+'px') });
     }
     else
     {
         ACDiv.style.display="block";
-        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
-        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
+        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler:WMEAC.refreshClosureListFromSelection });
         WMEAC.refreshClosureListFromSelection();
     }
     //window.setTimeout(function () { $('#wmeac-add-advanced-closure-dialog').find('.input-group-addon').css({display:"table-cell"}); });
@@ -482,8 +510,8 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            const m = W.selectionManager.getSelectedDataModelObjects();
-            if (m.length==0 || m[0].type!="segment")
+            let selection = WMEAC.wmeSDK.Editing.getSelection();
+            if (selection.ids.length==0 || selection.objectType != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
@@ -493,40 +521,38 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             var direction = $('#wmeac-advanced-closure-dialog-direction').val();
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             var mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
-            var mte = W.model.majorTrafficEvents.getObjectById(mteId);
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
-                if (mte)
-                    details.eventId = mte.attributes.id;
+                if (mteId)
+                    details.eventId = mteId;
                 return details;
             });
             
-            // save selection list
-            var selection = W.selectionManager.getSelectedDataModelObjects();
             var selectionReversed=[];
             if (direction!='3') // not two way
             {
                 var rev = W.selectionManager.getReversedSegments();
-                selection=selection.filter(function (e) {
-                    if (rev[e.attributes.id])
+                let ids = selection.ids.filter(function (e) {
+                    if (rev[e])
                     {
                         selectionReversed.push(e);
                         return false;
                     }
                     return true;
                 });
+                selection.ids = ids;
             }
-            const ll = W.map.getCenter();
-            const lonlat =  new OpenLayers.Geometry.Point(ll.lon, ll.lat).transform(W.map.getProjectionObject(), "EPSG:4326");
+
+            var lonlat = WMEAC.wmeSDK.Map.getMapCenter();
             var csv = 'header,reason,start date (yyyy-mm-dd hh:mm),end date (yyyy-mm-dd hh:mm),direction (A to B|B to A|TWO WAY),ignore trafic (Yes|No),segment IDs (id1;id2;...),lon/lat (like in a permalink: lon=xxx&lat=yyy),zoom (14 to 22),MTE id (empty cell if not),comment (optional)\n';
             closureList.forEach(function (e) {
-                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.x + '&lat=' + lonlat.y + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"B to A":"A to B")) + '",' + (isIT?"Yes":"No") + ',"' + selection.ids.map(function (s) { return s;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + WMEAC.wmeSDK.Map.getZoomLevel() + ',' + mteId + ',"Generated by WMEAC"\n';
             });
             if (!selectionReversed.length==0)
             {
                 closureList.forEach(function (e) {
-                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s.attributes.id;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + W.map.zoom + ',' + mteId + ',"Generated by WMEAC"\n';
+                    csv+='add,"' + e.reason + '","' + e.startDate + '","' + e.endDate + '","' + (direction==3?"TWO WAY":(direction==2?"A to B":"B to A")) + '",' + (isIT?"Yes":"No") + ',"' + selectionReversed.map(function (s) { return s;}).join(';') + '","lon=' + lonlat.lon + '&lat=' + lonlat.lat + '",' + WMEAC.wmeSDK.Map.getZoomLevel() + ',' + mteId + ',"Generated by WMEAC"\n';
                 });
             }
             WMEAC.download(csv, 'closures.csv');
@@ -538,10 +564,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
     {
         e.addEventListener('click', function() {
             var d = WMEAC.getId('wmeac-add-advanced-closure-dialog');
-            if (d) 
-            {
-                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
-                W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureListFromSelection);
+            if (d) {
+                try {
+                    WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+                    WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureListFromSelection });
+                }
+                catch (e) {
+                    console.warn("AC: Error in events.off: ", e);
+                }
                 d.style.display='none';
             }
         });
@@ -557,18 +587,16 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                 alert("Can't apply closures.\nPlease, check all parameters.");
                 return;
             }
-            const m = W.selectionManager.getSelectedDataModelObjects();
-            if (m.length==0 || m[0].type != "segment")
+            const m = WMEAC.wmeSDK.Editing.getSelection();
+            if (m.ids.length==0 || m.objectType != "segment")
             {
                 alert("Please, select segment(s) before.");
                 return;
             }
-            if (m.every(function (e) {
-                    const segid = e.attributes.id;
-                    const seg = W.model.segments.objects[segid];
-                    return seg.isAllowed(seg.permissionFlags.EDIT_CLOSURES);
-                })==false)
-            {
+            var segs = WMEAC.segmentsIDsToSegments(m);
+            if (segs.every(function (e) {
+                    return WMEAC.wmeSDK.DataModel.Segments.hasPermissions({permission: "EDIT_CLOSURES", segmentId: e.id });
+                })==false) {
                 alert("You don't have permission to edit closures on all those segments.");
                 return;
             }
@@ -580,32 +608,38 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
             direction=(direction=="1"?WMEAC.sharedClosureDirection.A_TO_B:(direction=="2"?WMEAC.sharedClosureDirection.B_TO_A:WMEAC.sharedClosureDirection.TWO_WAY));
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
-            var mte = W.model.majorTrafficEvents.getObjectById($("#wmeac-advanced-closure-dialog-mteid").val());
+            const mteId = $("#wmeac-advanced-closure-dialog-mteid").val();
             closureList = rc.list.map(function (e) {
                 //return {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: cllocation, permanent: isIT};
                 var details = {reason: reason, direction: direction, startDate: e.start, endDate: e.end, location: "", permanent: isIT};
-                if (mte)
-                    details.eventId = mte.attributes.id;
+                if (mteId)
+                    details.eventId = mteId;
                 return details;
             });
             
             // save selection list
-            var selection = W.selectionManager.getSelectedDataModelObjects();
-            W.selectionManager.removeEventListener("selectionchanged", WMEAC.refreshClosureList);
+            var selection = WMEAC.wmeSDK.Editing.getSelection();
+            try {
+                WMEAC.wmeSDK.Events.off({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
+            }
+            catch (e) {
+                console.warn("AC: Error in events.off: ", e);
+            }
             WMEAC.addClosureListFromSelection(closureList, function (i, e) {
-                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#44D544"}); // green
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "var(--safe)"}); // green
             }, function (i, e) {
-                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "#D5444F"}); // red
+                $('#wmeac-advanced-closure-dialog-preview-' + i).html(e).css({color: "var(--alarming)"}); // red
             }, function () {
-                W.selectionManager.setSelectedModels(selection);
+                WMEAC.wmeSDK.Editing.setSelection( { selection } );
                 //alert ('done');
                 var tmp = function selectionReady()
                 {
-                    if (W.selectionManager.getSelectedFeatures().length==0)
+                    let sel = WMEAC.wmeSDK.Editing.getSelection();
+                    if (sel.ids.length==0)
                         window.setTimeout(selectionReady, 500);
                     else
                     {
-                        W.selectionManager.addEventListener("selectionchanged", WMEAC.refreshClosureList);
+                        WMEAC.wmeSDK.Events.on({ eventName: "wme-selection-changed", eventHandler: WMEAC.refreshClosureList });
                         $('a[href="#segment-edit-closures"]').click();
                     }
                 };
@@ -614,13 +648,17 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
         });
     }
     
-    if (typeof $.fn.datepicker !== 'undefined')
-        $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
-    else if (typeof $.fn.daterangepicker !== 'undefined') // WME beta
+    // if (typeof $.fn.datepicker !== 'undefined')
+    //     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").datepicker({ format: "yyyy-mm-dd", todayHighlight: !0, autoclose: !0});
+    // else 
+	if (typeof $.fn.daterangepicker !== 'undefined')
         $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").daterangepicker({singleDatePicker: !0, autoApply: !0,
             locale: {
                 format: "YYYY-MM-DD"
         }});
+    else {
+        WMEAC.logError("daterangepicker not defined");
+    }
     $("#wmeac-advanced-closure-dialog-rangestartdate,#wmeac-advanced-closure-dialog-rangeenddate").on("change", function () { WMEAC.refreshMTEList(); });
     $("#wmeac-advanced-closure-dialog-starttime,#wmeac-advanced-closure-dialog-durationtime").timepicker({ defaultTime: "00:00", showMeridian: !1, template: !1});
     $("#wmeac-add-advanced-closure-dialog").find(".input-group").find(".input-group-addon").on("click", function (e) {
@@ -786,14 +824,14 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
      });
 
      $('#wmeac-advanced-closure-dialog-presets-load-fromseg').on('click', function () {
-        closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
+        const closureId = $("#wmeac-advanced-closure-dialog-segclosure-list").val();
         if (closureId)
         {
-            var c = W.model.roadClosures.objects[closureId];
+            var c = WMEAC.wmeSDK.DataModel.RoadClosures.getById( { roadClosureId: closureId });
             if (c)
             {
-                $("#wmeac-advanced-closure-dialog-starttime").val(c.attributes.startDate.split(' ')[1]);
-                var duration=new Date(c.attributes.endDate) - new Date(c.attributes.startDate);
+                $("#wmeac-advanced-closure-dialog-starttime").val(c.startDate.split(' ')[1]);
+                var duration=new Date(c.endDate) - new Date(c.startDate);
                  // $("#wmeac-advanced-closure-dialog-duration-hour").val(Math.floor(duration/3600000));
                  // $("#wmeac-advanced-closure-dialog-duration-minute").val(new Date(duration).getMinutes());
                  var days = Math.floor(duration/86400000);
@@ -801,19 +839,19 @@ WMEAC.connectAdvancedClosureDialogHandlers = function ()
                  var hours = Math.floor((duration - days * 86400000)/3600000);
                  var minutes = Math.floor((duration - days * 86400000 - hours * 3600000)/60000);
                  $("#wmeac-advanced-closure-dialog-durationtime").val('' + hours + ':' + minutes);
-                 $("#wmeac-advanced-closure-dialog-reason").val(c.attributes.reason.trim());
+                 $("#wmeac-advanced-closure-dialog-reason").val(c.description.trim());
                  if (WMEAC.getOppositeClosure(c).length==0) // oneway
-                    $("#wmeac-advanced-closure-dialog-direction").val(c.attributes.forward?1:2);
+                    $("#wmeac-advanced-closure-dialog-direction").val(c.isForward?1:2);
                 else
                     $("#wmeac-advanced-closure-dialog-direction").val(3);
-                $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.attributes.permanent);
+                $("#wmeac-advanced-closure-dialog-ignoretraffic").prop('checked', c.isPermanent);
                 // MTE
-                if (c.attributes.eventId!=null)
+                if (c.trafficEventId!=null)
                 {
                     var options = [];
                     $("#wmeac-advanced-closure-dialog-mteid option").each(function () { options.push($(this).val()); });
-                    if (options.indexOf(c.attributes.eventId)!=-1)
-                        $("#wmeac-advanced-closure-dialog-mteid").val(c.attributes.eventId);
+                    if (options.indexOf(c.trafficEventId)!=-1)
+                        $("#wmeac-advanced-closure-dialog-mteid").val(c.trafficEventId);
                     else
                         $("#wmeac-advanced-closure-dialog-mteid").val('');
                 }
