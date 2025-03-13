@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2025.03.10.01
+// @version     2025.03.12.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @match       https://www.waze.com/*editor*
@@ -73,7 +73,7 @@ var WMEAC={};
 WMEAC.isDebug=false;
 WMEAC.wmeSDK = null;
 
-WMEAC.ac_version="2025.03.10.01";
+WMEAC.ac_version="2025.03.12.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -549,11 +549,10 @@ css += ".slashed:after { content: ''; position: relative; width: 140%; height: 1
 css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
 css += ".wmeac-progressBarBG { margin-top: 2px; margin-bottom: 2px; margin-left: 2px; margin-right: 2px; padding-bottom: 0px; padding-top: 0px; padding-left: 0px; padding-right: 0px; width: 33%; background-color: #93c4d3; border: 3px rgb(147, 196, 211); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; height: 22px;}";
 css += ".wmeac-progressBarFG { float: left; position: relative; bottom: 22px; height: 0px; text-align: center; width: 100% }";
-css += ".wmeac-closuredialog { border: 2px solid #0099ff; background-color: #ffffff; width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
-css += ".wmeac-closuredialog { border: 2px solid var(--primary); background-color: var(--background_default); width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
+css += ".wmeac-closuredialog { border: 2px solid var(--primary); background-color: var(--surface_alt); width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
 css += ".wmeac-closuredialog button { border: none; border-radius: 50px; color: var(--on_primary); background-color: var(--primary); margin: 3px; }";
 css += ".wmeac-closuredialog h1 { text-align: center; background-color: var(--brand_waze); font-size: medium; margin-top: 0px; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 1px;}";
-css += ".wmeac-closuredialog .content { padding: 10px; background-color: var(--background_default); }";
+css += ".wmeac-closuredialog .content { padding: 10px; }";
 css += ".wmeac-closuredialog .content table { width: 100%; border: none; font-size: 10px; text-transform: uppercase;}";
 css += ".wmeac-closuredialog .content table tbody tr { vertical-align: top;}";
 css += ".wmeac-closuredialog .content table tbody tr td { padding-right: 2px; padding-left: 2px;}";
