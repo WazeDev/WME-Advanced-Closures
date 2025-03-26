@@ -36,3 +36,5 @@ WMEAC.daysOfWeek=[ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 WMEAC.lastGeneratedHolidays = [];
 
 WMEAC.presets=[];
+
+WMEAC.closeInsideNodes = false;
