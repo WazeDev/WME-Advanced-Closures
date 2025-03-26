@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2025.03.12.01
+// @version     2025.03.26.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @match       https://www.waze.com/*editor*
@@ -73,7 +73,7 @@ var WMEAC={};
 WMEAC.isDebug=false;
 WMEAC.wmeSDK = null;
 
-WMEAC.ac_version="2025.03.12.01";
+WMEAC.ac_version="2025.03.26.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -92,6 +92,8 @@ WMEAC.daysOfWeek=[ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 WMEAC.lastGeneratedHolidays = [];
 
 WMEAC.presets=[];
+
+WMEAC.closeInsideNodes = false;
 
 /***********************************************
 *** END OF INCLUDED FILE :                  ***
@@ -549,6 +551,7 @@ css += ".slashed:after { content: ''; position: relative; width: 140%; height: 1
 css += "#wmeac-progressBarInfo { display: none; width: 90%; float: left; position: absolute; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; margin-bottom: -100%; background-color: #c9e1e9; z-index: 999; margin: 5px; margin-right: 20px; }";
 css += ".wmeac-progressBarBG { margin-top: 2px; margin-bottom: 2px; margin-left: 2px; margin-right: 2px; padding-bottom: 0px; padding-top: 0px; padding-left: 0px; padding-right: 0px; width: 33%; background-color: #93c4d3; border: 3px rgb(147, 196, 211); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; height: 22px;}";
 css += ".wmeac-progressBarFG { float: left; position: relative; bottom: 22px; height: 0px; text-align: center; width: 100% }";
+css += "#wmeac-main-title { color: var(--content_p1); }";
 css += ".wmeac-closuredialog { border: 2px solid var(--primary); background-color: var(--surface_alt); width: 100%; float: left; display: none; position: absolute; padding: 0 0px;  border-radius: 10px; width: 500px; z-index: 9999; left: 80px; top: 40px;}";
 css += ".wmeac-closuredialog button { border: none; border-radius: 50px; color: var(--on_primary); background-color: var(--primary); margin: 3px; }";
 css += ".wmeac-closuredialog h1 { text-align: center; background-color: var(--brand_waze); font-size: medium; margin-top: 0px; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 1px;}";
@@ -2118,14 +2121,24 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}};
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, closuresType: 'roadClosure', reverseSegments: {}};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
-        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
-        t.actions=[cab.add(c)];
+        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true, closedNodesMap: {} });
+        WMEAC.setClosureNodes(c);
+        t.actions=[cab.add(c, W.loginManager.user, W.model)];
         W.controller.save(t).then(done()).catch(fail());
         return true;
     }
     return false;
+};
+
+WMEAC.setClosureNodes = function(shClosure)
+{
+    for (const n of shClosure.closureNodes.models) {
+        if (!WMEAC.closeInsideNodes) {
+            n.attributes.isClosed = false;
+        }
+    }
 };
 
 WMEAC.addClosureListFromSelection = function (closureList, successHandler, failureHandler, endHandler, i)
@@ -2185,11 +2198,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
         
-    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
+    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, closuresType: 'roadClosure', reverseSegments: W.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
     const ssel = W.selectionManager.getSegmentSelection();
-    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true });
-    t.actions=[cab.add(c)];
+    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true, closedNodesMap: {} });
+    WMEAC.setClosureNodes(c);
+    t.actions=[cab.add(c, W.loginManager.user, W.model)];
     W.controller.save(t).then(done()).catch(fail());
 };
 
@@ -2230,10 +2244,11 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var oldsegs = segs.map (function (e) {
             return (W.model.segments.getObjectById(e.id));
         });
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, closuresType: 'roadClosure', reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
-        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
-        t.actions=[cab.add(c)];
+        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true, closedNodesMap: {} });
+        WMEAC.setClosureNodes(c);
+        t.actions=[cab.add(c, W.loginManager.user, W.model)];
         W.controller.save(t).then(done()).catch(fail());
         return true;
     }

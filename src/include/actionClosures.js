@@ -30,14 +30,24 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         var cab = require("Waze/Modules/Closures/Models/ClosureActionBuilder");
         var sc = require("Waze/Modules/Closures/Models/SharedClosure");
         var t = {};
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, reverseSegments: {}};
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: options.segments, closuresType: 'roadClosure', reverseSegments: {}};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
-        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
-        t.actions=[cab.add(c)];
+        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true, closedNodesMap: {} });
+        WMEAC.setClosureNodes(c);
+        t.actions=[cab.add(c, W.loginManager.user, W.model)];
         W.controller.save(t).then(done()).catch(fail());
         return true;
     }
     return false;
+};
+
+WMEAC.setClosureNodes = function(shClosure)
+{
+    for (const n of shClosure.closureNodes.models) {
+        if (!WMEAC.closeInsideNodes) {
+            n.attributes.isClosed = false;
+        }
+    }
 };
 
 WMEAC.addClosureListFromSelection = function (closureList, successHandler, failureHandler, endHandler, i)
@@ -97,11 +107,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         }).join(', ') + (c=='noCity'?'':' (' + c + ')'));
     }).join(' ; ');
         
-    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
+    var closureDetails = {closures: [], attributions: [], reason: closureList[i].reason + String.fromCharCode(160), direction: closureList[i].direction, startDate: closureList[i].startDate, endDate: closureList[i].endDate, location: closureLocation, permanent: closureList[i].permanent, segments: oldsegs, closuresType: 'roadClosure', reverseSegments: W.selectionManager.getReversedSegments()};
     if (closureList[i].hasOwnProperty('eventId') && closureList[i].eventId!=null) closureDetails.eventId = closureList[i].eventId;
     const ssel = W.selectionManager.getSegmentSelection();
-    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true });
-    t.actions=[cab.add(c)];
+    var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: ssel, isNewClosure: true, closedNodesMap: {} });
+    WMEAC.setClosureNodes(c);
+    t.actions=[cab.add(c, W.loginManager.user, W.model)];
     W.controller.save(t).then(done()).catch(fail());
 };
 
@@ -142,10 +153,11 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var oldsegs = segs.map (function (e) {
             return (W.model.segments.getObjectById(e.id));
         });
-        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, reverseSegments: W.selectionManager.getReversedSegments()};
+        var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, closuresType: 'roadClosure', reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
-        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true});
-        t.actions=[cab.add(c)];
+        var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true, closedNodesMap: {} });
+        WMEAC.setClosureNodes(c);
+        t.actions=[cab.add(c, W.loginManager.user, W.model)];
         W.controller.save(t).then(done()).catch(fail());
         return true;
     }
