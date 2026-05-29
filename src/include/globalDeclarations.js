@@ -37,4 +37,9 @@ WMEAC.lastGeneratedHolidays = [];
 
 WMEAC.presets=[];
 
-WMEAC.closeInsideNodes = false;
+WMEAC.nodeClosure = {
+    none: 1,
+    inside: 2,
+    all: 3
+};
+WMEAC.closeNodes = WMEAC.nodeClosure.none;

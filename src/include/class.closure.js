@@ -100,6 +100,7 @@ WMEAC.ClassClosure = function (options)
         
         var allClosuresToRemove=[];
         var countToMatch=this.segIDs.length*(this.direction=="TWO WAY"?2:1); // two way = 2 closures in WME
+        const rsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: this.segIDs });
         segs.forEach(function (s) {
             // look for closure(s)
             var that = this;
@@ -118,9 +119,16 @@ WMEAC.ClassClosure = function (options)
                         c.attributes.segID==s.id &&
                         c.attributes.permanent == (that.permanent=='Yes'));
             });
-            if ((this.direction=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
-                (this.direction=="A to B" && closures.length==1 && closures[0].attributes.forward==true) ||
-                (this.direction=="B to A" && closures.length==1 && closures[0].attributes.forward==false))
+            let realWay = this.direction;
+            for (let r in rsegs) {
+                if (rsegs[r].id == s.id) {
+                    realWay = (this.direction=="A to B") ? "B to A" : "A to B";
+                    break;
+                }
+            }
+            if ((realWay=="TWO WAY") || // && closures.length==2 && closures[0].forward!=closures[1].forward) ||
+                (realWay=="A to B" && closures.length==1 && closures[0].attributes.forward==true) ||
+                (realWay=="B to A" && closures.length==1 && closures[0].attributes.forward==false))
             {
                 allClosuresToRemove=allClosuresToRemove.concat(closures);
             }

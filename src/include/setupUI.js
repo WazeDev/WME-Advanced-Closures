@@ -20,6 +20,17 @@ WMEAC.initUI = async function ()
     section.innerHTML  = title;
     addon.appendChild(section);
     
+    var divSetting = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-setting'});
+    divSetting.style.paddingBottom = "5px";
+    var lblSetting = WMEAC.createElement({type: 'span'});
+    lblSetting.innerHTML = "Node Closures: ";
+    divSetting.appendChild(lblSetting);
+    let selEl = WMEAC.createElement({type: 'select', id:'wmeac-nodesel'});
+    selEl.innerHTML = `<option value=${WMEAC.nodeClosure.none}>None</option>\
+        <option value=${WMEAC.nodeClosure.inside}>Inside</option>\
+        <option value=${WMEAC.nodeClosure.all}>All</option>`;
+    divSetting.appendChild(selEl);
+
     var divAdvCl = WMEAC.createElement({type: 'div', className: 'wmeac-sidepanel', id:'wmeac-ac'});
     var addACBtn = WMEAC.createElement({type: 'wz-button',
         id: 'wmeac-add-advanced-closure-button',
@@ -48,6 +59,7 @@ WMEAC.initUI = async function ()
     
     divCSV.innerHTML = csvHTML;
     
+    addon.appendChild(divSetting);
     addon.appendChild(divAdvCl);
     addon.appendChild(WMEAC.createElement({type: 'hr'}));
     addon.appendChild(divCSV);
@@ -82,12 +94,16 @@ WMEAC.initUI = async function ()
         });    
     });
     observer.observe(WMEAC.getId('edit-panel'), {childList: true, subtree: true});
-    
+
+    selEl.onchange = function(){
+        WMEAC.closeNodes = Number($('#wmeac-nodesel').val());
+        WMEAC.save();
+    };
+    $('#wmeac-nodesel').val(WMEAC.closeNodes).change();
+
     // test now if closure tab exists. It happens if WME is opened with a segment id in the url:
     WMEAC.installButtonInClosureTab();
     
-    //W.selectionManager.addEventListener("selectionchanged", WMEAC.selectionChanged);
-
     // refreshHighlight is not working, so commenting out these two lines
     // W.model.events.register("mergeend", null, WMEAC.refreshHighlight);
     // WMEAC.refreshHighlight();

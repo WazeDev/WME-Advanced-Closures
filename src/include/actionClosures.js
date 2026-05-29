@@ -1,3 +1,20 @@
+// for the given array of segments, make list of nodes with how many of the segments are part of each
+WMEAC.getNodeList = function ( segments )
+{
+    let nodeData = {};
+    for (let i=0; i<segments.length; i++) {
+        const seg = WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: segments[i] } );
+        if (seg.fromNodeId) {
+            if (nodeData.hasOwnProperty(seg.fromNodeId)) { nodeData[seg.fromNodeId]++; }
+            else { nodeData[seg.fromNodeId] = 1; }
+        }
+        if (seg.toNodeId) {
+            if (nodeData.hasOwnProperty(seg.toNodeId)) { nodeData[seg.toNodeId]++; }
+            else { nodeData[seg.toNodeId] = 1; }
+        }
+    }
+    return nodeData;
+}
 WMEAC.addClosure = function (options, successHandler, failureHandler)
 {
     if (options &&
@@ -42,6 +59,9 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         const ed = new Date(options.endDate);
         let sdoff = sd.getTimezoneOffset() * 60000;
         let edoff = ed.getTimezoneOffset() * 60000;
+        let nodeInfo = null;
+        let fromNodeClosed = false;
+        let toNodeClosed = false;
         let args = {
             description: options.reason,
             endDate: ed.valueOf() - edoff,
@@ -52,9 +72,27 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
             startDate: sd.valueOf() - sdoff,
             trafficEventId: mte
         };
+        switch (WMEAC.closeNodes) {
+            case WMEAC.nodeClosure.all:
+                fromNodeClosed = true;
+                toNodeClosed = true;
+                break;
+            case WMEAC.nodeClosure.inside:
+                nodeInfo = WMEAC.getNodeList( options.segments );
+                break;
+            default:
+                fromNodeClosed = false;
+                toNodeClosed = false;
+                break;
+        }
         let revsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: options.segments });
         for (let s in options.segments) {
             args.segmentId = Number(options.segments[s]);
+            const seg = WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: args.segmentId } );
+            if (nodeInfo) {
+                fromNodeClosed = nodeInfo[seg.fromNodeId] > 1;
+                toNodeClosed = nodeInfo[seg.toNodeId] > 1;
+            }
             let dir = options.direction;
             if (dir != WMEAC.sharedClosureDirection.TWO_WAY && revsegs.length > 0) {
                 for (let r in revsegs) {
@@ -67,10 +105,12 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
             try {
                 if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
                     args.isForward = true;
+                    args.fromNodeClosed = fromNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
                 }
                 if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
                     args.isForward = false;
+                    args.fromNodeClosed = toNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
                 }
             } catch(e) {
@@ -89,15 +129,6 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
         return true;
     }
     return false;
-};
-
-WMEAC.setClosureNodes = function(shClosure)
-{
-    for (const n of shClosure.closureNodes.models) {
-        if (!WMEAC.closeInsideNodes) {
-            n.attributes.isClosed = false;
-        }
-    }
 };
 
 WMEAC.addClosureListFromSelection = function (closureList, successHandler, failureHandler, endHandler, i)
@@ -158,6 +189,9 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
     const ed = new Date(closureList[i].endDate);
     let sdoff = sd.getTimezoneOffset() * 60000;
     let edoff = ed.getTimezoneOffset() * 60000;
+    let nodeInfo = null;
+    let fromNodeClosed = false;
+    let toNodeClosed = false;
     let args = {
         description: closureList[i].reason,
         endDate: ed.valueOf() - edoff,
@@ -168,10 +202,28 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         startDate: sd.valueOf() - sdoff,
         trafficEventId: mte
     };
+    switch (WMEAC.closeNodes) {
+        case WMEAC.nodeClosure.all:
+            fromNodeClosed = true;
+            toNodeClosed = true;
+            break;
+        case WMEAC.nodeClosure.inside:
+            nodeInfo = WMEAC.getNodeList( segIDs.ids );
+            break;
+        default:
+            fromNodeClosed = false;
+            toNodeClosed = false;
+            break;
+    }
 
     let revsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: segIDs.ids });
     for (let s in segIDs.ids) {
         args.segmentId = segIDs.ids[s];
+        const seg = WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: args.segmentId } );
+        if (nodeInfo) {
+            fromNodeClosed = nodeInfo[seg.fromNodeId] > 1;
+            toNodeClosed = nodeInfo[seg.toNodeId] > 1;
+        }
         let dir = closureList[i].direction;
         if (dir != WMEAC.sharedClosureDirection.TWO_WAY && revsegs.length > 0) {
             for (let r in revsegs) {
@@ -184,10 +236,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
         try {
             if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
                 args.isForward = true;
+                args.fromNodeClosed = fromNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
             }
             if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
                 args.isForward = false;
+                args.fromNodeClosed = toNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
             }
         } catch(e) {
@@ -246,7 +300,7 @@ WMEAC.addClosureFromSelection = function (options, successHandler, failureHandle
         var closureDetails = {closures: [], attributions: [], reason: options.reason + String.fromCharCode(160), direction: options.direction, startDate: options.startDate, endDate: options.endDate, location: options.location, permanent: options.permanent, segments: oldsegs, closuresType: 'roadClosure', reverseSegments: W.selectionManager.getReversedSegments()};
         if (options.hasOwnProperty('eventId') && options.eventId!=null) closureDetails.eventId = options.eventId;
         var c = new sc(closureDetails, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNewClosure: true, closedNodesMap: {} });
-        WMEAC.setClosureNodes(c);
+        //WMEAC.setClosureNodes(c);
         t.actions=[cab.add(c, W.loginManager.user, W.model)];
         W.controller.save(t).then(done()).catch(fail());
         return true;
@@ -279,11 +333,24 @@ WMEAC.removeClosure = function (closures, successHandler, failureHandler)
     var sc = require("Waze/Modules/Closures/Models/SharedClosure");
     var t = {};
     let segs = WMEAC.segmentsIDsToSegments(closures.map(closure => closure.attributes.segID)); // SDK - closures is internal objects for now
+    let segIds = closures.map(closure => closure.attributes.segID);
     // SDK - need old style segment objects for now since closure code called getID() on these objects
     var oldsegs = segs.map (function (e) {
         return (W.model.segments.getObjectById(e.id));
     });
-    var sclo = new sc({segments: oldsegs, closures, reverseSegments: W.selectionManager.getReversedSegments()}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
+    // need to simulate results of old getReversedSegments call to pass to old module
+    let reverseSegments = { multipleConnectedComponents: false }
+    for (let i=0; i<segIds.length; i++) {
+        reverseSegments[segIds[i]] = false;
+    }
+    let count = 0;
+    const rsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: segIds });
+    for (let i=0; i<rsegs.length; i++) {
+        reverseSegments[rsegs[i]] = true;
+        count++;
+    }
+    reverseSegments.numReversed = count;
+    var sclo = new sc({segments: oldsegs, closures, reverseSegments}, {dataModel: W.model, segmentSelection: W.selectionManager.getSegmentSelection(), isNew: true});
     t.actions=[cab.delete(W.model,sclo)];
     W.controller.save(t).then(done()).catch(fail());
     return true;
