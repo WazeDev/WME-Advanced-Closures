@@ -1,7 +1,7 @@
 WMEAC.save = function ()
 {
     WMEAC.log("save data...");
-    localStorage.WMEAC = JSON.stringify({presets: WMEAC.presets});
+    localStorage.WMEAC = JSON.stringify({presets: WMEAC.presets, closenodes: WMEAC.closeNodes});
 };
 
 WMEAC.load = function ()
@@ -11,6 +11,8 @@ WMEAC.load = function ()
         if (localStorage.WMEAC!==undefined && localStorage.WMEAC.length > 0) {
             var saved = JSON.parse(localStorage.WMEAC);
             WMEAC.presets = saved.presets;
+            WMEAC.closeNodes = WMEAC.nodeClosure.none;
+            if (saved.closenodes) { WMEAC.closeNodes = Number(saved.closenodes); }
             WMEAC.log("presets", WMEAC.presets);
         }
     }
