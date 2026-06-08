@@ -103,12 +103,12 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
                 }
             }
             try {
-                if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+                if ((dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isAtoB || seg.isTwoWay)) {
                     args.isForward = true;
                     args.fromNodeClosed = fromNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
                 }
-                if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+                if ((dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isBtoA || seg.isTwoWay)) {
                     args.isForward = false;
                     args.fromNodeClosed = toNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
@@ -234,12 +234,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
             }
         }
         try {
-            if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+            if ((dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isAtoB || seg.isTwoWay)) {
                 args.isForward = true;
                 args.fromNodeClosed = fromNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
             }
-            if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+            if ((dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isBtoA || seg.isTwoWay)) {
                 args.isForward = false;
                 args.fromNodeClosed = toNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
