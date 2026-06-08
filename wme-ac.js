@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2026.05.29.01
+// @version     2026.06.08.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @match       https://www.waze.com/*editor*
@@ -75,7 +75,7 @@ var WMEAC={};
 WMEAC.isDebug=false;
 WMEAC.wmeSDK = null;
 
-WMEAC.ac_version="2026.05.29.01";
+WMEAC.ac_version="2026.06.08.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -2199,12 +2199,12 @@ WMEAC.addClosure = function (options, successHandler, failureHandler)
                 }
             }
             try {
-                if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+                if ((dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isAtoB || seg.isTwoWay)) {
                     args.isForward = true;
                     args.fromNodeClosed = fromNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
                 }
-                if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+                if ((dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isBtoA || seg.isTwoWay)) {
                     args.isForward = false;
                     args.fromNodeClosed = toNodeClosed;
                     WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
@@ -2330,12 +2330,12 @@ WMEAC.addClosureListFromSelection = function (closureList, successHandler, failu
             }
         }
         try {
-            if (dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+            if ((dir==WMEAC.sharedClosureDirection.A_TO_B || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isAtoB || seg.isTwoWay)) {
                 args.isForward = true;
                 args.fromNodeClosed = fromNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
             }
-            if (dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) {
+            if ((dir==WMEAC.sharedClosureDirection.B_TO_A || dir==WMEAC.sharedClosureDirection.TWO_WAY) && (seg.isBtoA || seg.isTwoWay)) {
                 args.isForward = false;
                 args.fromNodeClosed = toNodeClosed;
                 WMEAC.wmeSDK.DataModel.RoadClosures.addClosure(args);
