@@ -131,7 +131,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     <div class="wmeac-csv-closures-list-col-dates"><div title="' + closure.startDate + '">' + closure.startDate + '</div><div title="' + closure.endDate + '">' + closure.endDate + '</div></div>\
                     <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
                     <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
-                    <div class="wmeac-csv-closures-list-col-target"><a href="' + WMEAC.buildPermalink({lon: closure.lonlat.lon, lat: closure.lonlat.lat, segments: closure.segIDs.join(','), zoom: closure.zoom}) + '" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
+                    <div class="wmeac-csv-closures-list-col-target"><a href="' + WMEAC.buildPermalink({lon: closure.lonlat.lon, lat: closure.lonlat.lat, segments: closure.segIDs.join(','), zoomLevel: closure.zoom}) + '" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
                     <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>\
                     <div class="wmeac-csv-closures-minilog" style="display: block;">' + (action=='add'?'Ready to apply':(action=='remove'?'Ready to remove':'')) + '</div>';
     // attach handlers

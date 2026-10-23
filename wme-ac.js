@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        WME Advanced Closures
-// @version     2026.06.08.01
+// @version     2026.10.23.01
 // @description Recurrent and imported closures in the Waze Map Editor
 // @namespace   WMEAC
 // @match       https://www.waze.com/*editor*
@@ -75,7 +75,7 @@ var WMEAC={};
 WMEAC.isDebug=false;
 WMEAC.wmeSDK = null;
 
-WMEAC.ac_version="2026.06.08.01";
+WMEAC.ac_version="2026.10.23.01";
 
 WMEAC.closureTabTimeout=null;
 
@@ -448,13 +448,24 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
 
 WMEAC.getOppositeClosure = function (closure)
 {
-    return WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
-        return (closure.description == c.description &&
+	let opp = [];
+	let clist = [];
+	try {
+		clist = WMEAC.wmeSDK.DataModel.RoadClosures.getAll();
+	} catch (e) {
+        WMEAC.log("error caught getting closures: ", e);
+	}
+
+	if (clist.length > 0) {
+        opp = clist.filter(function (c) {
+            return (closure.description == c.description &&
                 closure.startDate == c.startDate &&
                 closure.endDate == c.endDate &&
                 closure.segmentId == c.segmentId &&
                 closure.isForward != c.isForward);
-    });
+        });
+	}
+	return opp;
 };
 
 WMEAC.getCityStreetsFromSegmentSet = function (segs)
@@ -1955,22 +1966,26 @@ WMEAC.refreshClosureList = function ()
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             const selection = WMEAC.wmeSDK.Editing.getSelection();
-            var existingClosures = [];
-            if (selection.ids.length > 0 && selection.objectType == "segment") {
+            let existingClosures = [];
+            if (selection && selection.ids.length > 0 && selection.objectType == "segment") {
                 let revsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: selection.ids });
                 let realWay = direction;
-                existingClosures = selection.ids.reduce(function (p, c, i) {
-                    for (let r in revsegs) {
-                        if (revsegs[r].id == c) {
-                            realWay = (direction==WMEAC.sharedClosureDirection.A_TO_B) ? WMEAC.sharedClosureDirection.B_TO_A : WMEAC.sharedClosureDirection.A_TO_B;
-                            break;
+                try {
+                    existingClosures = selection.ids.reduce(function (p, c, i) {
+                        for (let r in revsegs) {
+                            if (revsegs[r].id == c) {
+                                realWay = (direction==WMEAC.sharedClosureDirection.A_TO_B) ? WMEAC.sharedClosureDirection.B_TO_A : WMEAC.sharedClosureDirection.A_TO_B;
+                                break;
+                            }
                         }
-                    }
-                    return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
-                        return (e.segmentId==c &&
-                                (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
-                    }));
-                }, []);
+                        return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
+                            return (e.segmentId==c &&
+                                    (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
+                        }));
+                    }, []);
+                } catch(e) {
+                    WMEAC.log("error caught getting closures: ", e);
+                }
             }
             const mte = WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getById( { majorTrafficEventId: $("#wmeac-advanced-closure-dialog-mteid").val() } );
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
@@ -2026,10 +2041,14 @@ WMEAC.refreshMTEList = function ()
     mtelist.forEach(function (o) {
         WMEAC.addMTEitem(o.name, o.value, currentMTEid);
     });
-    if (mtelist.length>0)
+    if (mtelist.length>0) {
         $("#wmeac-advanced-closure-dialog-mteid").removeAttr('disabled');
-    else
+        $("#wmeac-advanced-closure-dialog-mteid").attr('title', '');
+    }
+    else {
         $("#wmeac-advanced-closure-dialog-mteid").attr('disabled', '');
+        $("#wmeac-advanced-closure-dialog-mteid").attr('title', 'Click on the Events tab to load the events.');
+    }
 };
 
 WMEAC.addMTEitem = function (n, v, curId)
@@ -2051,7 +2070,13 @@ WMEAC.refreshClosureListFromSelection = function ()
         const sel = WMEAC.wmeSDK.Editing.getSelection();
         if (sel && sel.ids.length!=0 && sel.objectType == "segment") {
             var blackList=[];
-            WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+            let clist = [];
+            try {
+                clist = WMEAC.wmeSDK.DataModel.RoadClosures.getAll();
+            } catch(e) {
+                WMEAC.log("error caught getting closures: ", e);
+            }
+            clist.filter(function (c) {
                 return c.segmentId==sel.ids[0];
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));
@@ -2100,11 +2125,11 @@ WMEAC.getNodeList = function ( segments )
     let nodeData = {};
     for (let i=0; i<segments.length; i++) {
         const seg = WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: segments[i] } );
-        if (seg.fromNodeId) {
+        if (seg?.fromNodeId) {
             if (nodeData.hasOwnProperty(seg.fromNodeId)) { nodeData[seg.fromNodeId]++; }
             else { nodeData[seg.fromNodeId] = 1; }
         }
-        if (seg.toNodeId) {
+        if (seg?.toNodeId) {
             if (nodeData.hasOwnProperty(seg.toNodeId)) { nodeData[seg.toNodeId]++; }
             else { nodeData[seg.toNodeId] = 1; }
         }
@@ -2636,7 +2661,7 @@ WMEAC.buildInlineClosureUI = function (closure, action)
                     <div class="wmeac-csv-closures-list-col-dates"><div title="' + closure.startDate + '">' + closure.startDate + '</div><div title="' + closure.endDate + '">' + closure.endDate + '</div></div>\
                     <div class="wmeac-csv-closures-list-col-dir">' + (closure.direction=="A to B"?'A&#8594;B':(closure.direction=="B to A"?'B&#8594;A':'A&#8596;B')) + '</div>\
                     <div class="wmeac-csv-closures-list-col-it"><input type="checkbox" ' + (closure.permanent=="Yes"?'checked':'') + ' disabled/></div>\
-                    <div class="wmeac-csv-closures-list-col-target"><a href="' + WMEAC.buildPermalink({lon: closure.lonlat.lon, lat: closure.lonlat.lat, segments: closure.segIDs.join(','), zoom: closure.zoom}) + '" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
+                    <div class="wmeac-csv-closures-list-col-target"><a href="' + WMEAC.buildPermalink({lon: closure.lonlat.lon, lat: closure.lonlat.lat, segments: closure.segIDs.join(','), zoomLevel: closure.zoom}) + '" title="Go there!"><i class="fa fa-crosshairs"></i></a></div>\
                     <div class="wmeac-csv-closures-list-col-apply"><a href="#" title="Apply action of this closure"><i class="fa fa-arrow-circle-right"></i></a></div>\
                     <div class="wmeac-csv-closures-minilog" style="display: block;">' + (action=='add'?'Ready to apply':(action=='remove'?'Ready to remove':'')) + '</div>';
     // attach handlers

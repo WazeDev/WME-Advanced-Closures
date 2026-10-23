@@ -149,22 +149,26 @@ WMEAC.refreshClosureList = function ()
             var directionStr = direction==1?"(A &#8594; B)":(direction==2?"(B &#8594; A)":"(&#8646;)");
             var isIT = $('#wmeac-advanced-closure-dialog-ignoretraffic').is(':checked');
             const selection = WMEAC.wmeSDK.Editing.getSelection();
-            var existingClosures = [];
-            if (selection.ids.length > 0 && selection.objectType == "segment") {
+            let existingClosures = [];
+            if (selection && selection.ids.length > 0 && selection.objectType == "segment") {
                 let revsegs = WMEAC.wmeSDK.DataModel.Segments.getReversedSegments( { segmentIds: selection.ids });
                 let realWay = direction;
-                existingClosures = selection.ids.reduce(function (p, c, i) {
-                    for (let r in revsegs) {
-                        if (revsegs[r].id == c) {
-                            realWay = (direction==WMEAC.sharedClosureDirection.A_TO_B) ? WMEAC.sharedClosureDirection.B_TO_A : WMEAC.sharedClosureDirection.A_TO_B;
-                            break;
+                try {
+                    existingClosures = selection.ids.reduce(function (p, c, i) {
+                        for (let r in revsegs) {
+                            if (revsegs[r].id == c) {
+                                realWay = (direction==WMEAC.sharedClosureDirection.A_TO_B) ? WMEAC.sharedClosureDirection.B_TO_A : WMEAC.sharedClosureDirection.A_TO_B;
+                                break;
+                            }
                         }
-                    }
-                    return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
-                        return (e.segmentId==c &&
-                                (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
-                    }));
-                }, []);
+                        return p.concat(WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(e => {
+                            return (e.segmentId==c &&
+                                    (direction==3 || (e.isForward && realWay==1) || (!e.isForward && realWay==2)));
+                        }));
+                    }, []);
+                } catch(e) {
+                    WMEAC.log("error caught getting closures: ", e);
+                }
             }
             const mte = WMEAC.wmeSDK.DataModel.MajorTrafficEvents.getById( { majorTrafficEventId: $("#wmeac-advanced-closure-dialog-mteid").val() } );
             $('#wmeac-csv-closures-preview-content').html('' + rc.list.length + ' closure(s) to apply: <br>' +
@@ -220,10 +224,14 @@ WMEAC.refreshMTEList = function ()
     mtelist.forEach(function (o) {
         WMEAC.addMTEitem(o.name, o.value, currentMTEid);
     });
-    if (mtelist.length>0)
+    if (mtelist.length>0) {
         $("#wmeac-advanced-closure-dialog-mteid").removeAttr('disabled');
-    else
+        $("#wmeac-advanced-closure-dialog-mteid").attr('title', '');
+    }
+    else {
         $("#wmeac-advanced-closure-dialog-mteid").attr('disabled', '');
+        $("#wmeac-advanced-closure-dialog-mteid").attr('title', 'Click on the Events tab to load the events.');
+    }
 };
 
 WMEAC.addMTEitem = function (n, v, curId)
@@ -245,7 +253,13 @@ WMEAC.refreshClosureListFromSelection = function ()
         const sel = WMEAC.wmeSDK.Editing.getSelection();
         if (sel && sel.ids.length!=0 && sel.objectType == "segment") {
             var blackList=[];
-            WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
+            let clist = [];
+            try {
+                clist = WMEAC.wmeSDK.DataModel.RoadClosures.getAll();
+            } catch(e) {
+                WMEAC.log("error caught getting closures: ", e);
+            }
+            clist.filter(function (c) {
                 return c.segmentId==sel.ids[0];
             }).sort(function (a,b) {
                 return (new Date(a.startDate)-new Date(b.startDate));

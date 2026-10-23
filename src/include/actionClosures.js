@@ -4,11 +4,11 @@ WMEAC.getNodeList = function ( segments )
     let nodeData = {};
     for (let i=0; i<segments.length; i++) {
         const seg = WMEAC.wmeSDK.DataModel.Segments.getById( { segmentId: segments[i] } );
-        if (seg.fromNodeId) {
+        if (seg?.fromNodeId) {
             if (nodeData.hasOwnProperty(seg.fromNodeId)) { nodeData[seg.fromNodeId]++; }
             else { nodeData[seg.fromNodeId] = 1; }
         }
-        if (seg.toNodeId) {
+        if (seg?.toNodeId) {
             if (nodeData.hasOwnProperty(seg.toNodeId)) { nodeData[seg.toNodeId]++; }
             else { nodeData[seg.toNodeId] = 1; }
         }
