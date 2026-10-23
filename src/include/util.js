@@ -330,13 +330,24 @@ WMEAC.getCountriesFromSegmentSet = function (segs)
 
 WMEAC.getOppositeClosure = function (closure)
 {
-    return WMEAC.wmeSDK.DataModel.RoadClosures.getAll().filter(function (c) {
-        return (closure.description == c.description &&
+	let opp = [];
+	let clist = [];
+	try {
+		clist = WMEAC.wmeSDK.DataModel.RoadClosures.getAll();
+	} catch (e) {
+        WMEAC.log("error caught getting closures: ", e);
+	}
+
+	if (clist.length > 0) {
+        opp = clist.filter(function (c) {
+            return (closure.description == c.description &&
                 closure.startDate == c.startDate &&
                 closure.endDate == c.endDate &&
                 closure.segmentId == c.segmentId &&
                 closure.isForward != c.isForward);
-    });
+        });
+	}
+	return opp;
 };
 
 WMEAC.getCityStreetsFromSegmentSet = function (segs)
